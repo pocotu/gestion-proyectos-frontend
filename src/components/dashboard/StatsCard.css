@@ -1,0 +1,247 @@
+/* StatsCard Component Styles */
+.stats-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.stats-card--clickable {
+  cursor: pointer;
+}
+
+.stats-card--clickable:hover {
+  border-color: #3b82f6;
+}
+
+/* Color variants */
+.stats-card--primary {
+  border-left: 4px solid #3b82f6;
+}
+
+.stats-card--success {
+  border-left: 4px solid #10b981;
+}
+
+.stats-card--warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.stats-card--danger {
+  border-left: 4px solid #ef4444;
+}
+
+.stats-card--info {
+  border-left: 4px solid #06b6d4;
+}
+
+.stats-card--secondary {
+  border-left: 4px solid #6b7280;
+}
+
+/* Header section */
+.stats-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.stats-card__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-right: 0.75rem;
+}
+
+.stats-card--primary .stats-card__icon {
+  background-color: #dbeafe;
+  color: #3b82f6;
+}
+
+.stats-card--success .stats-card__icon {
+  background-color: #d1fae5;
+  color: #10b981;
+}
+
+.stats-card--warning .stats-card__icon {
+  background-color: #fef3c7;
+  color: #f59e0b;
+}
+
+.stats-card--danger .stats-card__icon {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.stats-card--info .stats-card__icon {
+  background-color: #cffafe;
+  color: #06b6d4;
+}
+
+.stats-card--secondary .stats-card__icon {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.stats-card__title-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stats-card__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Trend indicators */
+.stats-card__trend {
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+}
+
+.stats-card__trend--up {
+  color: #10b981;
+  background-color: #d1fae5;
+}
+
+.stats-card__trend--down {
+  color: #ef4444;
+  background-color: #fee2e2;
+}
+
+.stats-card__trend--neutral {
+  color: #6b7280;
+  background-color: #f3f4f6;
+}
+
+/* Content section */
+.stats-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stats-card__value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+.stats-card__subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.stats-card__percentage {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #3b82f6;
+  background-color: #dbeafe;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+/* Loading state */
+.stats-card--loading {
+  pointer-events: none;
+}
+
+.stats-card__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stats-card__skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+.stats-card__skeleton--title {
+  height: 1rem;
+  width: 60%;
+}
+
+.stats-card__skeleton--value {
+  height: 2rem;
+  width: 40%;
+}
+
+.stats-card__skeleton--subtitle {
+  height: 0.875rem;
+  width: 80%;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .stats-card {
+    padding: 1rem;
+  }
+  
+  .stats-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .stats-card__title-section {
+    width: 100%;
+  }
+  
+  .stats-card__value {
+    font-size: 1.75rem;
+  }
+  
+  .stats-card__icon {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-card {
+    padding: 0.75rem;
+  }
+  
+  .stats-card__value {
+    font-size: 1.5rem;
+  }
+}
