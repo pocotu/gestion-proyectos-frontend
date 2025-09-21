@@ -38,6 +38,7 @@ const FormSelect = ({
         onBlur={onBlur}
         required={required}
         disabled={disabled}
+        data-testid={`select-${name}`}
         className={`form-input ${
           error ? 'border-red-500 focus:ring-red-500' : ''
         } ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}

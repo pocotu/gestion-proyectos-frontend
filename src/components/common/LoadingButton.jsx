@@ -67,6 +67,7 @@ const LoadingButton = ({
       className={buttonClasses}
       disabled={isDisabled}
       onClick={handleClick}
+      data-testid={props['data-testid'] || `loading-button-${variant}`}
       {...props}
     >
       {loading && (

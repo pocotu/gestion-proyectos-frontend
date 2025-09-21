@@ -109,11 +109,11 @@ const DashboardPage = () => {
   }
 
   return (
-    <div style={styles.dashboardContainer}>
+    <div style={styles.dashboardContainer} data-testid="dashboard-page">
       {/* Header simplificado */}
-      <div style={styles.header}>
+      <div style={styles.header} data-testid="dashboard-header">
         <h1 style={styles.title}>
-          Bienvenido, {user?.nombre || 'Usuario'}
+          ¡Bienvenido, {user?.nombre || 'Usuario'}!
         </h1>
         <span style={styles.role}>
           {user?.es_administrador ? 'Administrador' : 'Usuario'}

@@ -42,6 +42,7 @@ const FormTextarea = ({
         disabled={disabled}
         rows={rows}
         maxLength={maxLength}
+        data-testid={`textarea-${name}`}
         className={`form-input resize-vertical ${
           error ? 'border-red-500 focus:ring-red-500' : ''
         } ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}

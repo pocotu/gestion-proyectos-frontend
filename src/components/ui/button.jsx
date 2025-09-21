@@ -42,6 +42,7 @@ export const Button = ({
       className={classes}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
+      data-testid={props['data-testid'] || `button-${variant}`}
       {...props}
     >
       {children}

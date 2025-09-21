@@ -124,9 +124,9 @@ const LoginPage = () => {
               <h1 className="display-4 fw-bold text-white mb-2">
                 Bienvenido
               </h1>
-              <p className="lead text-white-50">
-                Inicia sesión en tu cuenta
-              </p>
+              <h2 className="lead text-white-50">
+                Iniciar Sesión
+              </h2>
             </div>
 
             <Card className="card-modern shadow-modern fade-in">
@@ -144,6 +144,7 @@ const LoginPage = () => {
                       placeholder="tu@email.com"
                       className={`form-control-modern ${errors.email ? 'is-invalid' : ''}`}
                       disabled={isLoading}
+                      data-testid="email-input"
                     />
                     {errors.email && (
                       <Form.Control.Feedback type="invalid">
@@ -164,6 +165,7 @@ const LoginPage = () => {
                       placeholder="••••••••"
                       className={`form-control-modern ${errors.contraseña ? 'is-invalid' : ''}`}
                       disabled={isLoading}
+                      data-testid="password-input"
                     />
                     {errors.contraseña && (
                       <Form.Control.Feedback type="invalid">
@@ -179,6 +181,7 @@ const LoginPage = () => {
                       size="lg"
                       className="btn-modern"
                       disabled={isLoading}
+                      data-testid="login-button"
                     >
                       {isLoading ? (
                         <>

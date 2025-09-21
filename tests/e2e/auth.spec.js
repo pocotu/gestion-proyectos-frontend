@@ -48,18 +48,18 @@ test.describe('Sistema de Autenticación', () => {
     await expect(page).toHaveURL(/.*login/);
     
     // Verificar mensaje de error (aparece como toast con role="alert")
-    await expect(page.locator('[role="alert"]')).toBeVisible();
+    await expect(page.locator('[role="alert"]').first()).toBeVisible();
   });
 
   test('debe navegar a la página de registro', async ({ page }) => {
     // Hacer click en el enlace de registro
-    await page.click('text=¿No tienes cuenta? Regístrate');
+    await page.click('text=Regístrate aquí');
     
     // Verificar redirección a la página de registro
     await expect(page).toHaveURL(/.*register/);
     
     // Verificar elementos de la página de registro
-    await expect(page.locator('h2')).toContainText('Crear Cuenta');
+    await expect(page.locator('h1')).toContainText('Crear Cuenta');
     await expect(page.locator('input[name="nombre"]')).toBeVisible();
     await expect(page.locator('input[name="email"]')).toBeVisible();
     await expect(page.locator('input[name="contraseña"]')).toBeVisible();
