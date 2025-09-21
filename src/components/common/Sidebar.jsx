@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import './Sidebar.css';
 
 /**
  * Componente Sidebar - Navegación lateral con menú por rol
@@ -79,6 +78,13 @@ const Sidebar = () => {
           icon: '📋',
           roles: ['admin'],
           description: 'Logs de auditoría'
+        },
+        {
+          name: 'Logs de Actividad',
+          path: '/activity-logs',
+          icon: '📝',
+          roles: ['admin'],
+          description: 'Registro de actividades del sistema'
         }
       ]
     },
@@ -124,48 +130,44 @@ const Sidebar = () => {
   const filteredSections = getFilteredSections();
 
   return (
-    <aside className={`sidebar ${isCollapsed ? 'sidebar--collapsed' : ''}`}>
-      <div className="sidebar__header">
-        <div className="sidebar__logo">
+    <aside>
+      <div>
+        <div>
           {!isCollapsed && (
             <>
-              <span className="sidebar__logo-icon">🚀</span>
-              <span className="sidebar__logo-text">Gestión Pro</span>
+              <span>🚀</span>
+              <span>Gestión Pro</span>
             </>
           )}
         </div>
         <button 
-          className="sidebar__toggle"
           onClick={toggleSidebar}
           title={isCollapsed ? 'Expandir menú' : 'Contraer menú'}
         >
-          <span className={`sidebar__toggle-icon ${isCollapsed ? 'sidebar__toggle-icon--collapsed' : ''}`}>
+          <span>
             ◀
           </span>
         </button>
       </div>
 
-      <nav className="sidebar__nav">
+      <nav>
         {filteredSections.map((section, sectionIndex) => (
-          <div key={section.title} className="sidebar__section">
+          <div key={section.title}>
             {!isCollapsed && (
-              <h3 className="sidebar__section-title">{section.title}</h3>
+              <h3>{section.title}</h3>
             )}
-            <ul className="sidebar__list">
+            <ul>
               {section.items.map((item) => (
-                <li key={item.path} className="sidebar__item">
+                <li key={item.path}>
                   <NavLink
                     to={item.path}
-                    className={({ isActive }) =>
-                      `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
-                    }
                     title={isCollapsed ? `${item.name} - ${item.description}` : ''}
                   >
-                    <span className="sidebar__link-icon">{item.icon}</span>
+                    <span>{item.icon}</span>
                     {!isCollapsed && (
-                      <div className="sidebar__link-content">
-                        <span className="sidebar__link-name">{item.name}</span>
-                        <span className="sidebar__link-description">{item.description}</span>
+                      <div>
+                        <span>{item.name}</span>
+                        <span>{item.description}</span>
                       </div>
                     )}
                   </NavLink>
@@ -177,14 +179,14 @@ const Sidebar = () => {
       </nav>
 
       {!isCollapsed && (
-        <div className="sidebar__footer">
-          <div className="sidebar__user-info">
-            <div className="sidebar__user-avatar">
+        <div>
+          <div>
+            <div>
               {user?.nombre?.charAt(0)?.toUpperCase() || '👤'}
             </div>
-            <div className="sidebar__user-details">
-              <span className="sidebar__user-name">{user?.nombre || 'Usuario'}</span>
-              <span className="sidebar__user-role">
+            <div>
+              <span>{user?.nombre || 'Usuario'}</span>
+              <span>
                 {user?.roles?.join(', ') || 'Sin rol'}
               </span>
             </div>

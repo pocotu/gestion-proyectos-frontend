@@ -3,6 +3,7 @@ import FormInput from '../common/FormInput';
 import FormTextarea from '../common/FormTextarea';
 import FormSelect from '../common/FormSelect';
 import LoadingButton from '../common/LoadingButton';
+import FileUpload from '../file/FileUpload';
 import projectService from '../../services/projectService';
 
 /**
@@ -31,9 +32,9 @@ const ProjectForm = ({
     presupuesto: '',
     prioridad: 'media'
   });
-
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [files, setFiles] = useState([]);
 
   // Estados disponibles para proyectos
   const estadosOptions = [
@@ -144,7 +145,8 @@ const ProjectForm = ({
       // Preparar datos para envío
       const submitData = {
         ...formData,
-        presupuesto: formData.presupuesto ? parseFloat(formData.presupuesto) : null
+        presupuesto: formData.presupuesto ? parseFloat(formData.presupuesto) : null,
+        files: files // Incluir archivos en los datos
       };
 
       // Llamar función onSubmit pasada como prop
@@ -188,6 +190,14 @@ const ProjectForm = ({
       prioridad: 'media'
     });
     setErrors({});
+    setFiles([]);
+  };
+
+  /**
+   * Manejar cambios en archivos
+   */
+  const handleFilesChange = (newFiles) => {
+    setFiles(newFiles);
   };
 
   return (
@@ -307,6 +317,27 @@ const ProjectForm = ({
                 placeholder="0.00"
               />
             </div>
+          </div>
+
+          {/* Archivos */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Archivos del Proyecto
+            </h3>
+            
+            <FileUpload
+              files={files}
+              onFilesChange={handleFilesChange}
+              acceptedTypes={['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg']}
+              maxFiles={10}
+              maxSize={10 * 1024 * 1024} // 10MB
+              multiple={true}
+              className="mb-4"
+            />
+            
+            <p className="text-sm text-gray-500">
+              Tipos de archivo permitidos: PDF, DOC/DOCX, JPG. Tamaño máximo: 10MB por archivo.
+            </p>
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import FormInput from '../common/FormInput';
 import FormTextarea from '../common/FormTextarea';
 import FormSelect from '../common/FormSelect';
 import LoadingButton from '../common/LoadingButton';
+import FileUpload from '../file/FileUpload';
 import taskService from '../../services/taskService';
 import projectService from '../../services/projectService';
 
@@ -43,6 +44,7 @@ const TaskForm = ({
   const [users, setUsers] = useState([]);
   const [parentTasks, setParentTasks] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [files, setFiles] = useState([]);
 
   // Estados disponibles para tareas
   const estadosOptions = [
@@ -224,7 +226,8 @@ const TaskForm = ({
         proyecto_id: parseInt(formData.proyecto_id),
         progreso: parseInt(formData.progreso),
         usuario_asignado_id: formData.usuario_asignado_id ? parseInt(formData.usuario_asignado_id) : null,
-        padre_tarea_id: formData.padre_tarea_id ? parseInt(formData.padre_tarea_id) : null
+        padre_tarea_id: formData.padre_tarea_id ? parseInt(formData.padre_tarea_id) : null,
+        files: files // Incluir archivos en los datos
       };
 
       // Llamar función onSubmit pasada como prop
@@ -398,6 +401,27 @@ const TaskForm = ({
         placeholder="Describe los detalles de la tarea..."
         rows={4}
       />
+
+      {/* Archivos */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Archivos de la Tarea
+        </h3>
+        
+        <FileUpload
+          files={files}
+          onFilesChange={(newFiles) => setFiles(newFiles)}
+          acceptedTypes={['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg']}
+          maxFiles={10}
+          maxSize={10 * 1024 * 1024} // 10MB
+          multiple={true}
+          className="mb-4"
+        />
+        
+        <p className="text-sm text-gray-500">
+          Tipos de archivo permitidos: PDF, DOC/DOCX, JPG. Tamaño máximo: 10MB por archivo.
+        </p>
+      </div>
 
       {/* Botones de acción */}
       <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">

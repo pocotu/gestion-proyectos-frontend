@@ -8,6 +8,7 @@ import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import projectService from '../services/projectService';
+import fileService from '../services/fileService';
 
 /**
  * ProjectsPage - Página principal de gestión de proyectos
@@ -173,8 +174,28 @@ const ProjectsPage = () => {
 
       if (formMode === 'create') {
         response = await projectService.createProject(projectData);
+        
+        // Si se creó exitosamente y hay archivos, subirlos
+        if (response.success && projectData.files && projectData.files.length > 0) {
+          try {
+            await fileService.uploadProjectFiles(response.data.id, projectData.files);
+          } catch (fileError) {
+            console.error('Error al subir archivos:', fileError);
+            // No fallar completamente, solo mostrar advertencia
+          }
+        }
       } else {
         response = await projectService.updateProject(selectedProject.id, projectData);
+        
+        // Si se actualizó exitosamente y hay archivos nuevos, subirlos
+        if (response.success && projectData.files && projectData.files.length > 0) {
+          try {
+            await fileService.uploadProjectFiles(selectedProject.id, projectData.files);
+          } catch (fileError) {
+            console.error('Error al subir archivos:', fileError);
+            // No fallar completamente, solo mostrar advertencia
+          }
+        }
       }
 
       if (response.success) {
@@ -311,52 +332,31 @@ const ProjectsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              {currentView === 'detail' && (
-                <ActionButton
-                  variant="secondary"
-                  onClick={handleBackToList}
-                  className="flex items-center space-x-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  <span>Volver</span>
-                </ActionButton>
-              )}
-              
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {currentView === 'detail' ? 'Detalle del Proyecto' : 'Gestión de Proyectos'}
-                </h1>
-                <p className="mt-1 text-sm text-gray-500">
-                  {currentView === 'detail' 
-                    ? 'Información completa del proyecto seleccionado'
-                    : `Administra y supervisa todos los proyectos (${projects.length})`
-                  }
-                </p>
-              </div>
+      <div>
+        <div>
+          <div>
+            <div>
+              <h1>
+                Gestión de Proyectos
+              </h1>
+              <p>
+                Administra y supervisa todos los proyectos ({projects.length})
+              </p>
             </div>
 
-            {currentView === 'list' && (
-              <div className="flex items-center space-x-3">
-                <ActionButton
-                  variant="primary"
-                  onClick={handleCreateProject}
-                  className="flex items-center space-x-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span>Nuevo Proyecto</span>
-                </ActionButton>
-              </div>
-            )}
+            <div>
+              <button
+                onClick={handleCreateProject}
+                type="button"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Nuevo Proyecto</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

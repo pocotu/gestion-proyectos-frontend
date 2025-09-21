@@ -10,17 +10,17 @@ import Sidebar from './Sidebar';
  */
 const Layout = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       {/* Header fijo en la parte superior */}
       <Header />
       
-      <div className="flex">
+      <div>
         {/* Sidebar de navegación */}
         <Sidebar />
         
         {/* Contenido principal */}
-        <main className="flex-1 p-6 ml-64 mt-16">
-          <div className="max-w-7xl mx-auto">
+        <main>
+          <div>
             {/* Outlet para renderizar las páginas */}
             <Outlet />
           </div>

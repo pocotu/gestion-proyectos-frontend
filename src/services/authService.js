@@ -34,13 +34,13 @@ class AuthService {
    */
   async login(email, password) {
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const { user, accessToken, refreshToken } = response.data;
+      const response = await api.post('/auth/login', { email, contraseña: password });
+      const { user, token } = response.data.data;
       
       // Guardar datos en localStorage
-      this._setAuthData(user, accessToken, refreshToken);
+      this._setAuthData(user, token, null);
       
-      return response.data;
+      return { user, token };
     } catch (error) {
       throw this._handleError(error, 'Error al iniciar sesión');
     }

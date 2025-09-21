@@ -121,127 +121,77 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Header */}
+    <div>
+      <div>
+        <h2>Iniciar Sesión</h2>
+        <p>Accede a tu cuenta del sistema de gestión de proyectos</p>
+      </div>
+
+      <form onSubmit={handleSubmit}>
         <div>
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
-            <svg 
-              className="h-6 w-6 text-blue-600" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" 
-              />
-            </svg>
-          </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Iniciar Sesión
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Accede a tu cuenta del sistema de gestión de proyectos
-          </p>
+          <FormInput
+            label="Email"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            error={errors.email}
+            placeholder="tu@email.com"
+            required
+            autoComplete="email"
+            disabled={isLoading}
+          />
+
+          <FormInput
+            label="Contraseña"
+            type="password"
+            name="contraseña"
+            value={formData.contraseña}
+            onChange={handleInputChange}
+            error={errors.contraseña}
+            placeholder="Tu contraseña"
+            required
+            autoComplete="current-password"
+            disabled={isLoading}
+          />
         </div>
 
-        {/* Formulario */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <FormInput
-              label="Email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              error={errors.email}
-              placeholder="tu@email.com"
-              required
-              autoComplete="email"
-              disabled={isLoading}
-            />
-
-            <FormInput
-              label="Contraseña"
-              type="password"
-              name="contraseña"
-              value={formData.contraseña}
-              onChange={handleInputChange}
-              error={errors.contraseña}
-              placeholder="Tu contraseña"
-              required
-              autoComplete="current-password"
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Mensaje de redirección */}
-          {location.state?.from && (
-            <div className="rounded-md bg-blue-50 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg 
-                    className="h-5 w-5 text-blue-400" 
-                    viewBox="0 0 20 20" 
-                    fill="currentColor"
-                  >
-                    <path 
-                      fillRule="evenodd" 
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" 
-                      clipRule="evenodd" 
-                    />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-blue-700">
-                    Necesitas iniciar sesión para acceder a esa página
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Botón de envío */}
+        {location.state?.from && (
           <div>
-            <LoadingButton
-              type="submit"
-              loading={isLoading}
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              loadingText="Iniciando sesión..."
-            >
-              Iniciar Sesión
-            </LoadingButton>
+            <p>Necesitas iniciar sesión para acceder a esa página</p>
           </div>
+        )}
 
-          {/* Enlaces adicionales */}
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <Link 
-                to="/register" 
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                ¿No tienes cuenta? Regístrate
-              </Link>
-            </div>
-            <div className="text-sm">
-              <a 
-                href="#" 
-                className="font-medium text-blue-600 hover:text-blue-500"
-                onClick={(e) => {
-                  e.preventDefault();
-                  showInfo('Funcionalidad de recuperación de contraseña próximamente');
-                }}
-              >
-                ¿Olvidaste tu contraseña?
-              </a>
-            </div>
+        <div>
+          <LoadingButton
+            type="submit"
+            loading={isLoading}
+            disabled={isLoading}
+            loadingText="Iniciando sesión..."
+          >
+            Iniciar Sesión
+          </LoadingButton>
+        </div>
+
+        <div>
+          <div>
+            <Link to="/register">
+              ¿No tienes cuenta? Regístrate
+            </Link>
           </div>
-        </form>
-      </div>
+          <div>
+            <a 
+              href="#" 
+              onClick={(e) => {
+                e.preventDefault();
+                showInfo('Funcionalidad de recuperación de contraseña próximamente');
+              }}
+            >
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+        </div>
+      </form>
     </div>
   );
 };

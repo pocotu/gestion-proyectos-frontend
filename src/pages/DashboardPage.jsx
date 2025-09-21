@@ -37,40 +37,74 @@ const DashboardPage = () => {
     }
   });
 
+  // Estados adicionales para datos específicos del usuario
+  const [userTasks, setUserTasks] = useState([]);
+  const [userProjects, setUserProjects] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
+
   // Cargar datos del dashboard
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
         setIsLoading(true);
         
-        // Usar datos simulados por ahora (hasta que el backend esté listo)
-        const data = await dashboardService.getMockDashboardData();
+        // Cargar datos reales del dashboard
+        const [dashboardData, tasksData, projectsData, activityData] = await Promise.all([
+          dashboardService.getDashboardSummary(),
+          dashboardService.getUserTasks(user?.id),
+          dashboardService.getUserProjects(user?.id),
+          dashboardService.getRecentActivity(user?.id)
+        ]);
         
         setDashboardData({
           projects: {
-            total: data.projects.total,
-            active: data.projects.active,
-            completed: data.projects.completed,
-            myProjects: data.projects.myProjects
+            total: dashboardData.projects?.total || 0,
+            active: dashboardData.projects?.active || 0,
+            completed: dashboardData.projects?.completed || 0,
+            myProjects: dashboardData.projects?.myProjects || 0
           },
           tasks: {
-            total: data.tasks.total,
-            pending: data.tasks.pending,
-            inProgress: data.tasks.inProgress,
-            completed: data.tasks.completed,
-            myTasks: data.tasks.myTasks
+            total: dashboardData.tasks?.total || 0,
+            pending: dashboardData.tasks?.pending || 0,
+            inProgress: dashboardData.tasks?.inProgress || 0,
+            completed: dashboardData.tasks?.completed || 0,
+            myTasks: dashboardData.tasks?.myTasks || 0
           }
         });
+
+        setUserTasks(tasksData || []);
+        setUserProjects(projectsData || []);
+        setRecentActivity(activityData || []);
       } catch (error) {
         console.error('Error loading dashboard data:', error);
         showError('Error al cargar los datos del dashboard');
+        
+        // Fallback a datos simulados en caso de error
+        const mockData = await dashboardService.getMockDashboardData();
+        setDashboardData({
+          projects: {
+            total: mockData.projects.total,
+            active: mockData.projects.active,
+            completed: mockData.projects.completed,
+            myProjects: mockData.projects.myProjects
+          },
+          tasks: {
+            total: mockData.tasks.total,
+            pending: mockData.tasks.pending,
+            inProgress: mockData.tasks.inProgress,
+            completed: mockData.tasks.completed,
+            myTasks: mockData.tasks.myTasks
+          }
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadDashboardData();
-  }, [showError]);
+    if (user?.id) {
+      loadDashboardData();
+    }
+  }, [user?.id, showError]);
 
   // Función para determinar los elementos de navegación según el rol
   const getNavigationItems = () => {
@@ -112,38 +146,27 @@ const DashboardPage = () => {
   };
 
   // Componente para tarjetas de estadísticas
-  const StatCard = ({ title, value, subtitle, color = 'bg-gray-500', icon }) => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center">
-        <div className={`${color} rounded-md p-3 mr-4`}>
-          <span className="text-white text-xl">{icon}</span>
-        </div>
+  const StatCard = ({ title, value, subtitle, icon }) => (
+    <div>
+      <div>
+        <span>{icon}</span>
         <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900">{value}</p>
-          {subtitle && (
-            <p className="text-sm text-gray-500">{subtitle}</p>
-          )}
+          <p>{title}</p>
+          <p>{value}</p>
+          {subtitle && <p>{subtitle}</p>}
         </div>
       </div>
     </div>
   );
 
   // Componente para tarjetas de navegación
-  const NavigationCard = ({ title, description, path, icon, color }) => (
-    <Link
-      to={path}
-      className="block bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 p-6 group"
-    >
-      <div className="flex items-center">
-        <div className={`${color} rounded-md p-3 mr-4 group-hover:scale-110 transition-transform duration-200`}>
-          <span className="text-white text-xl">{icon}</span>
-        </div>
+  const NavigationCard = ({ title, description, path, icon }) => (
+    <Link to={path}>
+      <div>
+        <span>{icon}</span>
         <div>
-          <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
-            {title}
-          </h3>
-          <p className="text-sm text-gray-500">{description}</p>
+          <h3>{title}</h3>
+          <p>{description}</p>
         </div>
       </div>
     </Link>
@@ -151,34 +174,24 @@ const DashboardPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-96">
+      <div>
         <LoadingSpinner size="large" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* Header del Dashboard */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between">
+      <div>
+        <div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              ¡Bienvenido, {user?.nombre}!
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Aquí tienes un resumen de tus actividades
-            </p>
+            <h1>¡Bienvenido, {user?.nombre}!</h1>
+            <p>Aquí tienes un resumen de tus actividades</p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-500">
-              Roles: {user?.roles?.map(role => role.nombre).join(', ') || 'Usuario'}
-            </p>
-            {user?.es_administrador && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mt-1">
-                Administrador
-              </span>
-            )}
+          <div>
+            <p>Roles: {user?.roles?.map(role => role.nombre).join(', ') || 'Usuario'}</p>
+            {user?.es_administrador && <span>Administrador</span>}
           </div>
         </div>
       </div>
@@ -187,7 +200,7 @@ const DashboardPage = () => {
       <StatsOverview />
 
       {/* Resúmenes principales */}
-      <div className="summary-grid">
+      <div>
         <ProjectSummary 
           projectData={dashboardData.projects}
           isLoading={isLoading}
@@ -200,19 +213,93 @@ const DashboardPage = () => {
         />
       </div>
 
-      <style jsx>{`
-        .summary-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-          gap: 24px;
-          margin-bottom: 32px;
-        }
-      `}</style>
+      {/* Sección de Mis Tareas Asignadas */}
+      {userTasks.length > 0 && (
+        <div>
+          <div>
+            <h2>Mis Tareas Asignadas</h2>
+            <Link to="/tasks?filter=assigned">Ver todas →</Link>
+          </div>
+          <div>
+            {userTasks.slice(0, 6).map((task) => (
+              <div key={task.id}>
+                <div>
+                  <h3>{task.titulo}</h3>
+                  <span>{task.prioridad}</span>
+                </div>
+                <p>{task.descripcion}</p>
+                <div>
+                  <span>{task.estado.replace('_', ' ')}</span>
+                  <span>
+                    {task.fecha_vencimiento && new Date(task.fecha_vencimiento).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sección de Mis Proyectos */}
+      {userProjects.length > 0 && (
+        <div>
+          <div>
+            <h2>Mis Proyectos</h2>
+            <Link to="/projects?filter=assigned">Ver todos →</Link>
+          </div>
+          <div>
+            {userProjects.slice(0, 4).map((project) => (
+              <div key={project.id}>
+                <div>
+                  <h3>{project.nombre}</h3>
+                  <span>{project.estado.replace('_', ' ')}</span>
+                </div>
+                <p>{project.descripcion}</p>
+                <div>
+                  <div>
+                    <span>Progreso:</span>
+                    <div>
+                      <div style={{ width: `${project.progreso || 0}%` }}></div>
+                    </div>
+                    <span>{project.progreso || 0}%</span>
+                  </div>
+                  <span>
+                    {project.fecha_fin && new Date(project.fecha_fin).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Actividad Reciente */}
+      {recentActivity.length > 0 && (
+        <div>
+          <h2>Actividad Reciente</h2>
+          <div>
+            {recentActivity.slice(0, 5).map((activity, index) => (
+              <div key={index}>
+                <div>
+                  {activity.tipo === 'tarea' ? '✓' : activity.tipo === 'proyecto' ? '📁' : '📝'}
+                </div>
+                <div>
+                  <p>
+                    <span>{activity.accion}</span>
+                    {activity.elemento && <span> en "{activity.elemento}"</span>}
+                  </p>
+                  <p>{new Date(activity.fecha).toLocaleString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Navegación Rápida */}
       <div>
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Acceso Rápido</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h2>Acceso Rápido</h2>
+        <div>
           {getNavigationItems().map((item, index) => (
             <NavigationCard
               key={index}
@@ -220,7 +307,6 @@ const DashboardPage = () => {
               description={item.description}
               path={item.path}
               icon={item.icon}
-              color={item.color}
             />
           ))}
         </div>
@@ -228,27 +314,15 @@ const DashboardPage = () => {
 
       {/* Información adicional para administradores */}
       {(user?.es_administrador || user?.roles?.some(role => role.nombre === 'admin')) && (
-        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-200">
-          <h3 className="text-lg font-medium text-purple-900 mb-2">
-            Panel de Administrador
-          </h3>
-          <p className="text-purple-700 mb-4">
+        <div>
+          <h3>Panel de Administrador</h3>
+          <p>
             Como administrador, tienes acceso completo al sistema. Puedes gestionar usuarios, 
             proyectos y configuraciones del sistema.
           </p>
-          <div className="flex space-x-4">
-            <Link
-              to="/users"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-            >
-              Gestionar Usuarios
-            </Link>
-            <Link
-              to="/projects"
-              className="inline-flex items-center px-4 py-2 border border-purple-300 text-sm font-medium rounded-md text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-            >
-              Ver Todos los Proyectos
-            </Link>
+          <div>
+            <Link to="/users">Gestionar Usuarios</Link>
+            <Link to="/projects">Ver Todos los Proyectos</Link>
           </div>
         </div>
       )}

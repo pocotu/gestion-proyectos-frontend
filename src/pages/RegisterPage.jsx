@@ -173,139 +173,90 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Header */}
+    <div>
+      <div>
+        <h2>Crear Cuenta</h2>
+        <p>Únete al sistema de gestión de proyectos</p>
+      </div>
+
+      <form onSubmit={handleSubmit}>
         <div>
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100">
-            <svg 
-              className="h-6 w-6 text-green-600" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" 
-              />
-            </svg>
-          </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Crear Cuenta
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Únete al sistema de gestión de proyectos
-          </p>
+          <FormInput
+            label="Nombre completo"
+            type="text"
+            name="nombre"
+            value={formData.nombre}
+            onChange={handleInputChange}
+            error={errors.nombre}
+            placeholder="Tu nombre completo"
+            required
+            autoComplete="name"
+            disabled={isLoading}
+          />
+
+          <FormInput
+            label="Email"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            error={errors.email}
+            placeholder="tu@email.com"
+            required
+            autoComplete="email"
+            disabled={isLoading}
+          />
+
+          <FormInput
+            label="Contraseña"
+            type="password"
+            name="contraseña"
+            value={formData.contraseña}
+            onChange={handleInputChange}
+            error={errors.contraseña}
+            placeholder="Mínimo 6 caracteres"
+            required
+            autoComplete="new-password"
+            disabled={isLoading}
+          />
+
+          <FormInput
+            label="Confirmar contraseña"
+            type="password"
+            name="confirmarContraseña"
+            value={formData.confirmarContraseña}
+            onChange={handleInputChange}
+            error={errors.confirmarContraseña}
+            placeholder="Repite tu contraseña"
+            required
+            autoComplete="new-password"
+            disabled={isLoading}
+          />
         </div>
 
-        {/* Formulario */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <FormInput
-              label="Nombre completo"
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleInputChange}
-              error={errors.nombre}
-              placeholder="Tu nombre completo"
-              required
-              autoComplete="name"
-              disabled={isLoading}
-            />
+        <div>
+          <p>Tu información está protegida y será utilizada únicamente para el funcionamiento del sistema.</p>
+        </div>
 
-            <FormInput
-              label="Email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              error={errors.email}
-              placeholder="tu@email.com"
-              required
-              autoComplete="email"
-              disabled={isLoading}
-            />
+        <div>
+          <LoadingButton
+            type="submit"
+            loading={isLoading}
+            disabled={isLoading}
+            loadingText="Creando cuenta..."
+          >
+            Crear Cuenta
+          </LoadingButton>
+        </div>
 
-            <FormInput
-              label="Contraseña"
-              type="password"
-              name="contraseña"
-              value={formData.contraseña}
-              onChange={handleInputChange}
-              error={errors.contraseña}
-              placeholder="Mínimo 6 caracteres"
-              required
-              autoComplete="new-password"
-              disabled={isLoading}
-            />
-
-            <FormInput
-              label="Confirmar contraseña"
-              type="password"
-              name="confirmarContraseña"
-              value={formData.confirmarContraseña}
-              onChange={handleInputChange}
-              error={errors.confirmarContraseña}
-              placeholder="Repite tu contraseña"
-              required
-              autoComplete="new-password"
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Información de seguridad */}
-          <div className="rounded-md bg-blue-50 p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg 
-                  className="h-5 w-5 text-blue-400" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
-                >
-                  <path 
-                    fillRule="evenodd" 
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" 
-                    clipRule="evenodd" 
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-blue-700">
-                  Tu información está protegida y será utilizada únicamente para el funcionamiento del sistema.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Botón de envío */}
+        <div>
           <div>
-            <LoadingButton
-              type="submit"
-              loading={isLoading}
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              loadingText="Creando cuenta..."
-            >
-              Crear Cuenta
-            </LoadingButton>
+            <Link to="/login">
+              ¿Ya tienes cuenta? Inicia sesión
+            </Link>
           </div>
-
-          {/* Enlaces adicionales */}
-          <div className="text-center">
-            <div className="text-sm">
-              <Link 
-                to="/login" 
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                ¿Ya tienes cuenta? Inicia sesión
-              </Link>
-            </div>
-          </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 };

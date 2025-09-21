@@ -10,11 +10,13 @@ import UnauthorizedPage from '../pages/UnauthorizedPage';
 import DashboardPage from '../pages/DashboardPage';
 import ProjectsPage from '../pages/ProjectsPage';
 import TasksPage from '../pages/TasksPage';
-// import UsersPage from '../pages/UsersPage';
+import UsersPage from '../pages/UsersPage';
+import ActivityLogsPage from '../pages/ActivityLogsPage';
 
 // Componentes de layout y protección
 import Layout from '../components/common/Layout';
 import ProtectedRoute, { PublicRoute, AdminRoute } from '../components/common/ProtectedRoute';
+import ToastContainer from '../components/common/ToastContainer';
 
 const AppRouter = () => {
   return (
@@ -62,19 +64,32 @@ const AppRouter = () => {
           <Route path="tasks" element={<TasksPage />} />
           
           {/* Gestión de usuarios (solo admin) */}
-          {/* <Route 
+          <Route 
             path="users" 
             element={
               <AdminRoute>
                 <UsersPage />
               </AdminRoute>
             } 
-          /> */}
+          />
+          
+          {/* Logs de actividad (solo admin) */}
+          <Route 
+            path="activity-logs" 
+            element={
+              <AdminRoute>
+                <ActivityLogsPage />
+              </AdminRoute>
+            } 
+          />
         </Route>
 
         {/* Ruta 404 */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
+      
+      {/* ToastContainer global para mostrar notificaciones */}
+      <ToastContainer />
     </BrowserRouter>
   );
 };

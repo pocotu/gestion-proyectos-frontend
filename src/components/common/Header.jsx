@@ -14,30 +14,25 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white shadow-sm border-b border-gray-200 z-50">
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between">
+    <header>
+      <div>
+        <div>
           {/* Logo y título */}
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">GP</span>
+          <div>
+            <div>
+              <span>GP</span>
             </div>
-            <h1 className="text-xl font-semibold text-gray-900">
-              Gestión de Proyectos
-            </h1>
+            <h1>Gestión de Proyectos</h1>
           </div>
 
           {/* Información del usuario y acciones */}
-          <div className="flex items-center space-x-4">
+          <div>
             {user && (
               <>
-                <div className="text-sm text-gray-600">
-                  Bienvenido, <span className="font-medium">{user.nombre}</span>
+                <div>
+                  Bienvenido, <span>{user.nombre}</span>
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="btn-secondary text-sm"
-                >
+                <button onClick={handleLogout}>
                   Cerrar Sesión
                 </button>
               </>
