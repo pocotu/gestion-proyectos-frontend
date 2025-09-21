@@ -48,7 +48,7 @@ export const SelectTrigger = ({
   return (
     <button
       type="button"
-      className={`w-full px-3 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`}
+      className={`w-full px-3 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-0 focus:border-gray-500 ${className}`}
       onClick={() => setIsOpen(!isOpen)}
       {...props}
     >

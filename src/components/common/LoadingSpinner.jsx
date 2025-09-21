@@ -18,9 +18,14 @@ const LoadingSpinner = ({
   };
 
   const colorClasses = {
-    primary: 'text-primary-600',
-    secondary: 'text-secondary-600',
-    white: 'text-white'
+    white: 'text-white',
+    gray: 'text-gray-600',
+    slate: 'text-gray-600',
+    primary: 'text-gray-600',
+    blue: 'text-blue-600',
+    green: 'text-green-600',
+    red: 'text-red-600',
+    yellow: 'text-yellow-600'
   };
 
   const spinnerContent = (

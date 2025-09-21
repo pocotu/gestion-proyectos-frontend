@@ -43,44 +43,12 @@ const ProtectedRoute = ({
     );
   }
 
-  // Si requiere ser admin y no lo es
+  // Verificar si se requiere admin y el usuario no es admin
   if (requireAdmin && !isAdmin()) {
-    console.log('ProtectedRoute - requireAdmin check failed');
-    console.log('ProtectedRoute - requireAdmin:', requireAdmin);
-    console.log('ProtectedRoute - isAdmin():', isAdmin());
-    console.log('ProtectedRoute - user:', user);
-    return (
-      <Navigate 
-        to={unauthorizedPath} 
-        state={{ from: location, reason: 'admin_required' }} 
-        replace 
-      />
-    );
+    return <Navigate to="/dashboard" replace />;
   }
 
-  console.log('ProtectedRoute - All checks passed, rendering children');
-  console.log('ProtectedRoute - requireAdmin:', requireAdmin);
-  console.log('ProtectedRoute - isAdmin():', isAdmin());
-  // Si requiere roles específicos
-  if (requiredRoles.length > 0) {
-    const hasRequiredRole = requiredRoles.some(role => hasRole(role));
-    
-    if (!hasRequiredRole) {
-      return (
-        <Navigate 
-          to={unauthorizedPath} 
-          state={{ 
-            from: location, 
-            reason: 'insufficient_roles',
-            requiredRoles 
-          }} 
-          replace 
-        />
-      );
-    }
-  }
-
-  // Si pasa todas las validaciones, renderizar el componente hijo
+  // Si todas las verificaciones pasan, renderizar los children
   return children;
 };
 

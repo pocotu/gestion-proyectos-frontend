@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import FormInput from '../components/common/FormInput';
-import LoadingButton from '../components/common/LoadingButton';
 
 /**
- * RegisterPage - Página de registro de usuarios
+ * RegisterPage - Página de registro de usuarios con diseño moderno usando Bootstrap
  * Siguiendo principios SOLID:
  * - Single Responsibility: Solo maneja el formulario de registro
  * - Open/Closed: Abierto para extensión (nuevos campos, validaciones)
@@ -173,95 +171,166 @@ const RegisterPage = () => {
   };
 
   return (
-    <div>
-      <div>
-        <h2>Crear Cuenta</h2>
-        <p>Únete al sistema de gestión de proyectos</p>
-      </div>
+    <div className="gradient-bg min-vh-100 d-flex align-items-center justify-content-center py-5 px-3">
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-md-6 col-lg-5">
+            {/* Header */}
+            <div className="text-center mb-4">
+              <h1 className="display-5 fw-bold text-dark mb-2">
+                Crear Cuenta
+              </h1>
+              <p className="text-muted fs-5">
+                Únete a nuestro sistema de gestión
+              </p>
+            </div>
 
-      <form onSubmit={handleSubmit} data-testid="register-form">
-        <div>
-          <FormInput
-            label="Nombre completo"
-            type="text"
-            name="nombre"
-            value={formData.nombre}
-            onChange={handleInputChange}
-            error={errors.nombre}
-            placeholder="Tu nombre completo"
-            required
-            autoComplete="name"
-            disabled={isLoading}
-            data-testid="name-input"
-          />
+            {/* Register Card */}
+            <div className="card card-modern shadow-lg border-0">
+              <div className="card-body p-4">
+                <form onSubmit={handleSubmit}>
+                  {/* Name Field */}
+                  <div className="mb-3">
+                    <label htmlFor="nombre" className="form-label fw-semibold">
+                      Nombre Completo
+                    </label>
+                    <input
+                      type="text"
+                      className={`form-control form-control-lg ${errors.nombre ? 'is-invalid' : ''}`}
+                      id="nombre"
+                      name="nombre"
+                      value={formData.nombre}
+                      onChange={handleInputChange}
+                      placeholder="Tu nombre completo"
+                    />
+                    {errors.nombre && (
+                      <div className="invalid-feedback">
+                        {errors.nombre}
+                      </div>
+                    )}
+                  </div>
 
-          <FormInput
-            label="Email"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            error={errors.email}
-            placeholder="tu@email.com"
-            required
-            autoComplete="email"
-            disabled={isLoading}
-            data-testid="email-input"
-          />
+                  {/* Email Field */}
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label fw-semibold">
+                      Correo Electrónico
+                    </label>
+                    <input
+                      type="email"
+                      className={`form-control form-control-lg ${errors.email ? 'is-invalid' : ''}`}
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="tu@email.com"
+                    />
+                    {errors.email && (
+                      <div className="invalid-feedback">
+                        {errors.email}
+                      </div>
+                    )}
+                  </div>
 
-          <FormInput
-            label="Contraseña"
-            type="password"
-            name="contraseña"
-            value={formData.contraseña}
-            onChange={handleInputChange}
-            error={errors.contraseña}
-            placeholder="Mínimo 6 caracteres"
-            required
-            autoComplete="new-password"
-            disabled={isLoading}
-            data-testid="password-input"
-          />
+                  {/* Password Field */}
+                  <div className="mb-3">
+                    <label htmlFor="contraseña" className="form-label fw-semibold">
+                      Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      className={`form-control form-control-lg ${errors.contraseña ? 'is-invalid' : ''}`}
+                      id="contraseña"
+                      name="contraseña"
+                      value={formData.contraseña}
+                      onChange={handleInputChange}
+                      placeholder="Mínimo 6 caracteres"
+                    />
+                    {errors.contraseña && (
+                      <div className="invalid-feedback">
+                        {errors.contraseña}
+                      </div>
+                    )}
+                  </div>
 
-          <FormInput
-            label="Confirmar contraseña"
-            type="password"
-            name="confirmarContraseña"
-            value={formData.confirmarContraseña}
-            onChange={handleInputChange}
-            error={errors.confirmarContraseña}
-            placeholder="Repite tu contraseña"
-            required
-            autoComplete="new-password"
-            disabled={isLoading}
-            data-testid="confirm-password-input"
-          />
-        </div>
+                  {/* Confirm Password Field */}
+                  <div className="mb-3">
+                    <label htmlFor="confirmarContraseña" className="form-label fw-semibold">
+                      Confirmar Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      className={`form-control form-control-lg ${errors.confirmarContraseña ? 'is-invalid' : ''}`}
+                      id="confirmarContraseña"
+                      name="confirmarContraseña"
+                      value={formData.confirmarContraseña}
+                      onChange={handleInputChange}
+                      placeholder="Repite tu contraseña"
+                    />
+                    {errors.confirmarContraseña && (
+                      <div className="invalid-feedback">
+                        {errors.confirmarContraseña}
+                      </div>
+                    )}
+                  </div>
 
-        <div>
-          <p>Tu información está protegida y será utilizada únicamente para el funcionamiento del sistema.</p>
-        </div>
+                  {/* Security Info */}
+                  <div className="alert alert-success d-flex align-items-start mb-4" role="alert">
+                    <svg className="me-2 flex-shrink-0" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <small>
+                        Tu contraseña debe tener al menos 6 caracteres para garantizar la seguridad de tu cuenta.
+                      </small>
+                    </div>
+                  </div>
 
-        <div>
-          <LoadingButton
-            type="submit"
-            loading={isLoading}
-            disabled={isLoading}
-            loadingText="Creando cuenta..."
-            data-testid="register-button"
-          >
-            Crear Cuenta
-          </LoadingButton>
-        </div>
+                  {/* Submit Button */}
+                  <div className="d-grid">
+                    <button
+                      type="submit"
+                      className="btn btn-modern btn-lg"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                          Creando cuenta...
+                        </>
+                      ) : (
+                        'Crear Cuenta'
+                      )}
+                    </button>
+                  </div>
+                </form>
 
-        <div>
-          <div>
-            <Link to="/login">
-              ¿Ya tienes cuenta? Inicia sesión
-            </Link>
+                {/* Divider */}
+                <hr className="my-4" />
+
+                {/* Login Link */}
+                <div className="text-center">
+                  <p className="text-muted mb-0">
+                    ¿Ya tienes una cuenta?{' '}
+                    <Link 
+                      to="/login" 
+                      className="text-primary fw-semibold text-decoration-none"
+                    >
+                      Inicia sesión aquí
+                    </Link>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="text-center mt-4">
+              <p className="text-muted small">
+                © 2024 Sistema de Gestión de Proyectos. Todos los derechos reservados.
+              </p>
+            </div>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

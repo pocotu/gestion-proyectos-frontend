@@ -1,33 +1,164 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Importar Bootstrap CSS */
+@import 'bootstrap/dist/css/bootstrap.min.css';
 
-/* Estilos base personalizados para el MVP */
-@layer base {
-  html {
-    font-family: Inter, system-ui, sans-serif;
+/* Nueva paleta de colores sólidos */
+:root {
+  --color-dark-teal: #1e3a3a;
+  --color-light-blue: #87ceeb;
+  --color-bright-blue: #0ea5e9;
+  --color-dark-gray: #374151;
+  --color-medium-blue: #0284c7;
+  
+  /* Colores de Bootstrap personalizados */
+  --bs-primary: var(--color-bright-blue);
+  --bs-secondary: var(--color-dark-gray);
+  --bs-success: #22c55e;
+  --bs-danger: #ef4444;
+  --bs-warning: #f59e0b;
+  --bs-info: var(--color-light-blue);
+  --bs-light: #f8fafc;
+  --bs-dark: var(--color-dark-teal);
+}
+
+/* Estilos base */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.6;
+  color: var(--color-dark-teal);
+  background-color: var(--bs-light);
+}
+
+/* Fondos con colores sólidos */
+.gradient-bg {
+  background-color: var(--color-light-blue);
+}
+
+.bg-primary-solid {
+  background-color: var(--color-bright-blue) !important;
+}
+
+.bg-secondary-solid {
+  background-color: var(--color-dark-gray) !important;
+}
+
+.bg-dark-teal {
+  background-color: var(--color-dark-teal) !important;
+}
+
+/* Componentes personalizados */
+.card-modern {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.btn-modern {
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-modern:focus {
+  background-color: var(--color-medium-blue);
+  border-color: var(--color-medium-blue);
+  box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
+}
+
+/* Formularios modernos */
+.form-control-modern {
+  border-radius: 0.5rem;
+  border: 2px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-control-modern:focus {
+  border-color: var(--color-bright-blue);
+  box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
+}
+
+.form-control:focus {
+  border-color: var(--color-bright-blue);
+  box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
+}
+
+/* Enlaces */
+.text-primary {
+  color: var(--color-bright-blue) !important;
+}
+
+.text-success {
+  color: #22c55e !important;
+}
+
+.link-primary {
+  color: var(--color-bright-blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* Animaciones */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Componentes personalizados usando @apply */
-@layer components {
-  .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200;
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Utilidades adicionales */
+.shadow-modern {
+  box-shadow: 0 0.5rem 1rem rgba(30, 58, 58, 0.15) !important;
+}
+
+.rounded-modern {
+  border-radius: 1rem !important;
+}
+
+/* Alertas personalizadas */
+.alert-success {
+  background-color: #dcfce7;
+  border-color: #22c55e;
+  color: #166534;
+}
+
+.alert-info {
+  background-color: #e0f2fe;
+  border-color: var(--color-light-blue);
+  color: var(--color-dark-teal);
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  .card-modern {
+    margin: 0.5rem;
   }
   
-  .btn-secondary {
-    @apply bg-secondary-100 hover:bg-secondary-200 text-secondary-700 font-medium py-2 px-4 rounded-md transition-colors duration-200;
-  }
-  
-  .card {
-    @apply bg-white rounded-lg shadow-md border border-gray-200 p-6;
-  }
-  
-  .form-input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
-  }
-  
-  .form-label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+  .btn-modern {
+    width: 100%;
+    margin-bottom: 0.5rem;
   }
 }

@@ -1,19 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 /**
- * Componente Sidebar - Navegación lateral con menú por rol
- * Siguiendo principios SOLID:
- * - Single Responsibility: Solo maneja la navegación lateral
- * - Open/Closed: Abierto para extensión (nuevos elementos de menú)
- * - Liskov Substitution: Puede ser sustituido por otros componentes de navegación
- * - Interface Segregation: Usa interfaces específicas (useAuth)
- * - Dependency Inversion: Depende de abstracciones (hooks)
+ * Componente Sidebar - Navegación lateral profesional
+ * Diseño corporativo sin iconos decorativos - ESTÁTICO
  */
 const Sidebar = () => {
   const { user } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Configuración de elementos de navegación organizados por secciones
   const navigationSections = [
@@ -23,9 +17,8 @@ const Sidebar = () => {
         {
           name: 'Dashboard',
           path: '/dashboard',
-          icon: '📊',
           roles: ['admin', 'responsable_proyecto', 'responsable_tarea'],
-          description: 'Resumen general del sistema'
+          description: 'Panel principal'
         }
       ]
     },
@@ -35,21 +28,18 @@ const Sidebar = () => {
         {
           name: 'Proyectos',
           path: '/projects',
-          icon: '📁',
           roles: ['admin', 'responsable_proyecto', 'responsable_tarea'],
-          description: 'Administrar proyectos'
+          description: 'Gestionar proyectos'
         },
         {
           name: 'Tareas',
           path: '/tasks',
-          icon: '✅',
           roles: ['admin', 'responsable_proyecto', 'responsable_tarea'],
-          description: 'Gestionar tareas'
+          description: 'Administrar tareas'
         },
         {
           name: 'Archivos',
           path: '/files',
-          icon: '📎',
           roles: ['admin', 'responsable_proyecto', 'responsable_tarea'],
           description: 'Gestión de archivos'
         }
@@ -61,30 +51,26 @@ const Sidebar = () => {
         {
           name: 'Usuarios',
           path: '/users',
-          icon: '👥',
           roles: ['admin'],
-          description: 'Administrar usuarios'
+          description: 'Gestionar usuarios'
         },
         {
           name: 'Roles',
           path: '/roles',
-          icon: '🔐',
           roles: ['admin'],
-          description: 'Gestión de roles'
+          description: 'Configurar roles'
         },
         {
           name: 'Auditoría',
           path: '/audit',
-          icon: '📋',
           roles: ['admin'],
-          description: 'Logs de auditoría'
+          description: 'Logs del sistema'
         },
         {
-          name: 'Logs de Actividad',
+          name: 'Actividad',
           path: '/activity-logs',
-          icon: '📝',
           roles: ['admin'],
-          description: 'Registro de actividades del sistema'
+          description: 'Registro de actividades'
         }
       ]
     },
@@ -94,16 +80,14 @@ const Sidebar = () => {
         {
           name: 'Estadísticas',
           path: '/reports/stats',
-          icon: '📈',
           roles: ['admin', 'responsable_proyecto'],
-          description: 'Estadísticas del sistema'
+          description: 'Métricas del sistema'
         },
         {
           name: 'Actividad',
           path: '/reports/activity',
-          icon: '📊',
           roles: ['admin'],
-          description: 'Actividad del sistema'
+          description: 'Reportes de actividad'
         }
       ]
     }
@@ -133,54 +117,37 @@ const Sidebar = () => {
       .filter(section => section.items.length > 0);
   };
 
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
   const filteredSections = getFilteredSections();
 
   return (
-    <aside>
-      <div>
-        <div>
-          {!isCollapsed && (
-            <>
-              <span>🚀</span>
-              <span>Gestión Pro</span>
-            </>
-          )}
+    <aside style={styles.sidebar}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.logo}>
+          <div style={styles.logoText}>Sistema de Gestión</div>
         </div>
-        <button 
-          onClick={toggleSidebar}
-          title={isCollapsed ? 'Expandir menú' : 'Contraer menú'}
-        >
-          <span>
-            ◀
-          </span>
-        </button>
       </div>
 
-      <nav data-testid="sidebar-nav">
+      {/* Navigation */}
+      <nav style={styles.navigation}>
         {filteredSections.map((section, sectionIndex) => (
-          <div key={section.title}>
-            {!isCollapsed && (
-              <h3>{section.title}</h3>
-            )}
-            <ul>
+          <div key={section.title} style={styles.section}>
+            <h3 style={styles.sectionTitle}>
+              {section.title}
+            </h3>
+            <ul style={styles.list}>
               {section.items.map((item) => (
-                <li key={item.path}>
+                <li key={item.path} style={styles.listItem}>
                   <NavLink
                     to={item.path}
-                    title={isCollapsed ? `${item.name} - ${item.description}` : ''}
-                    data-testid={`nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
+                    style={({ isActive }) => ({
+                      ...styles.link,
+                      ...(isActive ? styles.linkActive : {})
+                    })}
                   >
-                    <span>{item.icon}</span>
-                    {!isCollapsed && (
-                      <div>
-                        <span>{item.name}</span>
-                        <span>{item.description}</span>
-                      </div>
-                    )}
+                    <span style={styles.linkText}>
+                      {item.name}
+                    </span>
                   </NavLink>
                 </li>
               ))}
@@ -189,23 +156,156 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      {!isCollapsed && (
-        <div>
-          <div>
-            <div>
-              {user?.nombre?.charAt(0)?.toUpperCase() || '👤'}
-            </div>
-            <div>
-              <span>{user?.nombre || 'Usuario'}</span>
-              <span>
-                {user?.roles?.join(', ') || 'Sin rol'}
-              </span>
-            </div>
+      {/* Footer */}
+      <div style={styles.footer}>
+        <div style={styles.userInfo}>
+          <div style={styles.userDetails}>
+            <span style={styles.userName}>
+              {user?.nombre || 'Usuario'}
+            </span>
+            <span style={styles.userRole}>
+              {user?.es_administrador ? 'Administrador' : 'Usuario'}
+            </span>
           </div>
         </div>
-      )}
+      </div>
     </aside>
   );
+};
+
+// Estilos simplificados - sidebar estático
+const styles = {
+  sidebar: {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    height: '100vh',
+    width: '280px',
+    backgroundColor: '#1e293b',
+    color: '#f8fafc',
+    zIndex: '1000',
+    display: 'flex',
+    flexDirection: 'column',
+    borderRight: '1px solid #334155',
+    boxShadow: '2px 0 4px rgba(0, 0, 0, 0.1)'
+  },
+
+  header: {
+    padding: '1.5rem',
+    borderBottom: '1px solid #334155',
+    display: 'flex',
+    alignItems: 'center',
+    minHeight: '80px'
+  },
+
+  logo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    textDecoration: 'none',
+    color: 'inherit'
+  },
+
+  logoText: {
+    fontSize: '1.25rem',
+    fontWeight: '700',
+    color: '#f8fafc',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden'
+  },
+
+  navigation: {
+    flex: '1',
+    padding: '1rem 0',
+    overflowY: 'auto'
+  },
+
+  section: {
+    marginBottom: '1.5rem'
+  },
+
+  sectionTitle: {
+    fontSize: '0.75rem',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: '#94a3b8',
+    margin: '0 0 0.75rem 1.5rem',
+    padding: '0'
+  },
+
+  list: {
+    listStyle: 'none',
+    margin: '0',
+    padding: '0'
+  },
+
+  listItem: {
+    margin: '0.25rem 0.75rem'
+  },
+
+  link: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0.75rem 1rem',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    color: '#cbd5e1',
+    transition: 'all 0.2s ease',
+    position: 'relative',
+    fontSize: '0.875rem',
+    fontWeight: '500'
+  },
+
+  linkActive: {
+    backgroundColor: '#334155',
+    color: '#f8fafc',
+    fontWeight: '600'
+  },
+
+  linkText: {
+    marginLeft: '0.75rem',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  },
+
+  footer: {
+    padding: '1.5rem',
+    borderTop: '1px solid #334155',
+    marginTop: 'auto'
+  },
+
+  userInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    padding: '0.75rem',
+    backgroundColor: '#334155',
+    borderRadius: '6px',
+    fontSize: '0.875rem'
+  },
+
+  userDetails: {
+    display: 'flex',
+    flexDirection: 'column'
+  },
+
+  userName: {
+    fontWeight: '600',
+    color: '#f8fafc',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  },
+
+  userRole: {
+    fontSize: '0.75rem',
+    color: '#94a3b8',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  }
 };
 
 export default Sidebar;

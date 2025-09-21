@@ -17,24 +17,22 @@
     "format": "prettier --write \"src/**/*.{js,jsx,json,css,md}\""
   },
   "dependencies": {
-    "@tailwindcss/postcss": "^4.1.13",
     "axios": "^1.4.0",
+    "bootstrap": "^5.3.8",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.544.0",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.10.10",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.14.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "@vitejs/plugin-react": "^5.0.0",
-    "autoprefixer": "^10.4.21",
     "eslint": "^8.45.0",
     "eslint-plugin-react": "^7.32.2",
     "playwright": "^1.55.0",
-    "postcss": "^8.5.6",
     "prettier": "^3.0.0",
-    "tailwindcss": "^4.1.13",
     "vite": "^5.0.0"
   }
 }

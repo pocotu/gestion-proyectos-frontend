@@ -397,3 +397,41 @@ const ProjectsPage = () => {
 };
 
 export default ProjectsPage;
+
+
+const handleDeleteProject = async (projectId) => {
+    try {
+        await projectService.deleteProject(projectId);
+        await loadProjects();
+        setShowDeleteModal(false);
+        setSelectedProject(null);
+    } catch (error) {
+        console.error('Error al eliminar proyecto:', error);
+    }
+};
+
+const handleSubmitProject = async (formData) => {
+    try {
+        if (formMode === 'create') {
+            await projectService.createProject(formData);
+        } else {
+            await projectService.updateProject(selectedProject.id, formData);
+        }
+        
+        await loadProjects();
+        setShowProjectModal(false);
+        setSelectedProject(null);
+        setFormMode('create');
+    } catch (error) {
+        console.error(`Error al ${formMode === 'create' ? 'crear' : 'actualizar'} proyecto:`, error);
+    }
+};
+
+const handleStatusChange = async (projectId, newStatus) => {
+    try {
+        await projectService.updateProjectStatus(projectId, newStatus);
+        await loadProjects();
+    } catch (error) {
+        console.error('Error al actualizar estado del proyecto:', error);
+    }
+};

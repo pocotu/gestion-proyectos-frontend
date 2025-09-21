@@ -57,97 +57,13 @@ apiClient.interceptors.response.use(
     
     return response;
   },
-  async (error) => {
-    // Manejo centralizado de errores
-    const { response, request, message, config } = error;
-    
-    if (response) {
-      // Error de respuesta del servidor
-      const { status, data } = response;
-      
-      switch (status) {
-        case 401:
-          // Token expirado o inválido - intentar refresh automático
-          if (!config._retry) {
-            config._retry = true;
-            
-            try {
-              const refreshToken = localStorage.getItem('refreshToken');
-              if (refreshToken) {
-                // Intentar refrescar el token
-                const refreshResponse = await apiClient.post('/auth/refresh-token', { refreshToken });
-                const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data;
-                
-                // Actualizar tokens en localStorage
-        localStorage.setItem('token', accessToken);
-        localStorage.setItem('refreshToken', newRefreshToken);
-                
-                // Reintentar la petición original con el nuevo token
-                config.headers.Authorization = `Bearer ${accessToken}`;
-                return apiClient(config);
-              }
-            } catch (refreshError) {
-              // Para MVP: Solo loguear el error, no hacer logout automático
-              // Esto evita que se cierre la sesión por problemas de conectividad
-              console.warn('No se pudo refrescar el token:', refreshError.message);
-              // Rechazar la petición original sin limpiar la sesión
-              return Promise.reject(error);
-            }
-          } else {
-            // Si ya se intentó el refresh y falló, solo loguear
-            console.warn('Refresh token ya intentado, petición falló');
-            return Promise.reject(error);
-          }
-          break;
-          
-        case 403:
-          console.error('❌ Acceso denegado');
-          break;
-          
-        case 404:
-          console.error('❌ Recurso no encontrado');
-          break;
-          
-        case 422:
-          console.error('❌ Error de validación:', data.errors);
-          break;
-          
-        case 500:
-          console.error('❌ Error interno del servidor');
-          break;
-          
-        default:
-          console.error(`❌ Error ${status}:`, data.message || 'Error desconocido');
-      }
-      
-      // Retornar error estructurado
-      return Promise.reject({
-        status,
-        message: data.message || 'Error en la petición',
-        errors: data.errors || null,
-        data: data
-      });
-      
-    } else if (request) {
-      // Error de red o timeout
-      console.error('❌ Error de conexión:', message);
-      return Promise.reject({
-        status: 0,
-        message: 'Error de conexión. Verifica tu conexión a internet.',
-        errors: null,
-        data: null
-      });
-      
-    } else {
-      // Error en la configuración de la petición
-      console.error('❌ Error de configuración:', message);
-      return Promise.reject({
-        status: 0,
-        message: 'Error en la configuración de la petición',
-        errors: null,
-        data: null
-      });
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
     }
+    return Promise.reject(error);
   }
 );
 

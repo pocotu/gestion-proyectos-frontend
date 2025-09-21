@@ -73,14 +73,12 @@ const StatsOverview = () => {
       {
         title: 'Total Proyectos',
         value: projects.total,
-        icon: '📊',
         color: 'primary',
         subtitle: 'Proyectos en el sistema'
       },
       {
         title: 'Proyectos Activos',
         value: projects.active,
-        icon: '🚀',
         color: 'success',
         subtitle: 'En desarrollo',
         percentage: activeRate
@@ -88,7 +86,6 @@ const StatsOverview = () => {
       {
         title: 'Completados',
         value: projects.completed,
-        icon: '✅',
         color: 'info',
         subtitle: 'Finalizados',
         percentage: completionRate
@@ -96,7 +93,6 @@ const StatsOverview = () => {
       ...(user?.es_administrador ? [] : [{
         title: 'Mis Proyectos',
         value: projects.myProjects || 0,
-        icon: '👤',
         color: 'warning',
         subtitle: 'Proyectos asignados'
       }])
@@ -112,14 +108,12 @@ const StatsOverview = () => {
       {
         title: 'Total Tareas',
         value: tasks.total,
-        icon: '📋',
         color: 'primary',
         subtitle: 'Tareas en el sistema'
       },
       {
         title: 'Pendientes',
         value: tasks.pending,
-        icon: '⏳',
         color: 'warning',
         subtitle: 'Por iniciar',
         percentage: pendingRate
@@ -127,14 +121,12 @@ const StatsOverview = () => {
       {
         title: 'En Progreso',
         value: tasks.inProgress,
-        icon: '⚡',
         color: 'info',
         subtitle: 'En desarrollo'
       },
       {
         title: 'Completadas',
         value: tasks.completed,
-        icon: '✅',
         color: 'success',
         subtitle: 'Finalizadas',
         percentage: completionRate
@@ -142,7 +134,6 @@ const StatsOverview = () => {
       ...(user?.es_administrador ? [] : [{
         title: 'Mis Tareas',
         value: tasks.myTasks || 0,
-        icon: '👤',
         color: 'secondary',
         subtitle: 'Tareas asignadas'
       }])

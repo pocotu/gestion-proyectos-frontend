@@ -21,7 +21,7 @@ const TaskSummary = ({
     return (
       <div className={`task-summary loading ${className}`}>
         <div className="summary-header">
-          <h3>✅ Resumen de Tareas</h3>
+          <h3>Resumen de Tareas</h3>
         </div>
         <div className="loading-content">
           <div className="loading-skeleton"></div>
@@ -36,7 +36,7 @@ const TaskSummary = ({
     return (
       <div className={`task-summary error ${className}`}>
         <div className="summary-header">
-          <h3>✅ Resumen de Tareas</h3>
+          <h3>Resumen de Tareas</h3>
         </div>
         <div className="error-content">
           <p>No se pudieron cargar los datos de tareas</p>
@@ -74,11 +74,11 @@ const TaskSummary = ({
   return (
     <div className={`task-summary ${className}`}>
       <div className="summary-header">
-        <h3>✅ Resumen de Tareas</h3>
-        <Link to="/tasks" className="view-all-link">
-          Ver todas →
-        </Link>
-      </div>
+          <h3>Resumen de Tareas</h3>
+          <Link to="/tasks" className="view-all-link">
+            Ver todas →
+          </Link>
+        </div>
 
       <div className="summary-content">
         {/* Estadísticas principales */}
@@ -256,14 +256,10 @@ const TaskSummary = ({
         }
 
         .view-all-link {
-          color: #3b82f6;
+          color: var(--color-bright-blue);
           text-decoration: none;
           font-weight: 500;
           font-size: 0.875rem;
-        }
-
-        .view-all-link:hover {
-          color: #2563eb;
         }
 
         .main-stats {
@@ -281,31 +277,31 @@ const TaskSummary = ({
         }
 
         .stat-card.primary {
-          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+          background: var(--color-dark-teal);
           color: white;
           border: none;
         }
 
         .stat-card.warning {
-          background: linear-gradient(135deg, #f59e0b, #d97706);
+          background: #d97706;
           color: white;
           border: none;
         }
 
         .stat-card.info {
-          background: linear-gradient(135deg, #06b6d4, #0891b2);
+          background: var(--color-bright-blue);
           color: white;
           border: none;
         }
 
         .stat-card.success {
-          background: linear-gradient(135deg, #10b981, #059669);
+          background: #059669;
           color: white;
           border: none;
         }
 
         .stat-card.personal {
-          background: linear-gradient(135deg, #ec4899, #db2777);
+          background: #db2777;
           color: white;
           border: none;
         }
@@ -460,7 +456,7 @@ const TaskSummary = ({
         .legend-dot.pending { background: #f59e0b; }
 
         .insight-card {
-          background: linear-gradient(135deg, #fef3c7, #fde68a);
+          background: #fde68a;
           border: 1px solid #f59e0b;
           border-radius: 8px;
           padding: 16px;
@@ -506,12 +502,8 @@ const TaskSummary = ({
         }
 
         .action-button.primary {
-          background: #8b5cf6;
+          background: var(--color-dark-teal);
           color: white;
-        }
-
-        .action-button.primary:hover {
-          background: #7c3aed;
         }
 
         .action-button.warning {
@@ -519,18 +511,10 @@ const TaskSummary = ({
           color: white;
         }
 
-        .action-button.warning:hover {
-          background: #d97706;
-        }
-
         .action-button.secondary {
           background: #f3f4f6;
           color: #374151;
           border: 1px solid #d1d5db;
-        }
-
-        .action-button.secondary:hover {
-          background: #e5e7eb;
         }
 
         .loading-content, .error-content {

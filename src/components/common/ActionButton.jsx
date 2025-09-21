@@ -16,14 +16,14 @@ const ActionButton = ({
   className = '',
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-0';
   
-  const variantClasses = {
-    primary: 'bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500',
-    secondary: 'bg-secondary-100 hover:bg-secondary-200 text-secondary-700 focus:ring-secondary-500',
+  const variants = {
+    primary: 'bg-gray-700 hover:bg-gray-800 text-white focus:ring-gray-500',
+    secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-700 focus:ring-gray-500',
     danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
     success: 'bg-green-600 hover:bg-green-700 text-white focus:ring-green-500',
-    outline: 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:ring-primary-500'
+    outline: 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:ring-gray-500'
   };
 
   const sizeClasses = {
@@ -38,7 +38,7 @@ const ActionButton = ({
 
   const buttonClasses = `
     ${baseClasses}
-    ${variantClasses[variant]}
+    ${variants[variant]}
     ${sizeClasses[size]}
     ${disabledClasses}
     ${className}

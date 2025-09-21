@@ -724,3 +724,15 @@ const ActivityLogsPage = () => {
  };
 
 export default ActivityLogsPage;
+
+  const fetchLogs = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/activity-logs');
+      setLogs(response.data);
+    } catch (error) {
+      setError('Error al cargar los logs de actividad');
+    } finally {
+      setLoading(false);
+    }
+  };

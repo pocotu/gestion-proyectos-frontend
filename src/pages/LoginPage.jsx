@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import FormInput from '../components/common/FormInput';
-import LoadingButton from '../components/common/LoadingButton';
 
 /**
- * LoginPage - Página de inicio de sesión
+ * LoginPage - Página de inicio de sesión con diseño moderno usando Bootstrap
  * Siguiendo principios SOLID:
  * - Single Responsibility: Solo maneja el formulario de login
  * - Open/Closed: Abierto para extensión (nuevos campos, validaciones)
@@ -61,8 +60,8 @@ const LoginPage = () => {
   };
 
   /**
-   * Maneja los cambios en los inputs
-   * Principio de Responsabilidad Única: Solo actualiza el estado
+   * Maneja los cambios en los inputs del formulario
+   * Principio de Responsabilidad Única: Solo maneja cambios de input
    */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -82,12 +81,13 @@ const LoginPage = () => {
 
   /**
    * Maneja el envío del formulario
-   * Principio de Responsabilidad Única: Solo maneja el login
+   * Principio de Responsabilidad Única: Solo maneja el envío
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
+      showError('Por favor, corrige los errores en el formulario');
       return;
     }
 
@@ -95,106 +95,134 @@ const LoginPage = () => {
 
     try {
       await login(formData.email, formData.contraseña);
+      showSuccess('¡Bienvenido! Has iniciado sesión correctamente');
       
-      showSuccess('Inicio de sesión exitoso');
-      
-      // Redirigir a la página anterior o al dashboard
+      // Redirigir a la página solicitada o al dashboard
       const from = location.state?.from?.pathname || '/dashboard';
       navigate(from, { replace: true });
-
     } catch (error) {
       console.error('Error en login:', error);
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Error al iniciar sesión. Intenta nuevamente.';
-      
-      showError(errorMessage);
-      
-      // Si las credenciales son inválidas, limpiar la contraseña
-      if (errorMessage.includes('Credenciales inválidas')) {
-        setFormData(prev => ({ ...prev, contraseña: '' }));
-      }
+      showError(error.message || 'Error al iniciar sesión');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Mostrar mensaje si viene de una ruta protegida
+  useEffect(() => {
+    if (location.state?.from) {
+      showInfo('Debes iniciar sesión para acceder a esa página');
+    }
+  }, [location.state, showInfo]);
+
   return (
-    <div>
-      <div>
-        <h2>Iniciar Sesión</h2>
-        <p>Accede a tu cuenta del sistema de gestión de proyectos</p>
-      </div>
+    <div className="gradient-bg min-vh-100 d-flex align-items-center py-5">
+      <Container>
+        <Row className="justify-content-center">
+          <Col md={6} lg={5} xl={4}>
+            <div className="text-center mb-4 fade-in">
+              <h1 className="display-4 fw-bold text-white mb-2">
+                Bienvenido
+              </h1>
+              <p className="lead text-white-50">
+                Inicia sesión en tu cuenta
+              </p>
+            </div>
 
-      <form onSubmit={handleSubmit} data-testid="login-form">
-        <div>
-          <FormInput
-            label="Email"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            error={errors.email}
-            placeholder="tu@email.com"
-            required
-            autoComplete="email"
-            disabled={isLoading}
-            data-testid="email-input"
-          />
+            <Card className="card-modern shadow-modern fade-in">
+              <Card.Body className="p-4">
+                <Form onSubmit={handleSubmit}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold">
+                      Correo Electrónico
+                    </Form.Label>
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="tu@email.com"
+                      className={`form-control-modern ${errors.email ? 'is-invalid' : ''}`}
+                      disabled={isLoading}
+                    />
+                    {errors.email && (
+                      <Form.Control.Feedback type="invalid">
+                        {errors.email}
+                      </Form.Control.Feedback>
+                    )}
+                  </Form.Group>
 
-          <FormInput
-            label="Contraseña"
-            type="password"
-            name="contraseña"
-            value={formData.contraseña}
-            onChange={handleInputChange}
-            error={errors.contraseña}
-            placeholder="Tu contraseña"
-            required
-            autoComplete="current-password"
-            disabled={isLoading}
-            data-testid="password-input"
-          />
-        </div>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">
+                      Contraseña
+                    </Form.Label>
+                    <Form.Control
+                      type="password"
+                      name="contraseña"
+                      value={formData.contraseña}
+                      onChange={handleInputChange}
+                      placeholder="••••••••"
+                      className={`form-control-modern ${errors.contraseña ? 'is-invalid' : ''}`}
+                      disabled={isLoading}
+                    />
+                    {errors.contraseña && (
+                      <Form.Control.Feedback type="invalid">
+                        {errors.contraseña}
+                      </Form.Control.Feedback>
+                    )}
+                  </Form.Group>
 
-        {location.state?.from && (
-          <div>
-            <p>Necesitas iniciar sesión para acceder a esa página</p>
-          </div>
-        )}
+                  <div className="d-grid mb-4">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="lg"
+                      className="btn-modern"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                          Iniciando sesión...
+                        </>
+                      ) : (
+                        'Iniciar Sesión'
+                      )}
+                    </Button>
+                  </div>
+                </Form>
 
-        <div>
-          <LoadingButton
-            type="submit"
-            loading={isLoading}
-            disabled={isLoading}
-            loadingText="Iniciando sesión..."
-            data-testid="login-button"
-          >
-            Iniciar Sesión
-          </LoadingButton>
-        </div>
+                <hr className="my-4" />
 
-        <div>
-          <div>
-            <Link to="/register">
-              ¿No tienes cuenta? Regístrate
-            </Link>
-          </div>
-          <div>
-            <a 
-              href="#" 
-              onClick={(e) => {
-                e.preventDefault();
-                showInfo('Funcionalidad de recuperación de contraseña próximamente');
-              }}
-            >
-              ¿Olvidaste tu contraseña?
-            </a>
-          </div>
-        </div>
-      </form>
+                <div className="text-center">
+                  <p className="mb-3">
+                    ¿No tienes una cuenta?{' '}
+                    <Link 
+                      to="/register" 
+                      className="text-decoration-none fw-semibold"
+                    >
+                      Regístrate aquí
+                    </Link>
+                  </p>
+                  
+                  <Link 
+                    to="/forgot-password" 
+                    className="text-muted text-decoration-none small"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </div>
+              </Card.Body>
+            </Card>
+
+            <div className="text-center mt-4 fade-in">
+              <p className="small text-muted">
+                © 2024 Sistema de Gestión de Proyectos. Todos los derechos reservados.
+              </p>
+            </div>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };

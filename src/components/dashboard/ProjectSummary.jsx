@@ -21,7 +21,7 @@ const ProjectSummary = ({
     return (
       <div className={`project-summary loading ${className}`}>
         <div className="summary-header">
-          <h3>📊 Resumen de Proyectos</h3>
+          <h3>Resumen de Proyectos</h3>
         </div>
         <div className="loading-content">
           <div className="loading-skeleton"></div>
@@ -36,7 +36,7 @@ const ProjectSummary = ({
     return (
       <div className={`project-summary error ${className}`}>
         <div className="summary-header">
-          <h3>📊 Resumen de Proyectos</h3>
+          <h3>Resumen de Proyectos</h3>
         </div>
         <div className="error-content">
           <p>No se pudieron cargar los datos de proyectos</p>
@@ -62,11 +62,11 @@ const ProjectSummary = ({
   return (
     <div className={`project-summary ${className}`}>
       <div className="summary-header">
-        <h3>📊 Resumen de Proyectos</h3>
-        <Link to="/projects" className="view-all-link">
-          Ver todos →
-        </Link>
-      </div>
+         <h3>Resumen de Proyectos</h3>
+         <Link to="/projects" className="view-all-link">
+           Ver todos →
+         </Link>
+       </div>
 
       <div className="summary-content">
         {/* Estadísticas principales */}
@@ -180,14 +180,10 @@ const ProjectSummary = ({
         }
 
         .view-all-link {
-          color: #3b82f6;
+          color: var(--color-bright-blue);
           text-decoration: none;
           font-weight: 500;
           font-size: 0.875rem;
-        }
-
-        .view-all-link:hover {
-          color: #2563eb;
         }
 
         .main-stats {
@@ -205,25 +201,25 @@ const ProjectSummary = ({
         }
 
         .stat-card.primary {
-          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          background: var(--color-bright-blue);
           color: white;
           border: none;
         }
 
         .stat-card.success {
-          background: linear-gradient(135deg, #10b981, #059669);
+          background: #059669;
           color: white;
           border: none;
         }
 
         .stat-card.info {
-          background: linear-gradient(135deg, #06b6d4, #0891b2);
+          background: var(--color-dark-teal);
           color: white;
           border: none;
         }
 
         .stat-card.warning {
-          background: linear-gradient(135deg, #f59e0b, #d97706);
+          background: #d97706;
           color: white;
           border: none;
         }
@@ -317,7 +313,7 @@ const ProjectSummary = ({
 
         .progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #10b981, #059669);
+          background: #059669;
           transition: width 0.3s ease;
         }
 
@@ -337,22 +333,14 @@ const ProjectSummary = ({
         }
 
         .action-button.primary {
-          background: #3b82f6;
+          background: var(--color-bright-blue);
           color: white;
-        }
-
-        .action-button.primary:hover {
-          background: #2563eb;
         }
 
         .action-button.secondary {
           background: #f3f4f6;
           color: #374151;
           border: 1px solid #d1d5db;
-        }
-
-        .action-button.secondary:hover {
-          background: #e5e7eb;
         }
 
         .loading-content, .error-content {
