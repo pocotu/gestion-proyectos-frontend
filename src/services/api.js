@@ -25,7 +25,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Obtener token del localStorage
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -79,27 +79,24 @@ apiClient.interceptors.response.use(
                 const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data;
                 
                 // Actualizar tokens en localStorage
-                localStorage.setItem('authToken', accessToken);
-                localStorage.setItem('refreshToken', newRefreshToken);
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('refreshToken', newRefreshToken);
                 
                 // Reintentar la petición original con el nuevo token
                 config.headers.Authorization = `Bearer ${accessToken}`;
                 return apiClient(config);
               }
             } catch (refreshError) {
-              // Si falla el refresh, hacer logout
-              localStorage.removeItem('authToken');
-              localStorage.removeItem('refreshToken');
-              localStorage.removeItem('user');
-              window.location.href = '/login';
-              break;
+              // Para MVP: Solo loguear el error, no hacer logout automático
+              // Esto evita que se cierre la sesión por problemas de conectividad
+              console.warn('No se pudo refrescar el token:', refreshError.message);
+              // Rechazar la petición original sin limpiar la sesión
+              return Promise.reject(error);
             }
           } else {
-            // Si ya se intentó el refresh y falló, hacer logout
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
+            // Si ya se intentó el refresh y falló, solo loguear
+            console.warn('Refresh token ya intentado, petición falló');
+            return Promise.reject(error);
           }
           break;
           

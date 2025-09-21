@@ -127,7 +127,7 @@ const LoginPage = () => {
         <p>Accede a tu cuenta del sistema de gestión de proyectos</p>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} data-testid="login-form">
         <div>
           <FormInput
             label="Email"
@@ -140,6 +140,7 @@ const LoginPage = () => {
             required
             autoComplete="email"
             disabled={isLoading}
+            data-testid="email-input"
           />
 
           <FormInput
@@ -153,6 +154,7 @@ const LoginPage = () => {
             required
             autoComplete="current-password"
             disabled={isLoading}
+            data-testid="password-input"
           />
         </div>
 
@@ -168,6 +170,7 @@ const LoginPage = () => {
             loading={isLoading}
             disabled={isLoading}
             loadingText="Iniciando sesión..."
+            data-testid="login-button"
           >
             Iniciar Sesión
           </LoadingButton>

@@ -179,7 +179,7 @@ const RegisterPage = () => {
         <p>Únete al sistema de gestión de proyectos</p>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} data-testid="register-form">
         <div>
           <FormInput
             label="Nombre completo"
@@ -192,6 +192,7 @@ const RegisterPage = () => {
             required
             autoComplete="name"
             disabled={isLoading}
+            data-testid="name-input"
           />
 
           <FormInput
@@ -205,6 +206,7 @@ const RegisterPage = () => {
             required
             autoComplete="email"
             disabled={isLoading}
+            data-testid="email-input"
           />
 
           <FormInput
@@ -218,6 +220,7 @@ const RegisterPage = () => {
             required
             autoComplete="new-password"
             disabled={isLoading}
+            data-testid="password-input"
           />
 
           <FormInput
@@ -231,6 +234,7 @@ const RegisterPage = () => {
             required
             autoComplete="new-password"
             disabled={isLoading}
+            data-testid="confirm-password-input"
           />
         </div>
 
@@ -244,6 +248,7 @@ const RegisterPage = () => {
             loading={isLoading}
             disabled={isLoading}
             loadingText="Creando cuenta..."
+            data-testid="register-button"
           >
             Crear Cuenta
           </LoadingButton>

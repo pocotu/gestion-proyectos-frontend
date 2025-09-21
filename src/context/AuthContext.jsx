@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import authService from '../services/authService';
 
 /**
@@ -109,41 +109,45 @@ export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   /**
-   * Inicializar autenticación al cargar la aplicación
-   */
-  useEffect(() => {
-    initializeAuth();
-  }, []);
-
-  /**
    * Inicializar estado de autenticación
    */
-  const initializeAuth = async () => {
+  const initializeAuth = useCallback(async () => {
     dispatch({ type: AUTH_ACTIONS.SET_LOADING });
-
+    
     try {
-      // Verificar si hay datos de autenticación guardados
       const token = authService.getCurrentToken();
       const user = authService.getCurrentUser();
-
+      
+      console.log('AuthContext - initializeAuth - Token:', token ? 'exists' : 'null');
+      console.log('AuthContext - initializeAuth - User from localStorage:', user);
+      
       if (token && user) {
-        // Verificar token con el servidor
-        const verifiedUser = await authService.verifyToken();
-        dispatch({
-          type: AUTH_ACTIONS.SET_AUTHENTICATED,
-          payload: { user: verifiedUser, token }
+        dispatch({ 
+          type: AUTH_ACTIONS.SET_AUTHENTICATED, 
+          payload: { user, token } 
         });
-
-        // Inicializar verificación periódica de tokens
-        authService.initTokenExpirationCheck();
+        
+        // Verificar token en background (no bloquear la UI)
+        try {
+          await authService.verifyToken();
+        } catch (error) {
+          console.warn('Token verification failed, but maintaining session for MVP:', error);
+        }
       } else {
         dispatch({ type: AUTH_ACTIONS.SET_UNAUTHENTICATED });
       }
     } catch (error) {
-      console.error('Error al inicializar autenticación:', error);
+      console.error('Error initializing auth:', error);
       dispatch({ type: AUTH_ACTIONS.SET_UNAUTHENTICATED });
     }
-  };
+  }, []);
+
+  /**
+   * Inicializar autenticación al cargar la aplicación
+   */
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   /**
    * Iniciar sesión

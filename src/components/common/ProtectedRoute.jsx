@@ -45,6 +45,10 @@ const ProtectedRoute = ({
 
   // Si requiere ser admin y no lo es
   if (requireAdmin && !isAdmin()) {
+    console.log('ProtectedRoute - requireAdmin check failed');
+    console.log('ProtectedRoute - requireAdmin:', requireAdmin);
+    console.log('ProtectedRoute - isAdmin():', isAdmin());
+    console.log('ProtectedRoute - user:', user);
     return (
       <Navigate 
         to={unauthorizedPath} 
@@ -54,6 +58,9 @@ const ProtectedRoute = ({
     );
   }
 
+  console.log('ProtectedRoute - All checks passed, rendering children');
+  console.log('ProtectedRoute - requireAdmin:', requireAdmin);
+  console.log('ProtectedRoute - isAdmin():', isAdmin());
   // Si requiere roles específicos
   if (requiredRoles.length > 0) {
     const hasRequiredRole = requiredRoles.some(role => hasRole(role));

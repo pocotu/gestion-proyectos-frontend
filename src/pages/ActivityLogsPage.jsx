@@ -23,6 +23,7 @@ import {
   TableHeader, 
   TableRow 
 } from '../components/ui/table';
+import Modal from '../components/common/Modal';
 import { 
   Calendar,
   Download,
@@ -54,6 +55,7 @@ const ActivityLogsPage = () => {
   const [logs, setLogs] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -68,14 +70,36 @@ const ActivityLogsPage = () => {
     limit: 50,
     total: 0
   });
+  const [selectedLog, setSelectedLog] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Debug: Log user information
+  console.log('ActivityLogsPage - User info:', user);
+  console.log('ActivityLogsPage - es_administrador:', user?.es_administrador);
+  console.log('ActivityLogsPage - roles:', user?.roles);
+
+  // Manejar click en fila para mostrar detalles
+  const handleRowClick = (log) => {
+    setSelectedLog(log);
+    setIsModalOpen(true);
+  };
+
+  // Cerrar modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedLog(null);
+  };
 
   // Cargar logs de actividad
   const loadActivityLogs = async () => {
     try {
+      console.log('ActivityLogsPage - loadActivityLogs - Starting with filters:', filters);
       setLoading(true);
       const response = await activityService.getActivityLogs(filters);
+      console.log('ActivityLogsPage - loadActivityLogs - Response:', response);
       setLogs(response.data || []);
       setPagination(response.pagination || { page: 1, limit: 50, total: 0 });
+      console.log('ActivityLogsPage - loadActivityLogs - Logs set:', response.data?.length || 0, 'logs');
     } catch (error) {
       console.error('Error loading activity logs:', error);
       setLogs([]);
@@ -87,7 +111,9 @@ const ActivityLogsPage = () => {
   // Cargar estadísticas
   const loadStats = async () => {
     try {
+      console.log('ActivityLogsPage - loadStats - Starting');
       const response = await activityService.getActivityStats();
+      console.log('ActivityLogsPage - loadStats - Response:', response);
       setStats(response.data || []);
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -96,9 +122,15 @@ const ActivityLogsPage = () => {
   };
 
   useEffect(() => {
-    if (user?.roles?.includes('admin')) {
+    // Verificar si el usuario es admin por el campo es_administrador o por roles
+    const isAdmin = (user?.es_administrador === 1 || user?.es_administrador === true) || user?.roles?.includes('admin');
+    console.log('ActivityLogsPage - Final isAdmin check:', isAdmin);
+    
+    if (isAdmin) {
       loadActivityLogs();
       loadStats();
+    } else {
+      console.log('ActivityLogsPage - User is not admin, not loading logs');
     }
   }, [user, filters]);
 
@@ -202,9 +234,9 @@ const ActivityLogsPage = () => {
   // Obtener icono para el tipo de entidad
   const getEntityIcon = (entityType) => {
     const iconMap = {
+      'usuario': User,
       'proyecto': FolderOpen,
       'tarea': CheckCircle,
-      'usuario': User,
       'archivo': FileText,
       'rol': Settings
     };
@@ -213,7 +245,28 @@ const ActivityLogsPage = () => {
     return <IconComponent className="h-4 w-4" />;
   };
 
-  if (!user?.roles?.includes('admin')) {
+  // Verificar si el usuario es admin por el campo es_administrador o por roles
+  const isAdmin = (user?.es_administrador === 1 || user?.es_administrador === true) || user?.roles?.includes('admin');
+  
+  console.log('ActivityLogsPage - Render isAdmin check:', isAdmin);
+  console.log('ActivityLogsPage - User in render:', user);
+  
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Cargando...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
+  if (!isAdmin) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
@@ -358,7 +411,7 @@ const ActivityLogsPage = () => {
                 value={filters.entityType}
                 onValueChange={(value) => handleFilterChange('entityType', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid="entity-type-select">
                   <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -380,11 +433,11 @@ const ActivityLogsPage = () => {
                 value={filters.action}
                 onValueChange={(value) => handleFilterChange('action', value)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar acción" />
+                <SelectTrigger data-testid="filter-select">
+                  <SelectValue placeholder="Todas las acciones" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="">Todas las acciones</SelectItem>
                   <SelectItem value="crear">Crear</SelectItem>
                   <SelectItem value="actualizar">Actualizar</SelectItem>
                   <SelectItem value="eliminar">Eliminar</SelectItem>
@@ -396,6 +449,17 @@ const ActivityLogsPage = () => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="mb-4">
+            <Input
+              type="text"
+              placeholder="Buscar por usuario, descripción o IP..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-md"
+              data-testid="search-input"
+            />
           </div>
 
           <div className="flex justify-between items-center">
@@ -445,7 +509,7 @@ const ActivityLogsPage = () => {
               <span className="ml-2">Cargando logs...</span>
             </div>
           ) : logs.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="text-center py-8" data-testid="no-data-message">
               <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 No hay logs disponibles
@@ -456,7 +520,7 @@ const ActivityLogsPage = () => {
             </div>
           ) : (
             <>
-              <Table>
+              <Table data-testid="activity-logs-table">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Fecha/Hora</TableHead>
@@ -469,8 +533,13 @@ const ActivityLogsPage = () => {
                 </TableHeader>
                 <TableBody>
                   {logs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell>
+                    <TableRow 
+                      key={log.id} 
+                      data-testid="activity-log-row"
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleRowClick(log)}
+                    >
+                      <TableCell data-testid="timestamp">
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 text-gray-400 mr-2" />
                           <div>
@@ -483,7 +552,7 @@ const ActivityLogsPage = () => {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-testid="user-name">
                         <div className="flex items-center">
                           <User className="h-4 w-4 text-gray-400 mr-2" />
                           <div>
@@ -496,13 +565,13 @@ const ActivityLogsPage = () => {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-testid="action-type">
                         <Badge className={`flex items-center ${getActionColor(log.accion)}`}>
                           {getActionIcon(log.accion)}
                           <span className="ml-1 capitalize">{log.accion}</span>
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-testid="resource-type">
                         <div className="flex items-center">
                           {getEntityIcon(log.entidad_tipo)}
                           <div className="ml-2">
@@ -562,8 +631,96 @@ const ActivityLogsPage = () => {
           )}
         </CardContent>
       </Card>
-    </div>
-  );
-};
+
+       {/* Modal de Detalles */}
+       <Modal
+         isOpen={isModalOpen}
+         onClose={closeModal}
+         title="Detalles del Log de Actividad"
+         data-testid="log-details-modal"
+       >
+         {selectedLog && (
+           <div className="space-y-4">
+             <div className="grid grid-cols-2 gap-4">
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   Fecha y Hora
+                 </label>
+                 <p className="text-sm text-gray-900">
+                   {format(new Date(selectedLog.created_at), 'dd/MM/yyyy HH:mm:ss', { locale: es })}
+                 </p>
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   Usuario
+                 </label>
+                 <p className="text-sm text-gray-900">
+                   {selectedLog.usuario_nombre || 'Usuario desconocido'}
+                 </p>
+                 <p className="text-xs text-gray-500">
+                   {selectedLog.usuario_email}
+                 </p>
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   Acción
+                 </label>
+                 <Badge className={`inline-flex items-center ${getActionColor(selectedLog.accion)}`}>
+                   {getActionIcon(selectedLog.accion)}
+                   <span className="ml-1 capitalize">{selectedLog.accion}</span>
+                 </Badge>
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   Tipo de Entidad
+                 </label>
+                 <div className="flex items-center">
+                   {getEntityIcon(selectedLog.entidad_tipo)}
+                   <span className="ml-2 text-sm text-gray-900 capitalize">
+                     {selectedLog.entidad_tipo}
+                   </span>
+                 </div>
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   ID de Entidad
+                 </label>
+                 <p className="text-sm text-gray-900">
+                   {selectedLog.entidad_id || 'N/A'}
+                 </p>
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   Dirección IP
+                 </label>
+                 <p className="text-sm text-gray-900 font-mono">
+                   {selectedLog.ip_address || 'N/A'}
+                 </p>
+               </div>
+             </div>
+             <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">
+                 Descripción
+               </label>
+               <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">
+                 {selectedLog.descripcion}
+               </p>
+             </div>
+             {selectedLog.detalles_adicionales && (
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   Detalles Adicionales
+                 </label>
+                 <pre className="text-xs text-gray-900 bg-gray-50 p-3 rounded-md overflow-auto max-h-40">
+                   {JSON.stringify(selectedLog.detalles_adicionales, null, 2)}
+                 </pre>
+               </div>
+             )}
+           </div>
+         )}
+       </Modal>
+     </div>
+   );
+ };
 
 export default ActivityLogsPage;

@@ -37,8 +37,8 @@ class AuthService {
       const response = await api.post('/auth/login', { email, contraseña: password });
       const { user, token } = response.data.data;
       
-      // Guardar datos en localStorage
-      this._setAuthData(user, token, null);
+      // Guardar datos en localStorage (usar token como refreshToken para MVP)
+      this._setAuthData(user, token, token);
       
       return { user, token };
     } catch (error) {
@@ -78,9 +78,9 @@ class AuthService {
       
       return user;
     } catch (error) {
-      // Token inválido, limpiar datos
-      this._clearAuthData();
-      throw this._handleError(error, 'Token inválido');
+      // Para MVP: No limpiar datos automáticamente, solo lanzar error
+      // Esto permite que AuthContext maneje la decisión de mantener o limpiar la sesión
+      throw this._handleError(error, 'No se pudo verificar el token con el servidor');
     }
   }
 
@@ -186,7 +186,7 @@ class AuthService {
    * @returns {string|null} Token o null
    */
   getCurrentToken() {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem('token');
   }
 
   /**
@@ -195,9 +195,8 @@ class AuthService {
    */
   isAuthenticated() {
     const token = this.getCurrentToken();
-    const refreshToken = this.getRefreshToken();
     const user = this.getCurrentUser();
-    return !!(token && refreshToken && user);
+    return !!(token && user);
   }
 
   /**
@@ -216,7 +215,20 @@ class AuthService {
    */
   isAdmin() {
     const user = this.getCurrentUser();
-    return user?.es_administrador || this.hasRole('admin');
+    console.log('AuthService - isAdmin - User:', user);
+    console.log('AuthService - isAdmin - es_administrador:', user?.es_administrador);
+    console.log('AuthService - isAdmin - hasRole admin:', this.hasRole('admin'));
+    
+    // Verificar tanto el campo es_administrador (puede ser 1 o true) como el rol admin
+    const isAdminByField = user?.es_administrador === 1 || user?.es_administrador === true;
+    const isAdminByRole = this.hasRole('admin');
+    const result = isAdminByField || isAdminByRole;
+    
+    console.log('AuthService - isAdmin - isAdminByField:', isAdminByField);
+    console.log('AuthService - isAdmin - isAdminByRole:', isAdminByRole);
+    console.log('AuthService - isAdmin - Final Result:', result);
+    
+    return result;
   }
 
   /**
@@ -294,7 +306,7 @@ class AuthService {
    * @private
    */
   _setAuthData(user, accessToken, refreshToken) {
-    localStorage.setItem('authToken', accessToken);
+    localStorage.setItem('token', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('user', JSON.stringify(user));
   }
@@ -304,7 +316,7 @@ class AuthService {
    * @private
    */
   _clearAuthData() {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
   }

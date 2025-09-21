@@ -111,14 +111,24 @@ const Sidebar = () => {
 
   // Filtrar secciones y elementos según el rol del usuario
   const getFilteredSections = () => {
-    if (!user?.roles) return [];
+    if (!user) return [];
 
     return navigationSections
       .map(section => ({
         ...section,
-        items: section.items.filter(item => 
-          user.roles.some(userRole => item.roles.includes(userRole))
-        )
+        items: section.items.filter(item => {
+          // Si el usuario es administrador, puede ver elementos marcados como 'admin'
+          if (user.es_administrador && item.roles.includes('admin')) {
+            return true;
+          }
+          
+          // Verificar si el usuario tiene alguno de los roles requeridos
+          if (user.roles && Array.isArray(user.roles)) {
+            return user.roles.some(userRole => item.roles.includes(userRole));
+          }
+          
+          return false;
+        })
       }))
       .filter(section => section.items.length > 0);
   };
@@ -150,7 +160,7 @@ const Sidebar = () => {
         </button>
       </div>
 
-      <nav>
+      <nav data-testid="sidebar-nav">
         {filteredSections.map((section, sectionIndex) => (
           <div key={section.title}>
             {!isCollapsed && (
@@ -162,6 +172,7 @@ const Sidebar = () => {
                   <NavLink
                     to={item.path}
                     title={isCollapsed ? `${item.name} - ${item.description}` : ''}
+                    data-testid={`nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     <span>{item.icon}</span>
                     {!isCollapsed && (

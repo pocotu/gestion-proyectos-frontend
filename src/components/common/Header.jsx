@@ -32,7 +32,7 @@ const Header = () => {
                 <div>
                   Bienvenido, <span>{user.nombre}</span>
                 </div>
-                <button onClick={handleLogout}>
+                <button onClick={handleLogout} data-testid="logout-button">
                   Cerrar Sesión
                 </button>
               </>

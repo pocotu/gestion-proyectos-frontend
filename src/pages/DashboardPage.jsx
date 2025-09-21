@@ -181,9 +181,9 @@ const DashboardPage = () => {
   }
 
   return (
-    <div>
+    <div data-testid="dashboard-page">
       {/* Header del Dashboard */}
-      <div>
+      <div data-testid="dashboard-header">
         <div>
           <div>
             <h1>¡Bienvenido, {user?.nombre}!</h1>

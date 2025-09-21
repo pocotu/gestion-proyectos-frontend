@@ -19,26 +19,30 @@ test.describe('Sistema de Autenticación', () => {
 
   test('debe realizar login exitoso con credenciales válidas', async ({ page }) => {
     // Llenar el formulario de login
-    await page.fill('input[name="email"]', 'admin@gestion-proyectos.com');
-    await page.fill('input[name="contraseña"]', 'admin123');
+    await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
+    await page.fill('[data-testid="password-input"]', 'admin123');
     
     // Hacer click en el botón de login
-    await page.click('button[type="submit"]');
+    await page.click('[data-testid="login-button"]');
     
-    // Verificar redirección al dashboard
-    await expect(page).toHaveURL(/.*dashboard/);
+    // Esperar la redirección al dashboard con timeout más largo
+    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
     
     // Verificar que el usuario está logueado (buscar elementos del dashboard)
-    await expect(page.locator('h1:has-text("¡Bienvenido")')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
+    
+    // Esperar a que el h1 se cargue y verificar el texto
+    await page.waitForSelector('h1', { timeout: 5000 });
+    await expect(page.locator('[data-testid="dashboard-header"] h1')).toContainText('¡Bienvenido');
   });
 
   test('debe mostrar error con credenciales inválidas', async ({ page }) => {
     // Llenar el formulario con credenciales incorrectas
-    await page.fill('input[name="email"]', 'wrong@test.com');
-    await page.fill('input[name="contraseña"]', 'wrongpass');
+    await page.fill('[data-testid="email-input"]', 'wrong@test.com');
+    await page.fill('[data-testid="password-input"]', 'wrongpass');
     
     // Hacer click en el botón de login
-    await page.click('button[type="submit"]');
+    await page.click('[data-testid="login-button"]');
     
     // Verificar que permanece en la página de login
     await expect(page).toHaveURL(/.*login/);
@@ -82,26 +86,27 @@ test.describe('Sistema de Autenticación', () => {
   test('debe realizar logout correctamente', async ({ page }) => {
     // Primero hacer login
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@gestion-proyectos.com');
-    await page.fill('input[type="password"]', 'admin123');
-    await page.click('button[type="submit"]');
+    await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
+    await page.fill('[data-testid="password-input"]', 'admin123');
+    await page.click('[data-testid="login-button"]');
     
     // Esperar a que se complete el login y esté en el dashboard
-    await expect(page).toHaveURL(/.*dashboard/);
-    await expect(page.locator('h1:has-text("¡Bienvenido")')).toBeVisible();
+    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
+    await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-header"] h1')).toContainText('¡Bienvenido');
     
     // Esperar a que el header se cargue completamente
     await page.waitForSelector('header', { timeout: 10000 });
     
-    // Buscar el botón de logout con un selector más específico
-    const logoutButton = page.locator('header button:has-text("Cerrar Sesión")');
+    // Buscar el botón de logout usando el data-testid
+    const logoutButton = page.locator('[data-testid="logout-button"]');
     await expect(logoutButton).toBeVisible();
     
     // Hacer logout
     await logoutButton.click();
     
     // Verificar que se redirige a la página de login
-    await expect(page).toHaveURL(/.*login/);
+    await page.waitForURL(/.*login/, { timeout: 10000 });
   });
 
   test('debe proteger rutas privadas', async ({ page }) => {
@@ -112,36 +117,23 @@ test.describe('Sistema de Autenticación', () => {
     await expect(page).toHaveURL(/.*login/);
   });
 
-  test('debe mantener la sesión después de recargar', async ({ page }) => {
-    // Primero hacer login
-    await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@gestion-proyectos.com');
-    await page.fill('input[type="password"]', 'admin123');
-    await page.click('button[type="submit"]');
+  test('debe mantener la sesión después de recargar la página', async ({ page }) => {
+    // Hacer login
+    await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
+    await page.fill('[data-testid="password-input"]', 'admin123');
+    await page.click('[data-testid="login-button"]');
     
-    // Esperar a que se complete el login
-    await expect(page).toHaveURL(/.*dashboard/);
-    await expect(page.locator('h1:has-text("¡Bienvenido")')).toBeVisible();
-    
-    // Esperar un poco para asegurar que el token se guarde
-    await page.waitForTimeout(2000);
+    // Verificar que estamos en el dashboard
+    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
+    await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-header"] h1')).toContainText('¡Bienvenido');
     
     // Recargar la página
     await page.reload();
     
-    // Esperar a que se complete la inicialización (más tiempo)
-    await page.waitForTimeout(5000);
-    
-    // Si sigue en login, la sesión no se mantuvo (esto es esperado por ahora)
-    const currentUrl = page.url();
-    if (currentUrl.includes('/login')) {
-      console.log('La sesión no se mantuvo después de recargar - esto puede ser normal si no hay persistencia implementada');
-      // Por ahora, consideramos que es normal que redirija al login
-      await expect(page).toHaveURL(/.*login/);
-    } else {
-      // Si se mantiene en dashboard, verificar que funciona correctamente
-      await expect(page).toHaveURL(/.*dashboard/);
-      await expect(page.locator('h1:has-text("¡Bienvenido")')).toBeVisible();
-    }
+    // Verificar que seguimos en el dashboard (sesión persistente)
+    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
+    await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-header"] h1')).toContainText('¡Bienvenido');
   });
 });
