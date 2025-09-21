@@ -19,7 +19,8 @@ const StatsCard = ({
   percentage, 
   trend,
   onClick,
-  loading = false 
+  loading = false,
+  testId
 }) => {
   const handleClick = () => {
     if (onClick && !loading) {
@@ -58,7 +59,7 @@ const StatsCard = ({
   }
 
   return (
-    <div className={cardClasses} onClick={handleClick}>
+    <div className={cardClasses} onClick={handleClick} data-testid={testId}>
       <div className="stats-card__header">
         {icon && (
           <div className="stats-card__icon">

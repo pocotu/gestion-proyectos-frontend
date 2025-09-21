@@ -3,10 +3,15 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import MobileMenu from '../components/common/MobileMenu';
 import dashboardService from '../services/dashboardService';
 import ProjectSummary from '../components/dashboard/ProjectSummary';
 import TaskSummary from '../components/dashboard/TaskSummary';
 import StatsOverview from '../components/dashboard/StatsOverview';
+import RecentActivities from '../components/dashboard/RecentActivities';
+import RecentProjects from '../components/dashboard/RecentProjects';
+import PendingTasks from '../components/dashboard/PendingTasks';
+import ExportReports from '../components/dashboard/ExportReports';
 
 /**
  * DashboardPage - Página principal del dashboard
@@ -110,6 +115,9 @@ const DashboardPage = () => {
 
   return (
     <div style={styles.dashboardContainer} data-testid="dashboard-page">
+      {/* Menú móvil */}
+      <MobileMenu />
+      
       {/* Header simplificado */}
       <div style={styles.header} data-testid="dashboard-header">
         <h1 style={styles.title}>
@@ -121,9 +129,21 @@ const DashboardPage = () => {
       </div>
 
       {/* Contenido principal sin contenedores innecesarios */}
-      <div style={styles.content}>
+      <div style={styles.content} data-testid="dashboard-grid">
         {/* Estadísticas */}
         <StatsOverview />
+
+        {/* Actividades Recientes */}
+        <RecentActivities />
+
+        {/* Proyectos Recientes */}
+        <RecentProjects />
+
+        {/* Tareas Pendientes */}
+        <PendingTasks />
+
+        {/* Exportar Reportes */}
+        <ExportReports />
 
         {/* Resúmenes */}
         <ProjectSummary 
@@ -220,9 +240,10 @@ const styles = {
   },
   
   content: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '30px'
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+    gap: '24px',
+    alignItems: 'start'
   },
   
   actions: {
@@ -253,11 +274,23 @@ const styles = {
   }
 };
 
-// Media queries simplificadas
+// Media queries mejoradas para responsividad
 const mediaQueries = `
+  @media (max-width: 1200px) {
+    .dashboard-grid {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+      gap: 20px !important;
+    }
+  }
+
   @media (max-width: 768px) {
     .dashboard-container {
       padding: 15px !important;
+    }
+    
+    .dashboard-grid {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
     }
     
     .header {
@@ -269,6 +302,29 @@ const mediaQueries = `
     .title {
       font-size: 24px !important;
     }
+    
+    .actions {
+      margin-top: 20px !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .dashboard-container {
+      padding: 10px !important;
+    }
+    
+    .dashboard-grid {
+      gap: 12px !important;
+    }
+    
+    .title {
+      font-size: 20px !important;
+    }
+    
+    .role {
+      font-size: 12px !important;
+      padding: 6px 12px !important;
+    }
   }
   
   .actionLink:hover {
@@ -276,10 +332,17 @@ const mediaQueries = `
   }
 `;
 
-// Inyectar estilos CSS
+// Inyectar estilos CSS con clase específica para el grid
 if (typeof document !== 'undefined') {
   const styleSheet = document.createElement('style');
-  styleSheet.textContent = mediaQueries;
+  styleSheet.textContent = mediaQueries + `
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 24px;
+      align-items: start;
+    }
+  `;
   document.head.appendChild(styleSheet);
 }
 

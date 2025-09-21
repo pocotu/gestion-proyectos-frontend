@@ -16,32 +16,19 @@ import './StatsOverview.css';
  */
 const StatsOverview = () => {
   const { user } = useAuth();
-  const { showError } = useNotifications();
+  const { addNotification, showError } = useNotifications();
   const [stats, setStats] = useState({
-    projects: {
-      total: 0,
-      active: 0,
-      completed: 0,
-      myProjects: 0
-    },
-    tasks: {
-      total: 0,
-      pending: 0,
-      inProgress: 0,
-      completed: 0,
-      myTasks: 0
-    },
-    users: {
-      total: 0,
-      active: 0,
-      inactive: 0
-    }
+    projects: { total: 0, active: 0, completed: 0, paused: 0 },
+    tasks: { total: 0, pending: 0, inProgress: 0, completed: 0 },
+    users: { total: 0, active: 0 },
+    activities: []
   });
   const [loading, setLoading] = useState(true);
+  const [timeFilter, setTimeFilter] = useState('month'); // 'week', 'month', 'quarter', 'year'
 
   useEffect(() => {
     loadStats();
-  }, [user]);
+  }, [user, timeFilter]);
 
   const loadStats = async () => {
     try {
@@ -65,7 +52,9 @@ const StatsOverview = () => {
   };
 
   const getProjectStats = () => {
-    const { projects } = stats;
+    const { projects } = stats || {};
+    if (!projects) return [];
+    
     const activeRate = projects.total > 0 ? Math.round((projects.active / projects.total) * 100) : 0;
     const completionRate = projects.total > 0 ? Math.round((projects.completed / projects.total) * 100) : 0;
 
@@ -74,7 +63,8 @@ const StatsOverview = () => {
         title: 'Total Proyectos',
         value: projects.total,
         color: 'primary',
-        subtitle: 'Proyectos en el sistema'
+        subtitle: 'Proyectos en el sistema',
+        testId: 'projects-count'
       },
       {
         title: 'Proyectos Activos',
@@ -88,7 +78,8 @@ const StatsOverview = () => {
         value: projects.completed,
         color: 'info',
         subtitle: 'Finalizados',
-        percentage: completionRate
+        percentage: completionRate,
+        testId: 'completed-projects'
       },
       ...(user?.es_administrador ? [] : [{
         title: 'Mis Proyectos',
@@ -100,7 +91,9 @@ const StatsOverview = () => {
   };
 
   const getTaskStats = () => {
-    const { tasks } = stats;
+    const { tasks } = stats || {};
+    if (!tasks) return [];
+    
     const completionRate = tasks.total > 0 ? Math.round((tasks.completed / tasks.total) * 100) : 0;
     const pendingRate = tasks.total > 0 ? Math.round((tasks.pending / tasks.total) * 100) : 0;
 
@@ -109,14 +102,16 @@ const StatsOverview = () => {
         title: 'Total Tareas',
         value: tasks.total,
         color: 'primary',
-        subtitle: 'Tareas en el sistema'
+        subtitle: 'Tareas en el sistema',
+        testId: 'tasks-count'
       },
       {
         title: 'Pendientes',
         value: tasks.pending,
         color: 'warning',
         subtitle: 'Por iniciar',
-        percentage: pendingRate
+        percentage: pendingRate,
+        testId: 'pending-tasks'
       },
       {
         title: 'En Progreso',
@@ -141,7 +136,7 @@ const StatsOverview = () => {
   };
 
   const getUserStats = () => {
-    if (!user?.es_administrador || !stats.users) return [];
+    if (!user?.es_administrador || !stats?.users) return [];
 
     const { users } = stats;
     const activeRate = users.total > 0 ? Math.round((users.active / users.total) * 100) : 0;
@@ -176,14 +171,27 @@ const StatsOverview = () => {
     <div className="stats-overview">
       <div className="stats-overview__header">
         <h2 className="stats-overview__title">Resumen General</h2>
-        <button 
-          className="stats-overview__refresh"
-          onClick={loadStats}
-          disabled={loading}
-          title="Actualizar estadísticas"
-        >
-          <span className={`refresh-icon ${loading ? 'spinning' : ''}`}>🔄</span>
-        </button>
+        <div className="stats-overview__controls">
+          <select 
+            className="time-filter"
+            value={timeFilter}
+            onChange={(e) => setTimeFilter(e.target.value)}
+            data-testid="time-filter"
+          >
+            <option value="week">Esta semana</option>
+            <option value="month">Este mes</option>
+            <option value="quarter">Este trimestre</option>
+            <option value="year">Este año</option>
+          </select>
+          <button 
+            className="stats-overview__refresh"
+            onClick={loadStats}
+            disabled={loading}
+            title="Actualizar estadísticas"
+          >
+            <span className={`refresh-icon ${loading ? 'spinning' : ''}`}>🔄</span>
+          </button>
+        </div>
       </div>
 
       {/* Estadísticas de Proyectos */}
