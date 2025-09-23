@@ -21,6 +21,8 @@ const RegisterPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { register, isAuthenticated } = useAuth();
   const { showSuccess, showError } = useNotifications();
@@ -202,6 +204,7 @@ const RegisterPage = () => {
                       value={formData.nombre}
                       onChange={handleInputChange}
                       placeholder="Tu nombre completo"
+                      data-testid="name-input"
                     />
                     {errors.nombre && (
                       <div className="invalid-feedback">
@@ -223,6 +226,7 @@ const RegisterPage = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="tu@email.com"
+                      data-testid="email-input"
                     />
                     {errors.email && (
                       <div className="invalid-feedback">
@@ -236,15 +240,52 @@ const RegisterPage = () => {
                     <label htmlFor="contraseña" className="form-label fw-semibold">
                       Contraseña
                     </label>
-                    <input
-                      type="password"
-                      className={`form-control form-control-lg ${errors.contraseña ? 'is-invalid' : ''}`}
-                      id="contraseña"
-                      name="contraseña"
-                      value={formData.contraseña}
-                      onChange={handleInputChange}
-                      placeholder="Mínimo 6 caracteres"
-                    />
+                    <div className="position-relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className={`form-control form-control-lg ${errors.contraseña ? 'is-invalid' : ''}`}
+                        id="contraseña"
+                        name="contraseña"
+                        value={formData.contraseña}
+                        onChange={handleInputChange}
+                        placeholder="Mínimo 6 caracteres"
+                        data-testid="password-input"
+                        style={{ paddingRight: '45px' }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-link position-absolute"
+                        style={{
+                          right: '10px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          border: 'none',
+                          background: 'none',
+                          color: '#6c757d',
+                          padding: '0',
+                          width: '24px',
+                          height: '24px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        onClick={() => setShowPassword(!showPassword)}
+                        disabled={isLoading}
+                        aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      >
+                        {showPassword ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                     {errors.contraseña && (
                       <div className="invalid-feedback">
                         {errors.contraseña}
@@ -257,15 +298,52 @@ const RegisterPage = () => {
                     <label htmlFor="confirmarContraseña" className="form-label fw-semibold">
                       Confirmar Contraseña
                     </label>
-                    <input
-                      type="password"
-                      className={`form-control form-control-lg ${errors.confirmarContraseña ? 'is-invalid' : ''}`}
-                      id="confirmarContraseña"
-                      name="confirmarContraseña"
-                      value={formData.confirmarContraseña}
-                      onChange={handleInputChange}
-                      placeholder="Repite tu contraseña"
-                    />
+                    <div className="position-relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        className={`form-control form-control-lg ${errors.confirmarContraseña ? 'is-invalid' : ''}`}
+                        id="confirmarContraseña"
+                        name="confirmarContraseña"
+                        value={formData.confirmarContraseña}
+                        onChange={handleInputChange}
+                        placeholder="Repite tu contraseña"
+                        data-testid="confirm-password-input"
+                        style={{ paddingRight: '45px' }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-link position-absolute"
+                        style={{
+                          right: '10px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          border: 'none',
+                          background: 'none',
+                          color: '#6c757d',
+                          padding: '0',
+                          width: '24px',
+                          height: '24px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        disabled={isLoading}
+                        aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      >
+                        {showConfirmPassword ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                     {errors.confirmarContraseña && (
                       <div className="invalid-feedback">
                         {errors.confirmarContraseña}
@@ -291,6 +369,7 @@ const RegisterPage = () => {
                       type="submit"
                       className="btn btn-modern btn-lg"
                       disabled={isLoading}
+                      data-testid="register-button"
                     >
                       {isLoading ? (
                         <>
@@ -325,7 +404,7 @@ const RegisterPage = () => {
             {/* Footer */}
             <div className="text-center mt-4">
               <p className="text-muted small">
-                © 2024 Sistema de Gestión de Proyectos. Todos los derechos reservados.
+                © 2025 Sistema de Gestión de Proyectos. Todos los derechos reservados.
               </p>
             </div>
           </div>

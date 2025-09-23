@@ -60,31 +60,19 @@ const StatsCard = ({
 
   return (
     <div className={cardClasses} onClick={handleClick} data-testid={testId}>
-      <div className="stats-card__header">
-        {icon && (
-          <div className="stats-card__icon">
-            {typeof icon === 'string' ? <span>{icon}</span> : icon}
-          </div>
-        )}
-        <div className="stats-card__title-section">
-          <h3 className="stats-card__title">{title}</h3>
+      <div className="stats-card__content">
+        <div className="stats-card__top">
+          <span className="stats-card__title">{title}</span>
           {getTrendIcon()}
         </div>
-      </div>
-      
-      <div className="stats-card__content">
         <div className="stats-card__value">
           {typeof value === 'number' ? value.toLocaleString() : value}
         </div>
-        
         {subtitle && (
-          <div className="stats-card__subtitle">{subtitle}</div>
+          <span className="stats-card__subtitle">{subtitle}</span>
         )}
-        
         {percentage !== undefined && (
-          <div className="stats-card__percentage">
-            {percentage}%
-          </div>
+          <span className="stats-card__percentage">{percentage}%</span>
         )}
       </div>
     </div>

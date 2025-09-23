@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
+import Modal from '../common/Modal';
+import dashboardService from '../../services/dashboardService';
 import './ExportReports.css';
 
 /**
@@ -14,33 +16,53 @@ import './ExportReports.css';
  */
 const ExportReports = () => {
   const [isExporting, setIsExporting] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [reportType, setReportType] = useState('general');
   const [dateRange, setDateRange] = useState('month');
+  const [exportFormat, setExportFormat] = useState('pdf');
+  const [startDate, setStartDate] = useState('2024-01-01');
+  const [endDate, setEndDate] = useState('2024-12-31');
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const { user } = useAuth();
   const { addNotification } = useNotifications();
 
-  const handleExport = async (format) => {
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setShowSuccessMessage(false);
+  };
+
+  const handleConfirmExport = async () => {
     setIsExporting(true);
     
     try {
       // Simular exportación
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Generar datos mock según el tipo de reporte
-      const reportData = generateReportData();
+      // Generar datos del reporte desde el backend
+      const reportData = await generateReportData();
       
-      if (format === 'pdf') {
+      if (exportFormat === 'pdf') {
         exportToPDF(reportData);
-      } else if (format === 'excel') {
+      } else if (exportFormat === 'excel') {
         exportToExcel(reportData);
-      } else if (format === 'csv') {
+      } else if (exportFormat === 'csv') {
         exportToCSV(reportData);
       }
       
+      setShowSuccessMessage(true);
       addNotification({
         type: 'success',
-        message: `Reporte ${format.toUpperCase()} exportado exitosamente`
+        message: `Reporte ${exportFormat.toUpperCase()} exportado exitosamente`
       });
+      
+      // Cerrar modal después de mostrar mensaje de éxito
+      setTimeout(() => {
+        handleCloseModal();
+      }, 2000);
     } catch (error) {
       addNotification({
         type: 'error',
@@ -51,70 +73,139 @@ const ExportReports = () => {
     }
   };
 
-  const generateReportData = () => {
+  const generateReportData = async () => {
     const baseData = {
-      title: getReportTitle(),
-      dateRange: getDateRangeText(),
+      title: `Reporte ${reportType.charAt(0).toUpperCase() + reportType.slice(1)}`,
       generatedBy: user?.nombre || 'Usuario',
-      generatedAt: new Date().toLocaleString('es-ES'),
+      generatedAt: new Date().toLocaleDateString('es-ES'),
+      dateRange: `${startDate} - ${endDate}`,
+      reportType,
+      format: exportFormat
     };
 
-    switch (reportType) {
-      case 'projects':
-        return {
-          ...baseData,
-          data: [
-            { nombre: 'Proyecto Alpha', estado: 'Activo', progreso: '75%', fechaInicio: '2024-01-15' },
-            { nombre: 'Proyecto Beta', estado: 'Completado', progreso: '100%', fechaInicio: '2024-02-01' },
-            { nombre: 'Proyecto Gamma', estado: 'En Pausa', progreso: '45%', fechaInicio: '2024-03-10' }
-          ]
-        };
-      case 'tasks':
-        return {
-          ...baseData,
-          data: [
-            { titulo: 'Diseño UI/UX', prioridad: 'Alta', estado: 'En Progreso', asignado: 'Juan Pérez' },
-            { titulo: 'Desarrollo Backend', prioridad: 'Media', estado: 'Pendiente', asignado: 'María García' },
-            { titulo: 'Testing', prioridad: 'Baja', estado: 'Completada', asignado: 'Carlos López' }
-          ]
-        };
-      case 'users':
-        return {
-          ...baseData,
-          data: user?.es_administrador ? [
-            { nombre: 'Juan Pérez', email: 'juan@empresa.com', rol: 'Desarrollador', estado: 'Activo' },
-            { nombre: 'María García', email: 'maria@empresa.com', rol: 'Diseñadora', estado: 'Activo' },
-            { nombre: 'Carlos López', email: 'carlos@empresa.com', rol: 'Tester', estado: 'Inactivo' }
-          ] : []
-        };
-      default:
-        return {
-          ...baseData,
-          projects: { total: 12, activos: 8, completados: 4 },
-          tasks: { total: 45, pendientes: 15, enProgreso: 20, completadas: 10 },
-          users: user?.es_administrador ? { total: 25, activos: 22, inactivos: 3 } : null
-        };
+    try {
+      // Obtener datos del backend
+      const dashboardData = await dashboardService.getDashboardData();
+      
+      switch (reportType) {
+        case 'projects':
+          const projectStats = dashboardData.projects || {};
+          return {
+            ...baseData,
+            data: {
+              totalProjects: projectStats.total || 0,
+              activeProjects: projectStats.active || 0,
+              completedProjects: projectStats.completed || 0,
+              projectsByStatus: {
+                'En progreso': projectStats.active || 0,
+                'Planificado': projectStats.planned || 0,
+                'Completado': projectStats.completed || 0
+              }
+            }
+          };
+        case 'tasks':
+          const taskStats = dashboardData.tasks || {};
+          return {
+            ...baseData,
+            data: {
+              totalTasks: taskStats.total || 0,
+              completedTasks: taskStats.completed || 0,
+              pendingTasks: taskStats.pending || 0,
+              tasksByPriority: {
+                'Alta': taskStats.high_priority || 0,
+                'Media': taskStats.medium_priority || 0,
+                'Baja': taskStats.low_priority || 0
+              }
+            }
+          };
+        case 'users':
+          const userStats = dashboardData.users || {};
+          return {
+            ...baseData,
+            data: {
+              totalUsers: userStats.total || 0,
+              activeUsers: userStats.active || 0,
+              adminUsers: userStats.admins || 0,
+              inactiveUsers: userStats.inactive || 0,
+              usersByRole: {
+                admin: userStats.admins || 0,
+                active: userStats.active || 0,
+                inactive: userStats.inactive || 0
+              }
+            }
+          };
+        default:
+          return {
+            ...baseData,
+            data: {
+              projects: dashboardData.projects?.total || 0,
+              tasks: dashboardData.tasks?.total || 0,
+              users: dashboardData.users?.total || 0,
+              completionRate: dashboardData.tasks?.total > 0 
+                ? `${Math.round((dashboardData.tasks.completed / dashboardData.tasks.total) * 100)}%`
+                : '0%'
+            }
+          };
+      }
+    } catch (error) {
+      console.error('Error obteniendo datos del dashboard:', error);
+      // Fallback con datos vacíos en caso de error
+      switch (reportType) {
+        case 'projects':
+          return {
+            ...baseData,
+            data: {
+              totalProjects: 0,
+              activeProjects: 0,
+              completedProjects: 0,
+              projectsByStatus: {
+                'En progreso': 0,
+                'Planificado': 0,
+                'Completado': 0
+              }
+            }
+          };
+        case 'tasks':
+          return {
+            ...baseData,
+            data: {
+              totalTasks: 0,
+              completedTasks: 0,
+              pendingTasks: 0,
+              tasksByPriority: {
+                'Alta': 0,
+                'Media': 0,
+                'Baja': 0
+              }
+            }
+          };
+        case 'users':
+          return {
+            ...baseData,
+            data: {
+              totalUsers: 0,
+              activeUsers: 0,
+              adminUsers: 0,
+              inactiveUsers: 0,
+              usersByRole: {
+                admin: 0,
+                active: 0,
+                inactive: 0
+              }
+            }
+          };
+        default:
+          return {
+            ...baseData,
+            data: {
+              projects: 0,
+              tasks: 0,
+              users: 0,
+              completionRate: '0%'
+            }
+          };
+      }
     }
-  };
-
-  const getReportTitle = () => {
-    const titles = {
-      general: 'Reporte General del Dashboard',
-      projects: 'Reporte de Proyectos',
-      tasks: 'Reporte de Tareas',
-      users: 'Reporte de Usuarios'
-    };
-    return titles[reportType] || 'Reporte';
-  };
-
-  const getDateRangeText = () => {
-    const ranges = {
-      week: 'Esta semana',
-      month: 'Este mes',
-      quarter: 'Este trimestre',
-      year: 'Este año'
-    };
-    return ranges[dateRange] || 'Período seleccionado';
   };
 
   const exportToPDF = (data) => {
@@ -124,17 +215,23 @@ const ExportReports = () => {
   };
 
   const exportToExcel = (data) => {
-    // Simular exportación a Excel (CSV)
-    let csvContent = `${data.title}\nGenerado por: ${data.generatedBy}\nFecha: ${data.generatedAt}\nPeríodo: ${data.dateRange}\n\n`;
+    // Simular exportación a Excel (usando CSV)
+    let csvContent = `${data.title}\n`;
+    csvContent += `Generado por,${data.generatedBy}\n`;
+    csvContent += `Fecha,${data.generatedAt}\n`;
+    csvContent += `Período,${data.dateRange}\n\n`;
     
-    if (Array.isArray(data.data)) {
-      const headers = Object.keys(data.data[0] || {});
-      csvContent += headers.join(',') + '\n';
-      data.data.forEach(row => {
-        csvContent += headers.map(header => row[header] || '').join(',') + '\n';
+    if (data.data && typeof data.data === 'object') {
+      Object.entries(data.data).forEach(([key, value]) => {
+        if (typeof value === 'object') {
+          csvContent += `\n${key}:\n`;
+          Object.entries(value).forEach(([subKey, subValue]) => {
+            csvContent += `${subKey},${subValue}\n`;
+          });
+        } else {
+          csvContent += `${key},${value}\n`;
+        }
       });
-    } else {
-      csvContent += JSON.stringify(data.data || data, null, 2);
     }
     
     downloadFile(csvContent, `reporte-${reportType}-${Date.now()}.csv`, 'text/csv');
@@ -200,7 +297,7 @@ const ExportReports = () => {
       <div className="export-reports__actions">
         <button
           className="export-btn export-btn--pdf"
-          onClick={() => handleExport('pdf')}
+          onClick={handleOpenModal}
           disabled={isExporting}
           data-testid="export-report-button"
         >
@@ -209,41 +306,100 @@ const ExportReports = () => {
           ) : (
             <>
               <span className="export-btn__icon">📄</span>
-              <span>Exportar PDF</span>
-            </>
-          )}
-        </button>
-
-        <button
-          className="export-btn export-btn--excel"
-          onClick={() => handleExport('excel')}
-          disabled={isExporting}
-        >
-          {isExporting ? (
-            <span className="export-btn__loading">⏳ Exportando...</span>
-          ) : (
-            <>
-              <span className="export-btn__icon">📊</span>
-              <span>Exportar Excel</span>
-            </>
-          )}
-        </button>
-
-        <button
-          className="export-btn export-btn--csv"
-          onClick={() => handleExport('csv')}
-          disabled={isExporting}
-        >
-          {isExporting ? (
-            <span className="export-btn__loading">⏳ Exportando...</span>
-          ) : (
-            <>
-              <span className="export-btn__icon">📋</span>
-              <span>Exportar CSV</span>
+              <span>Exportar Reporte</span>
             </>
           )}
         </button>
       </div>
+
+      {/* Modal de exportación */}
+      <Modal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        title="Exportar Reporte"
+        size="md"
+      >
+        <div data-testid="export-modal">
+          {showSuccessMessage ? (
+            <div className="text-center py-8">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">¡Reporte exportado exitosamente!</h3>
+              <p className="text-sm text-gray-500" data-testid="export-success-message">
+                El archivo se ha descargado automáticamente
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Formato de exportación
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={exportFormat}
+                  onChange={(e) => setExportFormat(e.target.value)}
+                  data-testid="export-format-select"
+                >
+                  <option value="pdf">PDF</option>
+                  <option value="excel">Excel</option>
+                  <option value="csv">CSV</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Fecha de inicio
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    data-testid="export-start-date"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Fecha de fin
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    data-testid="export-end-date"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  onClick={handleCloseModal}
+                  disabled={isExporting}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  onClick={handleConfirmExport}
+                  disabled={isExporting}
+                  data-testid="confirm-export-button"
+                >
+                  {isExporting ? 'Exportando...' : 'Confirmar Exportación'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
 
       {isExporting && (
         <div className="export-reports__progress">

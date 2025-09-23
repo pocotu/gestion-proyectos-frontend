@@ -24,13 +24,11 @@ const ProjectForm = ({
   className = '' 
 }) => {
   const [formData, setFormData] = useState({
-    nombre: '',
+    titulo: '',
     descripcion: '',
     fecha_inicio: '',
     fecha_fin: '',
-    estado: 'planificacion',
-    presupuesto: '',
-    prioridad: 'media'
+    estado: 'planificacion'
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,30 +38,21 @@ const ProjectForm = ({
   const estadosOptions = [
     { value: 'planificacion', label: 'Planificación' },
     { value: 'en_progreso', label: 'En Progreso' },
-    { value: 'pausado', label: 'Pausado' },
     { value: 'completado', label: 'Completado' },
     { value: 'cancelado', label: 'Cancelado' }
   ];
 
-  // Prioridades disponibles
-  const prioridadOptions = [
-    { value: 'baja', label: 'Baja' },
-    { value: 'media', label: 'Media' },
-    { value: 'alta', label: 'Alta' },
-    { value: 'critica', label: 'Crítica' }
-  ];
+  // Prioridades disponibles - removed as not in database schema
 
   // Cargar datos del proyecto si está en modo edición
   useEffect(() => {
     if (project) {
       setFormData({
-        nombre: project.nombre || '',
+        titulo: project.titulo || '',
         descripcion: project.descripcion || '',
         fecha_inicio: project.fecha_inicio ? project.fecha_inicio.split('T')[0] : '',
         fecha_fin: project.fecha_fin ? project.fecha_fin.split('T')[0] : '',
-        estado: project.estado || 'planificacion',
-        presupuesto: project.presupuesto || '',
-        prioridad: project.prioridad || 'media'
+        estado: project.estado || 'planificacion'
       });
     }
   }, [project]);
@@ -93,18 +82,18 @@ const ProjectForm = ({
   const validateForm = () => {
     const newErrors = {};
 
-    // Validar nombre (requerido)
-    if (!formData.nombre.trim()) {
-      newErrors.nombre = 'El nombre del proyecto es requerido';
-    } else if (formData.nombre.trim().length < 3) {
-      newErrors.nombre = 'El nombre debe tener al menos 3 caracteres';
-    } else if (formData.nombre.trim().length > 100) {
-      newErrors.nombre = 'El nombre no puede exceder 100 caracteres';
+    // Validar titulo (requerido)
+    if (!formData.titulo.trim()) {
+      newErrors.titulo = 'El título del proyecto es requerido';
+    } else if (formData.titulo.trim().length < 3) {
+      newErrors.titulo = 'El título debe tener al menos 3 caracteres';
+    } else if (formData.titulo.trim().length > 150) {
+      newErrors.titulo = 'El título no puede exceder 150 caracteres';
     }
 
     // Validar descripción (opcional pero con límite)
-    if (formData.descripcion && formData.descripcion.length > 500) {
-      newErrors.descripcion = 'La descripción no puede exceder 500 caracteres';
+    if (formData.descripcion && formData.descripcion.length > 1000) {
+      newErrors.descripcion = 'La descripción no puede exceder 1000 caracteres';
     }
 
     // Validar fechas
@@ -114,14 +103,6 @@ const ProjectForm = ({
       
       if (fechaFin <= fechaInicio) {
         newErrors.fecha_fin = 'La fecha de fin debe ser posterior a la fecha de inicio';
-      }
-    }
-
-    // Validar presupuesto (opcional pero debe ser número positivo)
-    if (formData.presupuesto) {
-      const presupuesto = parseFloat(formData.presupuesto);
-      if (isNaN(presupuesto) || presupuesto < 0) {
-        newErrors.presupuesto = 'El presupuesto debe ser un número positivo';
       }
     }
 
@@ -145,7 +126,6 @@ const ProjectForm = ({
       // Preparar datos para envío
       const submitData = {
         ...formData,
-        presupuesto: formData.presupuesto ? parseFloat(formData.presupuesto) : null,
         files: files // Incluir archivos en los datos
       };
 
@@ -158,7 +138,7 @@ const ProjectForm = ({
       
       // Manejar errores específicos del servidor
       if (error.message.includes('ya existe')) {
-        setErrors({ nombre: 'Ya existe un proyecto con este nombre' });
+        setErrors({ titulo: 'Ya existe un proyecto con este título' });
       } else {
         setErrors({ general: error.message || 'Error al guardar el proyecto' });
       }
@@ -181,13 +161,11 @@ const ProjectForm = ({
    */
   const resetForm = () => {
     setFormData({
-      nombre: '',
+      titulo: '',
       descripcion: '',
       fecha_inicio: '',
       fecha_fin: '',
-      estado: 'planificacion',
-      presupuesto: '',
-      prioridad: 'media'
+      estado: 'planificacion'
     });
     setErrors({});
     setFiles([]);
@@ -234,14 +212,14 @@ const ProjectForm = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <FormInput
-                  label="Nombre del Proyecto"
-                  name="nombre"
-                  value={formData.nombre}
+                  label="Título del Proyecto"
+                  name="titulo"
+                  value={formData.titulo}
                   onChange={handleChange}
-                  error={errors.nombre}
+                  error={errors.titulo}
                   required
-                  placeholder="Ingresa el nombre del proyecto"
-                  maxLength={100}
+                  placeholder="Ingresa el título del proyecto"
+                  maxLength={150}
                 />
               </div>
 
@@ -254,7 +232,7 @@ const ProjectForm = ({
                   error={errors.descripcion}
                   placeholder="Describe el proyecto (opcional)"
                   rows={4}
-                  maxLength={500}
+                  maxLength={1000}
                 />
               </div>
 
@@ -267,26 +245,16 @@ const ProjectForm = ({
                 options={estadosOptions}
                 required
               />
-
-              <FormSelect
-                label="Prioridad"
-                name="prioridad"
-                value={formData.prioridad}
-                onChange={handleChange}
-                error={errors.prioridad}
-                options={prioridadOptions}
-                required
-              />
             </div>
           </div>
 
-          {/* Fechas y presupuesto */}
+          {/* Fechas */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Planificación
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormInput
                 label="Fecha de Inicio"
                 name="fecha_inicio"
@@ -303,18 +271,6 @@ const ProjectForm = ({
                 value={formData.fecha_fin}
                 onChange={handleChange}
                 error={errors.fecha_fin}
-              />
-
-              <FormInput
-                label="Presupuesto"
-                name="presupuesto"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.presupuesto}
-                onChange={handleChange}
-                error={errors.presupuesto}
-                placeholder="0.00"
               />
             </div>
           </div>

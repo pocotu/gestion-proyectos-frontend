@@ -45,7 +45,34 @@ const ProtectedRoute = ({
 
   // Verificar si se requiere admin y el usuario no es admin
   if (requireAdmin && !isAdmin()) {
-    return <Navigate to="/dashboard" replace />;
+    return (
+      <Navigate 
+        to={unauthorizedPath} 
+        state={{ 
+          from: location, 
+          reason: 'admin_required' 
+        }} 
+        replace 
+      />
+    );
+  }
+
+  // Verificar roles específicos requeridos
+  if (requiredRoles.length > 0) {
+    const hasRequiredRole = requiredRoles.some(role => hasRole(role));
+    if (!hasRequiredRole && !isAdmin()) {
+      return (
+        <Navigate 
+          to={unauthorizedPath} 
+          state={{ 
+            from: location, 
+            reason: 'insufficient_roles',
+            requiredRoles 
+          }} 
+          replace 
+        />
+      );
+    }
   }
 
   // Si todas las verificaciones pasan, renderizar los children

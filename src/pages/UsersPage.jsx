@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import UserList from '../components/user/UserList';
 import UserForm from '../components/user/UserForm';
-import ActionButton from '../components/common/ActionButton';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import userService from '../services/userService';
+import '../styles/projects.css';
 
 /**
  * UsersPage - Página de gestión de usuarios (solo para administradores)
@@ -64,7 +64,8 @@ const UsersPage = () => {
       setError(null);
       
       const response = await userService.getUsers(filters);
-      setUsers(response.data || []);
+      // Backend devuelve {success, message, data: {users}} o {success, data: [users]}
+      setUsers(response.data?.users || response.data || []);
     } catch (err) {
       console.error('Error al cargar usuarios:', err);
       setError('Error al cargar la lista de usuarios');
@@ -184,115 +185,133 @@ const UsersPage = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner message="Cargando usuarios..." />;
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div>
-        <div>
+    <div className="projects-page">
+      {/* Header limpio y profesional */}
+      <div className="page-header mb-4">
+        <div className="d-flex justify-content-between align-items-start">
           <div>
-            <div>
-              <h1>
-                Gestión de Usuarios
-              </h1>
-              <p>
-                Administra usuarios y permisos del sistema ({users.length} usuarios)
-              </p>
-            </div>
+            <h1 className="h2 mb-2 text-primary fw-bold">Usuarios</h1>
+            <p className="text-muted mb-0">
+              Administra usuarios y permisos del sistema ({users.length} usuarios)
+            </p>
+          </div>
+          <button
+            onClick={handleCreateUser}
+            className="btn btn-primary d-flex align-items-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+            Nuevo Usuario
+          </button>
+        </div>
+      </div>
 
-            <div>
-              <button
-                onClick={handleCreateUser}
-                type="button"
-              >
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+      {/* Barra de filtros moderna */}
+      <div className="card mb-4 border-0 shadow-sm">
+        <div className="card-body p-3">
+          <div className="row g-3">
+            <div className="col-md-4">
+              <div className="position-relative">
+                <svg 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2"
+                  className="position-absolute text-muted"
+                  style={{ left: '12px', top: '50%', transform: 'translateY(-50%)', zIndex: 1 }}
+                >
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="M21 21l-4.35-4.35"/>
                 </svg>
-                <span>Nuevo Usuario</span>
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre o email..."
+                  value={filters.search}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
+                  className="form-control ps-5"
+                  style={{ paddingLeft: '2.5rem' }}
+                />
+              </div>
+            </div>
+            <div className="col-md-3">
+              <select
+                value={filters.role}
+                onChange={(e) => handleFilterChange('role', e.target.value)}
+                className="form-select"
+              >
+                <option value="">Todos los roles</option>
+                <option value="admin">Administrador</option>
+                <option value="responsable_proyecto">Responsable de Proyecto</option>
+                <option value="responsable_tarea">Responsable de Tarea</option>
+              </select>
+            </div>
+            <div className="col-md-3">
+              <select
+                value={filters.estado}
+                onChange={(e) => handleFilterChange('estado', e.target.value)}
+                className="form-select"
+              >
+                <option value="">Todos los estados</option>
+                <option value="true">Habilitado</option>
+                <option value="false">Deshabilitado</option>
+              </select>
+            </div>
+            <div className="col-md-2">
+              <button
+                onClick={clearFilters}
+                className="btn btn-outline-secondary w-100"
+              >
+                Limpiar Filtros
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filtros */}
-      <div className="bg-white p-4 rounded-lg shadow border">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Mensaje de error */}
+      {error && (
+        <div className="alert alert-danger d-flex align-items-center mb-4" role="alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2 flex-shrink-0">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Buscar
-            </label>
-            <input
-              type="text"
-              placeholder="Nombre o email..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Rol
-            </label>
-            <select
-              value={filters.role}
-              onChange={(e) => handleFilterChange('role', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Todos los roles</option>
-              <option value="admin">Administrador</option>
-              <option value="responsable_proyecto">Responsable de Proyecto</option>
-              <option value="responsable_tarea">Responsable de Tarea</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Estado
-            </label>
-            <select
-              value={filters.estado}
-              onChange={(e) => handleFilterChange('estado', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Todos los estados</option>
-              <option value="true">Habilitado</option>
-              <option value="false">Deshabilitado</option>
-            </select>
-          </div>
-          <div className="flex items-end">
+            {error}
             <button
-              onClick={clearFilters}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
+              onClick={loadUsers}
+              className="btn btn-link p-0 ms-2 text-decoration-underline"
             >
-              Limpiar
+              Intentar nuevamente
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Mensaje de error */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{error}</p>
-          <button
-            onClick={loadUsers}
-            className="mt-2 text-red-600 hover:text-red-800 underline"
-          >
-            Intentar nuevamente
-          </button>
-        </div>
       )}
 
-      {/* Lista de usuarios */}
-      <UserList
-        users={users}
-        onEdit={handleEditUser}
-        onDelete={handleDeleteUser}
-        onToggleStatus={handleToggleUserStatus}
-        loading={loading}
-      />
+      {/* Lista de usuarios con diseño profesional */}
+      <div className="card border-0 shadow-sm">
+        <UserList
+          users={users}
+          onEdit={handleEditUser}
+          onDelete={handleDeleteUser}
+          onToggleStatus={handleToggleUserStatus}
+          loading={loading}
+        />
+      </div>
 
       {/* Modal de formulario de usuario */}
       <Modal
@@ -309,7 +328,7 @@ const UsersPage = () => {
         />
       </Modal>
 
-      {/* Dialog de confirmación para eliminar */}
+      {/* Diálogo de confirmación */}
       <ConfirmDialog
         isOpen={showConfirmDialog}
         onClose={() => setShowConfirmDialog(false)}
@@ -318,7 +337,7 @@ const UsersPage = () => {
         message={`¿Estás seguro de que deseas eliminar al usuario "${selectedUser?.nombre}"? Esta acción no se puede deshacer.`}
         confirmText="Eliminar"
         cancelText="Cancelar"
-        variant="danger"
+        type="danger"
       />
     </div>
   );

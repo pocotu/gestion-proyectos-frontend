@@ -148,31 +148,7 @@ export const activityService = {
       return response.data?.data || [];
     } catch (error) {
       console.error('Error fetching recent activity:', error);
-      // Fallback a datos mock en caso de error
-      return [
-        {
-          id: 1,
-          usuario_nombre: 'Usuario Demo',
-          usuario_email: 'demo@example.com',
-          accion: 'crear',
-          entidad_tipo: 'proyecto',
-          entidad_id: 1,
-          descripcion: 'Creó un nuevo proyecto',
-          created_at: new Date().toISOString(),
-          ip_address: '192.168.1.1'
-        },
-        {
-          id: 2,
-          usuario_nombre: 'Usuario Demo',
-          usuario_email: 'demo@example.com',
-          accion: 'actualizar',
-          entidad_tipo: 'tarea',
-          entidad_id: 5,
-          descripcion: 'Actualizó el estado de una tarea',
-          created_at: new Date(Date.now() - 3600000).toISOString(),
-          ip_address: '192.168.1.1'
-        }
-      ];
+      throw error;
     }
   },
 

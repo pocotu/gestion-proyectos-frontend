@@ -98,9 +98,12 @@ class UserService {
   /**
    * Asignar rol a usuario
    */
-  async assignRole(userId, roleId) {
+  async assignRole(userId, roleIdentifier) {
     try {
-      const response = await api.post(`/users/${userId}/roles`, { roleId });
+      const response = await api.post('/roles/assign', { 
+        userId: parseInt(userId), 
+        roleIdentifier 
+      });
       return response.data;
     } catch (error) {
       console.error('Error al asignar rol:', error);
@@ -111,9 +114,14 @@ class UserService {
   /**
    * Remover rol de usuario
    */
-  async removeRole(userId, roleId) {
+  async removeRole(userId, roleIdentifier) {
     try {
-      const response = await api.delete(`/users/${userId}/roles/${roleId}`);
+      const response = await api.delete('/roles/remove', { 
+        data: { 
+          userId: parseInt(userId), 
+          roleIdentifier 
+        }
+      });
       return response.data;
     } catch (error) {
       console.error('Error al remover rol:', error);
@@ -130,6 +138,59 @@ class UserService {
       return response.data;
     } catch (error) {
       console.error('Error al obtener roles:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener todos los roles
+   */
+  async getRoles() {
+    try {
+      const response = await api.get('/roles');
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener roles:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Crear nuevo rol
+   */
+  async createRole(roleData) {
+    try {
+      const response = await api.post('/roles', roleData);
+      return response.data;
+    } catch (error) {
+      console.error('Error al crear rol:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualizar rol existente (no implementado en backend)
+   */
+  async updateRole(id, roleData) {
+    throw new Error('La actualización de roles no está implementada en el backend');
+  }
+
+  /**
+   * Eliminar rol (no implementado en backend)
+   */
+  async deleteRole(id) {
+    throw new Error('La eliminación de roles no está implementada en el backend');
+  }
+
+  /**
+   * Obtener asignaciones usuario-rol
+   */
+  async getUserRoles() {
+    try {
+      const response = await api.get('/user-roles');
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener asignaciones usuario-rol:', error);
       throw error;
     }
   }

@@ -248,16 +248,16 @@
     width: 280px;
     right: -280px;
   }
-  
+
   .mobile-menu__header {
     padding: 16px;
   }
-  
+
   .mobile-menu__link {
     padding: 14px 16px;
     font-size: 14px;
   }
-  
+
   .mobile-menu__footer {
     padding: 16px;
   }
@@ -268,6 +268,7 @@
   from {
     right: -320px;
   }
+
   to {
     right: 0;
   }
@@ -277,6 +278,7 @@
   from {
     right: 0;
   }
+
   to {
     right: -320px;
   }
@@ -288,6 +290,7 @@
 
 /* Accesibilidad */
 @media (prefers-reduced-motion: reduce) {
+
   .mobile-menu,
   .mobile-menu-toggle,
   .hamburger-line,
@@ -296,7 +299,7 @@
   .mobile-menu__logout {
     transition: none;
   }
-  
+
   .mobile-menu.open {
     animation: none;
   }

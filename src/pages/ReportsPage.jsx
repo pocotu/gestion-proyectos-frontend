@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import ActionButton from '../components/common/ActionButton';
 
 /**
  * ReportsPage - Página de reportes y estadísticas del sistema
@@ -156,238 +155,290 @@ const ReportsPage = () => {
   };
 
   // Componente para tarjetas de estadísticas
-  const StatCard = ({ title, value, subtitle, color = 'bg-blue-500', icon, trend }) => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center">
-        <div className={`${color} rounded-md p-3 mr-4`}>
-          <span className="text-white text-xl">{icon}</span>
-        </div>
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900">{formatNumber(value)}</p>
-          {subtitle && (
-            <p className="text-sm text-gray-500">{subtitle}</p>
-          )}
-          {trend && (
-            <div className={`flex items-center mt-1 ${trend.positive ? 'text-green-600' : 'text-red-600'}`}>
-              <span className="text-xs">{trend.positive ? '↗' : '↘'} {trend.value}%</span>
-            </div>
-          )}
+  const StatCard = ({ title, value, subtitle, icon }) => (
+    <div className="card h-100">
+      <div className="card-body">
+        <div className="d-flex align-items-center">
+          <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+            <i className={`bi ${icon} text-primary fs-4`}></i>
+          </div>
+          <div>
+            <h6 className="card-subtitle mb-1 text-muted">{title}</h6>
+            <h4 className="card-title mb-0 fw-bold">{formatNumber(value)}</h4>
+            {subtitle && (
+              <small className="text-primary">{subtitle}</small>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 
   if (loading) {
-    return <LoadingSpinner message="Cargando reportes..." />;
+    return <LoadingSpinner message="Cargando estadísticas..." />;
   }
 
   return (
-    <div>
+    <div className="container-fluid py-4">
       {/* Header */}
-      <div>
-        <div>
-          <h1>
-            Reportes y Estadísticas
-          </h1>
-          <p>
-            Análisis y métricas del sistema de gestión de proyectos
-          </p>
-        </div>
-
-        <div>
-          <button
-            onClick={loadStatistics}
-            disabled={loading}
-            type="button"
-          >
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>Actualizar</span>
-          </button>
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 className="h3 mb-1 text-dark fw-bold">Estadísticas del Sistema</h1>
+              <p className="text-muted mb-0">Análisis y métricas del sistema de gestión de proyectos</p>
+            </div>
+            <button
+              onClick={loadStatistics}
+              disabled={loading}
+              className="btn btn-outline-primary d-flex align-items-center"
+            >
+              <i className="bi bi-arrow-clockwise me-2"></i>
+              Actualizar
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Configuración de Reportes */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Configuración de Reportes</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha Inicio
-            </label>
-            <input
-              type="date"
-              value={reportFilters.startDate}
-              onChange={(e) => setReportFilters({ ...reportFilters, startDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha Fin
-            </label>
-            <input
-              type="date"
-              value={reportFilters.endDate}
-              onChange={(e) => setReportFilters({ ...reportFilters, endDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tipo de Reporte
-            </label>
-            <select
-              value={reportFilters.reportType}
-              onChange={(e) => setReportFilters({ ...reportFilters, reportType: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="general">General</option>
-              <option value="projects">Proyectos</option>
-              <option value="tasks">Tareas</option>
-              <option value="users">Usuarios</option>
-              <option value="activity">Actividad</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Formato
-            </label>
-            <select
-              value={reportFilters.format}
-              onChange={(e) => setReportFilters({ ...reportFilters, format: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="pdf">PDF</option>
-              <option value="excel">Excel</option>
-            </select>
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header bg-light">
+              <h6 className="card-title mb-0 d-flex align-items-center">
+                <i className="bi bi-gear me-2"></i>
+                Configuración de Reportes
+              </h6>
+            </div>
+            <div className="card-body">
+              <div className="row g-3">
+                <div className="col-lg-3 col-md-6">
+                  <label className="form-label fw-semibold">Fecha Inicio</label>
+                  <input
+                    type="date"
+                    value={reportFilters.startDate}
+                    onChange={(e) => setReportFilters({ ...reportFilters, startDate: e.target.value })}
+                    className="form-control"
+                  />
+                </div>
+                
+                <div className="col-lg-3 col-md-6">
+                  <label className="form-label fw-semibold">Fecha Fin</label>
+                  <input
+                    type="date"
+                    value={reportFilters.endDate}
+                    onChange={(e) => setReportFilters({ ...reportFilters, endDate: e.target.value })}
+                    className="form-control"
+                  />
+                </div>
+                
+                <div className="col-lg-3 col-md-6">
+                  <label className="form-label fw-semibold">Tipo de Reporte</label>
+                  <select
+                    value={reportFilters.reportType}
+                    onChange={(e) => setReportFilters({ ...reportFilters, reportType: e.target.value })}
+                    className="form-select"
+                  >
+                    <option value="general">General</option>
+                    <option value="projects">Proyectos</option>
+                    <option value="tasks">Tareas</option>
+                    <option value="users">Usuarios</option>
+                    <option value="activity">Actividad</option>
+                  </select>
+                </div>
+                
+                <div className="col-lg-3 col-md-6">
+                  <label className="form-label fw-semibold">Formato</label>
+                  <select
+                    value={reportFilters.format}
+                    onChange={(e) => setReportFilters({ ...reportFilters, format: e.target.value })}
+                    className="form-select"
+                  >
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-top">
+                <button
+                  onClick={handleGenerateReport}
+                  className="btn btn-primary"
+                >
+                  <i className="bi bi-download me-2"></i>
+                  Generar Reporte
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Estadísticas Generales */}
-      <div>
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Resumen General</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="row mb-4">
+        <div className="col-12">
+          <h5 className="mb-3 text-dark fw-semibold">Resumen General</h5>
+        </div>
+        <div className="col-lg-3 col-md-6 mb-3">
           <StatCard
             title="Total Usuarios"
             value={stats.users?.total || 0}
             subtitle={`${stats.users?.active || 0} activos`}
-            color="bg-blue-500"
-            icon="👥"
+            icon="bi-people"
           />
+        </div>
+        <div className="col-lg-3 col-md-6 mb-3">
           <StatCard
             title="Total Proyectos"
             value={stats.projects?.total || 0}
             subtitle={`${stats.projects?.active || 0} activos`}
-            color="bg-green-500"
-            icon="📁"
+            icon="bi-folder"
           />
+        </div>
+        <div className="col-lg-3 col-md-6 mb-3">
           <StatCard
             title="Total Tareas"
             value={stats.tasks?.total || 0}
             subtitle={`${stats.tasks?.completed || 0} completadas`}
-            color="bg-purple-500"
-            icon="✅"
+            icon="bi-clipboard-check"
           />
+        </div>
+        <div className="col-lg-3 col-md-6 mb-3">
           <StatCard
             title="Archivos"
             value={stats.files?.total || 0}
             subtitle={formatFileSize(stats.files?.totalSize || 0)}
-            color="bg-orange-500"
-            icon="📎"
+            icon="bi-file-earmark"
           />
         </div>
       </div>
 
       {/* Estadísticas Detalladas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="row mb-4">
         {/* Proyectos */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Estado de Proyectos</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Activos</span>
-              <div className="flex items-center">
-                <div className="w-32 bg-gray-200 rounded-full h-2 mr-3">
+        <div className="col-lg-6 col-md-12 mb-4">
+          <div className="card h-100">
+            <div className="card-header bg-light">
+              <h6 className="card-title mb-0 d-flex align-items-center">
+                <i className="bi bi-folder me-2"></i>
+                Estado de Proyectos
+              </h6>
+            </div>
+            <div className="card-body">
+              <div className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted">En Planificación</span>
+                  <span className="fw-semibold text-primary">{stats.projects?.planning || 0}</span>
+                </div>
+                <div className="progress mb-3" style={{ height: '8px' }}>
                   <div 
-                    className="bg-green-500 h-2 rounded-full" 
+                    className="progress-bar bg-primary" 
+                    style={{ width: `${(stats.projects?.planning / stats.projects?.total * 100) || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <div className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted">En Progreso</span>
+                  <span className="fw-semibold text-primary">{stats.projects?.active || 0}</span>
+                </div>
+                <div className="progress mb-3" style={{ height: '8px' }}>
+                  <div 
+                    className="progress-bar bg-primary" 
                     style={{ width: `${(stats.projects?.active / stats.projects?.total * 100) || 0}%` }}
                   ></div>
                 </div>
-                <span className="text-sm font-medium">{stats.projects?.active || 0}</span>
               </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Completados</span>
-              <div className="flex items-center">
-                <div className="w-32 bg-gray-200 rounded-full h-2 mr-3">
+              
+              <div className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted">Completados</span>
+                  <span className="fw-semibold text-primary">{stats.projects?.completed || 0}</span>
+                </div>
+                <div className="progress mb-3" style={{ height: '8px' }}>
                   <div 
-                    className="bg-blue-500 h-2 rounded-full" 
+                    className="progress-bar bg-primary" 
                     style={{ width: `${(stats.projects?.completed / stats.projects?.total * 100) || 0}%` }}
                   ></div>
                 </div>
-                <span className="text-sm font-medium">{stats.projects?.completed || 0}</span>
               </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Cancelados</span>
-              <div className="flex items-center">
-                <div className="w-32 bg-gray-200 rounded-full h-2 mr-3">
+              
+              <div>
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted">Cancelados</span>
+                  <span className="fw-semibold text-primary">{stats.projects?.cancelled || 0}</span>
+                </div>
+                <div className="progress" style={{ height: '8px' }}>
                   <div 
-                    className="bg-red-500 h-2 rounded-full" 
+                    className="progress-bar bg-primary" 
                     style={{ width: `${(stats.projects?.cancelled / stats.projects?.total * 100) || 0}%` }}
                   ></div>
                 </div>
-                <span className="text-sm font-medium">{stats.projects?.cancelled || 0}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Tareas */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Estado de Tareas</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Pendientes</span>
-              <div className="flex items-center">
-                <div className="w-32 bg-gray-200 rounded-full h-2 mr-3">
+        <div className="col-lg-6 col-md-12 mb-4">
+          <div className="card h-100">
+            <div className="card-header bg-light">
+              <h6 className="card-title mb-0 d-flex align-items-center">
+                <i className="bi bi-clipboard-check me-2"></i>
+                Estado de Tareas
+              </h6>
+            </div>
+            <div className="card-body">
+              <div className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted">Pendientes</span>
+                  <span className="fw-semibold text-primary">{stats.tasks?.pending || 0}</span>
+                </div>
+                <div className="progress mb-3" style={{ height: '8px' }}>
                   <div 
-                    className="bg-yellow-500 h-2 rounded-full" 
+                    className="progress-bar bg-primary" 
                     style={{ width: `${(stats.tasks?.pending / stats.tasks?.total * 100) || 0}%` }}
                   ></div>
                 </div>
-                <span className="text-sm font-medium">{stats.tasks?.pending || 0}</span>
               </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">En Progreso</span>
-              <div className="flex items-center">
-                <div className="w-32 bg-gray-200 rounded-full h-2 mr-3">
+              
+              <div className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted">En Progreso</span>
+                  <span className="fw-semibold text-primary">{stats.tasks?.inProgress || 0}</span>
+                </div>
+                <div className="progress mb-3" style={{ height: '8px' }}>
                   <div 
-                    className="bg-blue-500 h-2 rounded-full" 
+                    className="progress-bar bg-primary" 
                     style={{ width: `${(stats.tasks?.inProgress / stats.tasks?.total * 100) || 0}%` }}
                   ></div>
                 </div>
-                <span className="text-sm font-medium">{stats.tasks?.inProgress || 0}</span>
               </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Completadas</span>
-              <div className="flex items-center">
-                <div className="w-32 bg-gray-200 rounded-full h-2 mr-3">
+              
+              <div className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted">Completadas</span>
+                  <span className="fw-semibold text-primary">{stats.tasks?.completed || 0}</span>
+                </div>
+                <div className="progress mb-3" style={{ height: '8px' }}>
                   <div 
-                    className="bg-green-500 h-2 rounded-full" 
+                    className="progress-bar bg-primary" 
                     style={{ width: `${(stats.tasks?.completed / stats.tasks?.total * 100) || 0}%` }}
                   ></div>
                 </div>
-                <span className="text-sm font-medium">{stats.tasks?.completed || 0}</span>
+              </div>
+              
+              <div>
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted">Canceladas</span>
+                  <span className="fw-semibold text-primary">{stats.tasks?.cancelled || 0}</span>
+                </div>
+                <div className="progress" style={{ height: '8px' }}>
+                  <div 
+                    className="progress-bar bg-primary" 
+                    style={{ width: `${(stats.tasks?.cancelled / stats.tasks?.total * 100) || 0}%` }}
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -395,65 +446,120 @@ const ReportsPage = () => {
       </div>
 
       {/* Actividad del Sistema */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Actividad del Sistema</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">{formatNumber(stats.activity?.logins || 0)}</div>
-            <div className="text-sm text-gray-600">Inicios de Sesión</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">{formatNumber(stats.activity?.actions || 0)}</div>
-            <div className="text-sm text-gray-600">Acciones Realizadas</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600">{formatNumber(stats.users?.active || 0)}</div>
-            <div className="text-sm text-gray-600">Usuarios Activos</div>
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header bg-light">
+              <h6 className="card-title mb-0 d-flex align-items-center">
+                <i className="bi bi-activity me-2"></i>
+                Actividad del Sistema
+              </h6>
+            </div>
+            <div className="card-body">
+              <div className="row text-center">
+                <div className="col-md-4 mb-3">
+                  <div className="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i className="bi bi-box-arrow-in-right text-primary fs-4"></i>
+                  </div>
+                  <h4 className="text-primary fw-bold">{formatNumber(stats.activity?.logins || 0)}</h4>
+                  <small className="text-muted">Inicios de Sesión</small>
+                </div>
+                <div className="col-md-4 mb-3">
+                  <div className="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i className="bi bi-lightning text-primary fs-4"></i>
+                  </div>
+                  <h4 className="text-primary fw-bold">{formatNumber(stats.activity?.actions || 0)}</h4>
+                  <small className="text-muted">Acciones Realizadas</small>
+                </div>
+                <div className="col-md-4 mb-3">
+                  <div className="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i className="bi bi-people text-primary fs-4"></i>
+                  </div>
+                  <h4 className="text-primary fw-bold">{formatNumber(stats.users?.active || 0)}</h4>
+                  <small className="text-muted">Usuarios Activos</small>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Reportes Disponibles */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Reportes Disponibles</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-2">
-              <span className="text-2xl mr-3">📊</span>
-              <h4 className="font-medium">Reporte General</h4>
+      <div className="row">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header bg-light">
+              <h6 className="card-title mb-0 d-flex align-items-center">
+                <i className="bi bi-file-earmark-text me-2"></i>
+                Reportes Disponibles
+              </h6>
             </div>
-            <p className="text-sm text-gray-600 mb-3">
-              Resumen completo del sistema con todas las métricas principales
-            </p>
-            <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-              Generar →
-            </button>
-          </div>
-          
-          <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-2">
-              <span className="text-2xl mr-3">📁</span>
-              <h4 className="font-medium">Reporte de Proyectos</h4>
+            <div className="card-body">
+              <div className="row">
+                <div className="col-lg-4 col-md-6 mb-3">
+                  <div className="card h-100 border">
+                    <div className="card-body text-center">
+                      <div className="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-3">
+                        <i className="bi bi-bar-chart text-primary fs-4"></i>
+                      </div>
+                      <h6 className="card-title">Reporte General</h6>
+                      <p className="card-text text-muted small">
+                        Resumen completo del sistema con todas las métricas principales
+                      </p>
+                      <button 
+                        onClick={() => setReportFilters({...reportFilters, reportType: 'general'})}
+                        className="btn btn-outline-primary btn-sm"
+                      >
+                        <i className="bi bi-download me-1"></i>
+                        Generar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="col-lg-4 col-md-6 mb-3">
+                  <div className="card h-100 border">
+                    <div className="card-body text-center">
+                      <div className="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-3">
+                        <i className="bi bi-folder text-primary fs-4"></i>
+                      </div>
+                      <h6 className="card-title">Reporte de Proyectos</h6>
+                      <p className="card-text text-muted small">
+                        Análisis detallado del estado y progreso de proyectos
+                      </p>
+                      <button 
+                        onClick={() => setReportFilters({...reportFilters, reportType: 'projects'})}
+                        className="btn btn-outline-primary btn-sm"
+                      >
+                        <i className="bi bi-download me-1"></i>
+                        Generar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="col-lg-4 col-md-6 mb-3">
+                  <div className="card h-100 border">
+                    <div className="card-body text-center">
+                      <div className="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-3">
+                        <i className="bi bi-people text-primary fs-4"></i>
+                      </div>
+                      <h6 className="card-title">Reporte de Usuarios</h6>
+                      <p className="card-text text-muted small">
+                        Estadísticas de usuarios, roles y actividad
+                      </p>
+                      <button 
+                        onClick={() => setReportFilters({...reportFilters, reportType: 'users'})}
+                        className="btn btn-outline-primary btn-sm"
+                      >
+                        <i className="bi bi-download me-1"></i>
+                        Generar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <p className="text-sm text-gray-600 mb-3">
-              Análisis detallado del estado y progreso de proyectos
-            </p>
-            <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-              Generar →
-            </button>
-          </div>
-          
-          <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-2">
-              <span className="text-2xl mr-3">👥</span>
-              <h4 className="font-medium">Reporte de Usuarios</h4>
-            </div>
-            <p className="text-sm text-gray-600 mb-3">
-              Estadísticas de usuarios, roles y actividad
-            </p>
-            <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-              Generar →
-            </button>
           </div>
         </div>
       </div>

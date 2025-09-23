@@ -1,15 +1,14 @@
 import React from 'react';
 import Modal from './Modal';
-import ActionButton from './ActionButton';
 
 /**
- * ConfirmDialog - Componente de diálogo de confirmación
+ * ConfirmDialog - Componente de diálogo de confirmación con Bootstrap
  * Siguiendo principios SOLID:
  * - Single Responsibility: Solo maneja confirmaciones
  * - Open/Closed: Abierto para extensión (diferentes variantes)
  * - Liskov Substitution: Puede ser sustituido por otros diálogos
  * - Interface Segregation: Props específicas para configuración
- * - Dependency Inversion: Depende de abstracciones (Modal, ActionButton)
+ * - Dependency Inversion: Depende de abstracciones (Modal)
  */
 
 const ConfirmDialog = ({
@@ -20,30 +19,32 @@ const ConfirmDialog = ({
   message = '¿Estás seguro de que deseas continuar?',
   confirmText = 'Confirmar',
   cancelText = 'Cancelar',
-  variant = 'primary', // 'primary', 'danger', 'warning'
+  type = 'primary', // 'primary', 'danger', 'warning'
   loading = false,
   icon = null
 }) => {
   /**
-   * Obtener icono por defecto según la variante
+   * Obtener icono por defecto según el tipo
    */
   const getDefaultIcon = () => {
-    switch (variant) {
+    const iconStyle = { width: '24px', height: '24px' };
+    
+    switch (type) {
       case 'danger':
         return (
-          <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg style={iconStyle} className="text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
         );
       case 'warning':
         return (
-          <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg style={iconStyle} className="text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
         );
       default:
         return (
-          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg style={iconStyle} className="text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
@@ -51,16 +52,30 @@ const ConfirmDialog = ({
   };
 
   /**
-   * Obtener color de fondo del icono
+   * Obtener clase de fondo del icono
    */
-  const getIconBackgroundColor = () => {
-    switch (variant) {
+  const getIconBackgroundClass = () => {
+    switch (type) {
       case 'danger':
-        return 'bg-red-100';
+        return 'bg-danger-subtle';
       case 'warning':
-        return 'bg-yellow-100';
+        return 'bg-warning-subtle';
       default:
-        return 'bg-blue-100';
+        return 'bg-primary-subtle';
+    }
+  };
+
+  /**
+   * Obtener clase del botón de confirmación
+   */
+  const getConfirmButtonClass = () => {
+    switch (type) {
+      case 'danger':
+        return 'btn-danger';
+      case 'warning':
+        return 'btn-warning';
+      default:
+        return 'btn-primary';
     }
   };
 
@@ -82,47 +97,49 @@ const ConfirmDialog = ({
       size="sm"
       closeOnOverlayClick={!loading}
       closeOnEscape={!loading}
+      showCloseButton={false}
     >
-      <div className="sm:flex sm:items-start">
+      <div className="d-flex align-items-start">
         {/* Icono */}
-        <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${getIconBackgroundColor()} sm:mx-0 sm:h-10 sm:w-10`}>
+        <div className={`d-flex align-items-center justify-content-center rounded-circle me-3 ${getIconBackgroundClass()}`} 
+             style={{ width: '48px', height: '48px', flexShrink: 0 }}>
           {icon || getDefaultIcon()}
         </div>
         
         {/* Contenido */}
-        <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
+        <div className="flex-grow-1">
+          <h5 className="fw-semibold text-dark mb-2">
             {title}
-          </h3>
+          </h5>
           
-          <div className="mt-2">
-            <p className="text-sm text-gray-500">
-              {message}
-            </p>
-          </div>
+          <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
+            {message}
+          </p>
         </div>
       </div>
       
       {/* Botones */}
-      <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse space-y-2 sm:space-y-0 sm:space-x-2 sm:space-x-reverse">
-        <ActionButton
-          variant={variant}
-          onClick={handleConfirm}
-          loading={loading}
-          disabled={loading}
-          className="w-full sm:w-auto"
-        >
-          {confirmText}
-        </ActionButton>
-        
-        <ActionButton
-          variant="secondary"
+      <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+        <button
+          type="button"
+          className="btn btn-outline-secondary"
           onClick={onClose}
           disabled={loading}
-          className="w-full sm:w-auto"
         >
           {cancelText}
-        </ActionButton>
+        </button>
+        
+        <button
+          type="button"
+          className={`btn ${getConfirmButtonClass()}`}
+          onClick={handleConfirm}
+          disabled={loading}
+        >
+          {loading && (
+            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          )}
+          {confirmText}
+        </button>
       </div>
     </Modal>
   );

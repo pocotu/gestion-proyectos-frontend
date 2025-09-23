@@ -157,25 +157,26 @@ const ProjectSummary = ({
       <style jsx>{`
         .project-summary {
           background: white;
-          border-radius: 12px;
-          padding: 24px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          padding: 16px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
           border: 1px solid #e5e7eb;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         .summary-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 20px;
-          padding-bottom: 12px;
-          border-bottom: 1px solid #f3f4f6;
+          margin-bottom: 16px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #e5e7eb;
         }
 
         .summary-header h3 {
           margin: 0;
-          color: #1f2937;
-          font-size: 1.25rem;
+          color: #374151;
+          font-size: 1rem;
           font-weight: 600;
         }
 
@@ -183,19 +184,19 @@ const ProjectSummary = ({
           color: var(--color-bright-blue);
           text-decoration: none;
           font-weight: 500;
-          font-size: 0.875rem;
+          font-size: 0.75rem;
         }
 
         .main-stats {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          gap: 16px;
-          margin-bottom: 24px;
+          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+          gap: 12px;
+          margin-bottom: 16px;
         }
 
         .stat-card {
-          padding: 16px;
-          border-radius: 8px;
+          padding: 12px;
+          border-radius: 6px;
           text-align: center;
           border: 1px solid #e5e7eb;
         }
@@ -225,52 +226,52 @@ const ProjectSummary = ({
         }
 
         .stat-number {
-          font-size: 2rem;
+          font-size: 1.5rem;
           font-weight: 700;
-          margin-bottom: 4px;
+          margin-bottom: 2px;
         }
 
         .stat-label {
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           opacity: 0.9;
           font-weight: 500;
         }
 
         .stat-percentage {
-          font-size: 0.75rem;
-          margin-top: 4px;
+          font-size: 0.7rem;
+          margin-top: 2px;
           opacity: 0.8;
         }
 
         .status-breakdown {
-          margin-bottom: 24px;
+          margin-bottom: 16px;
         }
 
         .status-breakdown h4 {
-          margin: 0 0 12px 0;
+          margin: 0 0 8px 0;
           color: #374151;
-          font-size: 1rem;
+          font-size: 0.875rem;
           font-weight: 600;
         }
 
         .status-stats {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 6px;
         }
 
         .status-item {
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 8px 12px;
+          gap: 6px;
+          padding: 6px 10px;
           background: #f9fafb;
-          border-radius: 6px;
+          border-radius: 4px;
         }
 
         .status-dot {
-          width: 8px;
-          height: 8px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
         }
 
@@ -281,33 +282,34 @@ const ProjectSummary = ({
 
         .status-label {
           flex: 1;
-          font-size: 0.875rem;
+          font-size: 0.75rem;
           color: #374151;
         }
 
         .status-count {
           font-weight: 600;
           color: #1f2937;
+          font-size: 0.75rem;
         }
 
         .progress-section {
-          margin-bottom: 24px;
+          margin-bottom: 16px;
         }
 
         .progress-header {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 8px;
-          font-size: 0.875rem;
+          margin-bottom: 6px;
+          font-size: 0.75rem;
           color: #374151;
           font-weight: 500;
         }
 
         .progress-bar {
           width: 100%;
-          height: 8px;
+          height: 6px;
           background: #e5e7eb;
-          border-radius: 4px;
+          border-radius: 3px;
           overflow: hidden;
         }
 
@@ -319,15 +321,15 @@ const ProjectSummary = ({
 
         .quick-actions {
           display: flex;
-          gap: 12px;
+          gap: 8px;
           flex-wrap: wrap;
         }
 
         .action-button {
-          padding: 8px 16px;
-          border-radius: 6px;
+          padding: 6px 12px;
+          border-radius: 4px;
           text-decoration: none;
-          font-size: 0.875rem;
+          font-size: 0.75rem;
           font-weight: 500;
           transition: all 0.2s ease;
         }
@@ -344,15 +346,15 @@ const ProjectSummary = ({
         }
 
         .loading-content, .error-content {
-          padding: 20px;
+          padding: 16px;
           text-align: center;
         }
 
         .loading-skeleton {
-          height: 20px;
+          height: 16px;
           background: #f3f4f6;
-          border-radius: 4px;
-          margin-bottom: 12px;
+          border-radius: 3px;
+          margin-bottom: 8px;
           animation: pulse 1.5s ease-in-out infinite;
         }
 
@@ -364,11 +366,13 @@ const ProjectSummary = ({
         .error-content p {
           color: #6b7280;
           margin: 0;
+          font-size: 0.875rem;
         }
 
         @media (max-width: 768px) {
           .main-stats {
             grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
           }
           
           .quick-actions {

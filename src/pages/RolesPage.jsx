@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import ActionButton from '../components/common/ActionButton';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import RoleList from '../components/role/RoleList';
+import RoleForm from '../components/role/RoleForm';
+import RoleAssignForm from '../components/role/RoleAssignForm';
+import userService from '../services/userService';
 
 /**
  * RolesPage - Página de gestión de roles (solo para administradores)
- * Siguiendo principios SOLID:
- * - Single Responsibility: Solo maneja la gestión de roles
- * - Open/Closed: Abierto para extensión (nuevas funcionalidades de roles)
- * - Liskov Substitution: Puede ser sustituido por otros componentes de gestión
- * - Interface Segregation: Usa interfaces específicas (useAuth, useNotifications)
- * - Dependency Inversion: Depende de abstracciones (hooks, contextos)
+ * Basado en la estructura de la base de datos: tabla 'roles' con campos 'id' y 'nombre'
  */
 const RolesPage = () => {
   const navigate = useNavigate();
@@ -23,6 +21,7 @@ const RolesPage = () => {
 
   // Estados principales
   const [roles, setRoles] = useState([]);
+  const [userRoles, setUserRoles] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,325 +30,305 @@ const RolesPage = () => {
   const [showRoleForm, setShowRoleForm] = useState(false);
   const [showAssignForm, setShowAssignForm] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [formMode, setFormMode] = useState('create'); // 'create' | 'edit'
 
   // Estados de formularios
-  const [roleForm, setRoleForm] = useState({
-    nombre: '',
-    descripcion: ''
-  });
-  const [assignForm, setAssignForm] = useState({
-    userId: '',
-    roleId: ''
-  });
+  const [formMode, setFormMode] = useState('create');
+  const [submitting, setSubmitting] = useState(false);
 
-  // Estados de filtros
+  // Estados de selección
+  const [selectedRole, setSelectedRole] = useState(null);
   const [filters, setFilters] = useState({
-    search: '',
-    activeOnly: false
+    search: ''
   });
 
   // Verificar permisos de administrador
   useEffect(() => {
-    if (!user?.es_administrador && !user?.roles?.some(role => role.nombre === 'admin')) {
-      navigate('/unauthorized');
+    if (!user?.es_administrador) {
+      addNotification('No tienes permisos para acceder a esta página', 'error');
+      navigate('/dashboard');
       return;
     }
-  }, [user, navigate]);
+    loadData();
+  }, [user, navigate, addNotification]);
 
-  // Cargar datos al montar el componente
-  useEffect(() => {
-    loadRoles();
-    loadUsers();
-  }, []);
-
-  // Función para cargar roles
-  const loadRoles = async () => {
+  // Cargar todos los datos
+  const loadData = async () => {
     try {
       setLoading(true);
-      // Simulación de API call - reemplazar con servicio real
-      const response = await fetch('/api/roles', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setRoles(data.data || []);
-      } else {
-        throw new Error('Error al cargar roles');
-      }
-    } catch (err) {
-      setError(err.message);
-      addNotification('Error al cargar roles', 'error');
+      await Promise.all([loadRoles(), loadUsers()]);
+      // Note: user-roles endpoint doesn't exist in backend, so we skip it for now
+      setError(null);
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+      setError('Error al cargar los datos');
+      addNotification('Error al cargar los datos', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  // Función para cargar usuarios
+  // Cargar roles
+  const loadRoles = async () => {
+    try {
+      const response = await userService.getRoles();
+      console.log('Roles response:', response);
+      
+      let rolesData = [];
+      if (Array.isArray(response)) {
+        rolesData = response;
+      } else if (response?.data?.roles && Array.isArray(response.data.roles)) {
+        // Backend format: { success: true, data: { roles: [...] } }
+        rolesData = response.data.roles.map(role => ({
+          id: role.id,
+          nombre: role.name || role.nombre
+        }));
+      } else if (response?.data && Array.isArray(response.data)) {
+        rolesData = response.data;
+      } else if (response?.roles && Array.isArray(response.roles)) {
+        rolesData = response.roles;
+      } else {
+        console.warn('Unexpected roles response format:', response);
+        rolesData = [];
+      }
+      
+      setRoles(rolesData);
+    } catch (error) {
+      console.error('Error al cargar roles:', error);
+      setRoles([]); // Ensure roles is always an array
+      throw error;
+    }
+  };
+
+  // Cargar usuarios
   const loadUsers = async () => {
     try {
-      const response = await fetch('/api/users', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await userService.getUsers();
+      console.log('Users response:', response);
       
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.data || []);
+      let usersData = [];
+      if (Array.isArray(response)) {
+        usersData = response;
+      } else if (response?.data && Array.isArray(response.data)) {
+        usersData = response.data;
+      } else if (response?.users && Array.isArray(response.users)) {
+        usersData = response.users;
+      } else {
+        console.warn('Unexpected users response format:', response);
+        usersData = [];
       }
-    } catch (err) {
-      console.error('Error al cargar usuarios:', err);
-    }
-  };
-
-  // Función para crear/editar rol
-  const handleRoleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const url = formMode === 'create' ? '/api/roles' : `/api/roles/${selectedRole.id}`;
-      const method = formMode === 'create' ? 'POST' : 'PUT';
       
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(roleForm)
-      });
-
-      if (response.ok) {
-        addNotification(
-          `Rol ${formMode === 'create' ? 'creado' : 'actualizado'} exitosamente`,
-          'success'
-        );
-        setShowRoleForm(false);
-        setRoleForm({ nombre: '', descripcion: '' });
-        loadRoles();
-      } else {
-        throw new Error('Error al guardar rol');
-      }
-    } catch (err) {
-      addNotification(err.message, 'error');
+      setUsers(usersData);
+    } catch (error) {
+      console.error('Error al cargar usuarios:', error);
+      setUsers([]); // Ensure users is always an array
+      throw error;
     }
   };
 
-  // Función para asignar rol a usuario
-  const handleAssignRole = async (e) => {
-    e.preventDefault();
+  // Cargar asignaciones usuario-rol (endpoint no disponible por ahora)
+  const loadUserRoles = async () => {
+    // TODO: Implementar cuando el endpoint /user-roles esté disponible
+    setUserRoles([]);
+  };
+
+  // Manejar creación/edición de rol
+  const handleRoleSubmit = async (roleData) => {
     try {
-      const response = await fetch('/api/roles/assign', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          userId: parseInt(assignForm.userId),
-          roleIdentifier: assignForm.roleId
-        })
-      });
-
-      if (response.ok) {
-        addNotification('Rol asignado exitosamente', 'success');
-        setShowAssignForm(false);
-        setAssignForm({ userId: '', roleId: '' });
-        loadUsers();
+      setSubmitting(true);
+      
+      if (formMode === 'create') {
+        await userService.createRole(roleData);
+        addNotification('Rol creado exitosamente', 'success');
       } else {
-        throw new Error('Error al asignar rol');
+        await userService.updateRole(selectedRole.id, roleData);
+        addNotification('Rol actualizado exitosamente', 'success');
       }
-    } catch (err) {
-      addNotification(err.message, 'error');
+      
+      setShowRoleForm(false);
+      setSelectedRole(null);
+      loadRoles();
+    } catch (error) {
+      console.error('Error al guardar rol:', error);
+      const message = error.response?.data?.message || 
+        (formMode === 'create' ? 'Error al crear el rol' : 'Error al actualizar el rol');
+      addNotification(message, 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  // Función para eliminar rol
-  const handleDeleteRole = async () => {
+  // Manejar asignación de rol
+  const handleAssignRole = async (assignData) => {
     try {
-      const response = await fetch(`/api/roles/${selectedRole.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        addNotification('Rol eliminado exitosamente', 'success');
-        setShowConfirmDialog(false);
-        setSelectedRole(null);
-        loadRoles();
-      } else {
-        throw new Error('Error al eliminar rol');
+      setSubmitting(true);
+      
+      // Find the role name by ID for the API call
+      const selectedRole = roles.find(r => r.id === parseInt(assignData.rol_id));
+      if (!selectedRole) {
+        throw new Error('Rol no encontrado');
       }
-    } catch (err) {
-      addNotification(err.message, 'error');
+      
+      // The backend expects { userId, roleIdentifier }
+      await userService.assignRole(assignData.usuario_id, selectedRole.nombre);
+      addNotification('Rol asignado exitosamente', 'success');
+      setShowAssignForm(false);
+      loadUserRoles();
+    } catch (error) {
+      console.error('Error al asignar rol:', error);
+      const message = error.response?.data?.message || 'Error al asignar el rol';
+      addNotification(message, 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  // Función para abrir formulario de creación
-  const handleCreateRole = () => {
-    setFormMode('create');
-    setRoleForm({ nombre: '', descripcion: '' });
-    setShowRoleForm(true);
-  };
-
-  // Función para abrir formulario de edición
+  // Manejar edición de rol (no disponible)
   const handleEditRole = (role) => {
-    setFormMode('edit');
-    setSelectedRole(role);
-    setRoleForm({
-      nombre: role.nombre,
-      descripcion: role.descripcion || ''
-    });
+    addNotification('La edición de roles no está disponible actualmente', 'info');
+  };
+
+  // Confirmar eliminación de rol (no disponible)
+  const confirmDeleteRole = (role) => {
+    addNotification('La eliminación de roles no está disponible actualmente', 'info');
+  };
+
+  // Manejar eliminación de rol (no disponible)
+  const handleDeleteRole = async () => {
+    // No operation
+  };
+
+  // Abrir formulario de creación
+  const openCreateForm = () => {
+    setFormMode('create');
+    setSelectedRole(null);
     setShowRoleForm(true);
   };
 
-  // Función para confirmar eliminación
-  const confirmDeleteRole = (role) => {
-    setSelectedRole(role);
-    setShowConfirmDialog(true);
+  // Abrir formulario de asignación
+  const openAssignForm = () => {
+    setShowAssignForm(true);
   };
 
-  // Filtrar roles según búsqueda
-  const filteredRoles = roles.filter(role => {
-    const matchesSearch = role.nombre.toLowerCase().includes(filters.search.toLowerCase()) ||
-                         (role.descripcion && role.descripcion.toLowerCase().includes(filters.search.toLowerCase()));
-    return matchesSearch;
-  });
+  // Filtrar roles - ensure roles is always an array
+  const filteredRoles = Array.isArray(roles) ? roles.filter((role) => {
+    return role?.nombre?.toLowerCase().includes(filters.search.toLowerCase());
+  }) : [];
+
+  // Obtener conteo de usuarios por rol
+  const getUserCountForRole = (roleId) => {
+    if (!Array.isArray(userRoles)) return 0;
+    return userRoles.filter(ur => ur.rol_id === roleId).length;
+  };
+
+  // Obtener usuarios asignados a un rol
+  const getUsersForRole = (roleId) => {
+    if (!Array.isArray(userRoles) || !Array.isArray(users)) return '';
+    const roleUsers = userRoles.filter(ur => ur.rol_id === roleId);
+    return roleUsers.map(ur => {
+      const user = users.find(u => u.id === ur.usuario_id);
+      return user ? user.nombre : 'Usuario no encontrado';
+    }).join(', ');
+  };
 
   if (loading) {
     return <LoadingSpinner message="Cargando roles..." />;
   }
 
+  // Debug information
+  console.log('RolesPage render - roles:', roles);
+  console.log('RolesPage render - filteredRoles:', filteredRoles);
+
   return (
-    <div className="space-y-6">
+    <div className="container-fluid py-4">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestión de Roles</h1>
-          <p className="text-gray-600">Administra los roles y permisos del sistema</p>
-        </div>
-        <div className="flex space-x-3">
-          <ActionButton
-            onClick={() => setShowAssignForm(true)}
-            variant="secondary"
-            icon="👤"
-          >
-            Asignar Rol
-          </ActionButton>
-          <ActionButton
-            onClick={handleCreateRole}
-            variant="primary"
-            icon="➕"
-          >
-            Nuevo Rol
-          </ActionButton>
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 className="h3 mb-1 text-dark fw-bold">Gestión de Roles</h1>
+              <p className="text-muted mb-0">Administra los roles del sistema</p>
+            </div>
+            <div className="d-flex gap-2">
+              <button
+                onClick={openAssignForm}
+                className="btn btn-outline-primary d-flex align-items-center"
+              >
+                <i className="bi bi-person-plus me-2"></i>
+                Asignar Rol
+              </button>
+              <button
+                onClick={openCreateForm}
+                className="btn btn-primary d-flex align-items-center"
+              >
+                <i className="bi bi-plus-lg me-2"></i>
+                Nuevo Rol
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white p-4 rounded-lg shadow">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
+      <div className="row mb-4">
+        <div className="col-md-6">
+          <div className="input-group">
+            <span className="input-group-text">
+              <i className="bi bi-search"></i>
+            </span>
             <input
               type="text"
+              className="form-control"
               placeholder="Buscar roles..."
               value={filters.search}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
       </div>
 
-      {/* Lista de Roles */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">
-            Roles del Sistema ({filteredRoles.length})
-          </h3>
+      {/* Mensajes de error */}
+      {error && (
+        <div className="row mb-4">
+          <div className="col-12">
+            <div className="alert alert-danger d-flex align-items-center" role="alert">
+              <i className="bi bi-exclamation-triangle-fill me-2"></i>
+              {error}
+            </div>
+          </div>
         </div>
-        
-        {filteredRoles.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            No se encontraron roles
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rol
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Descripción
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Usuarios
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredRoles.map((role) => (
-                  <tr key={role.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-8 w-8">
-                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span className="text-blue-600 font-medium text-sm">
-                              {role.nombre.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {role.nombre}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
-                        {role.descripcion || 'Sin descripción'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {role.usuarios_count || 0} usuarios
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <button
-                          onClick={() => handleEditRole(role)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => confirmDeleteRole(role)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      )}
+
+      {/* Lista de roles */}
+      <div className="row">
+        <div className="col-12">
+          {!Array.isArray(roles) ? (
+            <div className="card">
+              <div className="card-body text-center py-5">
+                <i className="bi bi-exclamation-triangle display-1 text-warning mb-3"></i>
+                <h5 className="card-title">Error de datos</h5>
+                <p className="card-text text-muted">
+                  Los datos de roles no se cargaron correctamente. 
+                  <br />
+                  Tipo de datos recibido: {typeof roles}
+                  <br />
+                  Contenido: {JSON.stringify(roles)}
+                </p>
+                <button onClick={loadData} className="btn btn-primary">
+                  <i className="bi bi-arrow-clockwise me-2"></i>
+                  Reintentar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <RoleList
+              roles={filteredRoles}
+              onEdit={handleEditRole}
+              onDelete={confirmDeleteRole}
+              getUserCountForRole={getUserCountForRole}
+              getUsersForRole={getUsersForRole}
+            />
+          )}
+        </div>
       </div>
 
       {/* Modal de Formulario de Rol */}
@@ -358,50 +337,12 @@ const RolesPage = () => {
         onClose={() => setShowRoleForm(false)}
         title={formMode === 'create' ? 'Crear Nuevo Rol' : 'Editar Rol'}
       >
-        <form onSubmit={handleRoleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre del Rol
-            </label>
-            <input
-              type="text"
-              required
-              value={roleForm.nombre}
-              onChange={(e) => setRoleForm({ ...roleForm, nombre: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ej: responsable_proyecto"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción
-            </label>
-            <textarea
-              value={roleForm.descripcion}
-              onChange={(e) => setRoleForm({ ...roleForm, descripcion: e.target.value })}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Descripción del rol..."
-            />
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4">
-            <ActionButton
-              type="button"
-              onClick={() => setShowRoleForm(false)}
-              variant="secondary"
-            >
-              Cancelar
-            </ActionButton>
-            <ActionButton
-              type="submit"
-              variant="primary"
-            >
-              {formMode === 'create' ? 'Crear Rol' : 'Actualizar Rol'}
-            </ActionButton>
-          </div>
-        </form>
+        <RoleForm
+          role={selectedRole}
+          onSubmit={handleRoleSubmit}
+          onCancel={() => setShowRoleForm(false)}
+          loading={submitting}
+        />
       </Modal>
 
       {/* Modal de Asignación de Rol */}
@@ -410,61 +351,13 @@ const RolesPage = () => {
         onClose={() => setShowAssignForm(false)}
         title="Asignar Rol a Usuario"
       >
-        <form onSubmit={handleAssignRole} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Usuario
-            </label>
-            <select
-              required
-              value={assignForm.userId}
-              onChange={(e) => setAssignForm({ ...assignForm, userId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Seleccionar usuario...</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.nombre} ({user.email})
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Rol
-            </label>
-            <select
-              required
-              value={assignForm.roleId}
-              onChange={(e) => setAssignForm({ ...assignForm, roleId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Seleccionar rol...</option>
-              {roles.map((role) => (
-                <option key={role.id} value={role.nombre}>
-                  {role.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4">
-            <ActionButton
-              type="button"
-              onClick={() => setShowAssignForm(false)}
-              variant="secondary"
-            >
-              Cancelar
-            </ActionButton>
-            <ActionButton
-              type="submit"
-              variant="primary"
-            >
-              Asignar Rol
-            </ActionButton>
-          </div>
-        </form>
+        <RoleAssignForm
+          users={users}
+          roles={roles}
+          onSubmit={handleAssignRole}
+          onCancel={() => setShowAssignForm(false)}
+          loading={submitting}
+        />
       </Modal>
 
       {/* Diálogo de Confirmación */}
@@ -473,9 +366,13 @@ const RolesPage = () => {
         onClose={() => setShowConfirmDialog(false)}
         onConfirm={handleDeleteRole}
         title="Eliminar Rol"
-        message={`¿Estás seguro de que deseas eliminar el rol "${selectedRole?.nombre}"? Esta acción no se puede deshacer.`}
-        confirmText="Eliminar"
-        cancelText="Cancelar"
+        message={
+          getUserCountForRole(selectedRole?.id) > 0
+            ? `No se puede eliminar el rol "${selectedRole?.nombre}" porque tiene ${getUserCountForRole(selectedRole?.id)} usuarios asignados. Primero debes reasignar o eliminar estos usuarios.`
+            : `¿Estás seguro de que deseas eliminar el rol "${selectedRole?.nombre}"? Esta acción no se puede deshacer.`
+        }
+        confirmText={getUserCountForRole(selectedRole?.id) > 0 ? null : "Eliminar"}
+        cancelText={getUserCountForRole(selectedRole?.id) > 0 ? "Entendido" : "Cancelar"}
         variant="danger"
       />
     </div>

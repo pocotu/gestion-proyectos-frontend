@@ -123,7 +123,7 @@ async function runE2ETests() {
       // Intentar hacer login con un usuario del seeder
       const seederLoginData = {
         email: 'admin@gestion-proyectos.com', // Usuario del seeder
-        contraseña: 'admin123'
+        contraseña: 'Admin123!'
       };
       
       const seederLoginResponse = await axios.post(`${BACKEND_URL}/auth/login`, seederLoginData);

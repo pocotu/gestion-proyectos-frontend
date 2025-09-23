@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import dashboardService from '../../services/dashboardService';
+import taskService from '../../services/taskService';
 
 /**
  * PendingTasks - Componente para mostrar tareas pendientes
@@ -23,64 +24,27 @@ const PendingTasks = () => {
     try {
       setLoading(true);
       
-      // Datos simulados para las pruebas
-      const mockTasks = [
-        {
-          id: 1,
-          titulo: 'Implementar autenticación',
-          descripcion: 'Desarrollar sistema de login y registro de usuarios',
-          estado: 'pendiente',
-          prioridad: 'alta',
-          fecha_limite: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3), // 3 días adelante
-          proyecto: 'Sistema de Gestión',
-          asignado_a: user?.nombre || 'Usuario Actual'
-        },
-        {
-          id: 2,
-          titulo: 'Diseño de base de datos',
-          descripcion: 'Crear esquema de base de datos para el proyecto',
-          estado: 'pendiente',
-          prioridad: 'alta',
-          fecha_limite: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5), // 5 días adelante
-          proyecto: 'E-commerce Platform',
-          asignado_a: user?.nombre || 'Usuario Actual'
-        },
-        {
-          id: 3,
-          titulo: 'Configurar CI/CD',
-          descripcion: 'Implementar pipeline de integración continua',
-          estado: 'pendiente',
-          prioridad: 'media',
-          fecha_limite: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 días adelante
-          proyecto: 'Portal Web Corporativo',
-          asignado_a: user?.nombre || 'Usuario Actual'
-        },
-        {
-          id: 4,
-          titulo: 'Pruebas unitarias',
-          descripcion: 'Escribir pruebas para los componentes principales',
-          estado: 'pendiente',
-          prioridad: 'media',
-          fecha_limite: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10), // 10 días adelante
-          proyecto: 'App Móvil',
-          asignado_a: user?.nombre || 'Usuario Actual'
-        },
-        {
-          id: 5,
-          titulo: 'Documentación API',
-          descripcion: 'Crear documentación completa de la API REST',
-          estado: 'pendiente',
-          prioridad: 'baja',
-          fecha_limite: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14), // 14 días adelante
-          proyecto: 'Sistema de Gestión',
-          asignado_a: user?.nombre || 'Usuario Actual'
-        }
-      ];
+      // Obtener tareas pendientes del backend
+      const response = await dashboardService.getPendingTasks();
+      const backendTasks = response?.data || [];
+      
+      // Formatear datos del backend para el componente
+      const formattedTasks = backendTasks.map(task => ({
+        id: task.id,
+        titulo: task.titulo,
+        descripcion: task.descripcion,
+        estado: task.estado,
+        prioridad: task.prioridad,
+        fecha_limite: task.fecha_limite ? new Date(task.fecha_limite) : null,
+        proyecto: task.proyecto_titulo || 'Sin proyecto',
+        asignado_a: user?.nombre || 'Usuario Actual'
+      }));
 
-      setTasks(mockTasks);
+      setTasks(formattedTasks);
     } catch (error) {
       console.error('Error cargando tareas pendientes:', error);
       showError('Error al cargar las tareas pendientes');
+      setTasks([]); // Fallback a array vacío en caso de error
     } finally {
       setLoading(false);
     }
@@ -90,22 +54,26 @@ const PendingTasks = () => {
     try {
       setCompletingTask(taskId);
       
-      // Simular llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Llamar a la API real para completar la tarea
+      const response = await taskService.updateTaskStatus(taskId, 'completada');
       
-      // Actualizar el estado local
-      setTasks(prevTasks => 
-        prevTasks.map(task => 
-          task.id === taskId 
-            ? { ...task, estado: 'completada' }
-            : task
-        ).filter(task => task.estado !== 'completada')
-      );
-      
-      showSuccess('Tarea completada exitosamente');
+      if (response.success) {
+        // Actualizar el estado local
+        setTasks(prevTasks => 
+          prevTasks.map(task => 
+            task.id === taskId 
+              ? { ...task, estado: 'completada' }
+              : task
+          ).filter(task => task.estado !== 'completada')
+        );
+        
+        showSuccess('Tarea completada exitosamente');
+      } else {
+        throw new Error(response.message || 'Error al completar la tarea');
+      }
     } catch (error) {
       console.error('Error completando tarea:', error);
-      showError('Error al completar la tarea');
+      showError(error.message || 'Error al completar la tarea');
     } finally {
       setCompletingTask(null);
     }
@@ -138,7 +106,10 @@ const PendingTasks = () => {
   };
 
   const formatDate = (date) => {
-    return date.toLocaleDateString('es-ES', {
+    if (!date) return 'Sin fecha';
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return 'Fecha inválida';
+    return dateObj.toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -146,8 +117,11 @@ const PendingTasks = () => {
   };
 
   const getDaysUntilDeadline = (deadline) => {
+    if (!deadline) return null;
+    const deadlineDate = new Date(deadline);
+    if (isNaN(deadlineDate.getTime())) return null;
     const now = new Date();
-    const diffTime = deadline - now;
+    const diffTime = deadlineDate - now;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
@@ -193,8 +167,8 @@ const PendingTasks = () => {
         ) : (
           tasks.map((task) => {
             const daysLeft = getDaysUntilDeadline(task.fecha_limite);
-            const isOverdue = daysLeft < 0;
-            const isUrgent = daysLeft <= 2 && daysLeft >= 0;
+            const isOverdue = daysLeft !== null && daysLeft < 0;
+            const isUrgent = daysLeft !== null && daysLeft <= 2 && daysLeft >= 0;
             
             return (
               <div key={task.id} style={styles.taskItem}>
@@ -246,7 +220,7 @@ const PendingTasks = () => {
                     >
                       {formatDate(task.fecha_limite)}
                       {isOverdue && ' (Vencida)'}
-                      {isUrgent && ` (${daysLeft} días)`}
+                      {isUrgent && daysLeft !== null && ` (${daysLeft} días)`}
                     </span>
                   </div>
                 </div>
@@ -266,7 +240,10 @@ const styles = {
     border: '1px solid #cccccc',
     borderRadius: '4px',
     padding: '20px',
-    fontFamily: 'Arial, sans-serif'
+    fontFamily: 'Arial, sans-serif',
+    maxHeight: '400px',
+    display: 'flex',
+    flexDirection: 'column'
   },
   header: {
     display: 'flex',
@@ -318,7 +295,10 @@ const styles = {
   tasksList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px'
+    gap: '16px',
+    overflowY: 'auto',
+    flex: 1,
+    paddingRight: '5px'
   },
   taskItem: {
     padding: '16px',

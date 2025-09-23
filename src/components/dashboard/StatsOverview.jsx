@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
-import dashboardService from '../../services/dashboardService';
 import StatsCard from './StatsCard';
 import './StatsOverview.css';
 
@@ -14,45 +13,23 @@ import './StatsOverview.css';
  * - Interface Segregation: Usa interfaces específicas (useAuth, useNotification)
  * - Dependency Inversion: Depende de abstracciones (hooks, servicios)
  */
-const StatsOverview = () => {
+const StatsOverview = ({ stats }) => {
   const { user } = useAuth();
-  const { addNotification, showError } = useNotifications();
-  const [stats, setStats] = useState({
-    projects: { total: 0, active: 0, completed: 0, paused: 0 },
-    tasks: { total: 0, pending: 0, inProgress: 0, completed: 0 },
-    users: { total: 0, active: 0 },
-    activities: []
-  });
-  const [loading, setLoading] = useState(true);
+  const { addNotification } = useNotifications();
   const [timeFilter, setTimeFilter] = useState('month'); // 'week', 'month', 'quarter', 'year'
 
-  useEffect(() => {
-    loadStats();
-  }, [user, timeFilter]);
-
-  const loadStats = async () => {
-    try {
-      setLoading(true);
-      const response = await dashboardService.getDashboardSummary();
-      
-      if (response.success) {
-        setStats(response.data);
-      } else {
-        throw new Error(response.message || 'Error al cargar estadísticas');
-      }
-    } catch (error) {
-      console.error('Error cargando estadísticas:', error);
-      showError('Error al cargar las estadísticas del dashboard');
-      
-      // Usar datos simulados en caso de error
-      setStats(await dashboardService.getMockDashboardData());
-    } finally {
-      setLoading(false);
-    }
+  // Usar stats por defecto si no se pasan como prop
+  const defaultStats = {
+    projects: { total: 0, active: 0, completed: 0, paused: 0, myProjects: 0 },
+    tasks: { total: 0, pending: 0, inProgress: 0, completed: 0, myTasks: 0 },
+    users: { total: 0, active: 0 },
+    activities: []
   };
 
+  const currentStats = stats || defaultStats;
+
   const getProjectStats = () => {
-    const { projects } = stats || {};
+    const { projects } = currentStats || {};
     if (!projects) return [];
     
     const activeRate = projects.total > 0 ? Math.round((projects.active / projects.total) * 100) : 0;
@@ -91,11 +68,12 @@ const StatsOverview = () => {
   };
 
   const getTaskStats = () => {
-    const { tasks } = stats || {};
+    const { tasks } = currentStats || {};
     if (!tasks) return [];
     
-    const completionRate = tasks.total > 0 ? Math.round((tasks.completed / tasks.total) * 100) : 0;
     const pendingRate = tasks.total > 0 ? Math.round((tasks.pending / tasks.total) * 100) : 0;
+    const progressRate = tasks.total > 0 ? Math.round((tasks.inProgress / tasks.total) * 100) : 0;
+    const completionRate = tasks.total > 0 ? Math.round((tasks.completed / tasks.total) * 100) : 0;
 
     return [
       {
@@ -110,21 +88,22 @@ const StatsOverview = () => {
         value: tasks.pending,
         color: 'warning',
         subtitle: 'Por iniciar',
-        percentage: pendingRate,
-        testId: 'pending-tasks'
+        percentage: pendingRate
       },
       {
         title: 'En Progreso',
         value: tasks.inProgress,
         color: 'info',
-        subtitle: 'En desarrollo'
+        subtitle: 'En desarrollo',
+        percentage: progressRate
       },
       {
         title: 'Completadas',
         value: tasks.completed,
         color: 'success',
         subtitle: 'Finalizadas',
-        percentage: completionRate
+        percentage: completionRate,
+        testId: 'completed-tasks'
       },
       ...(user?.es_administrador ? [] : [{
         title: 'Mis Tareas',
@@ -136,73 +115,79 @@ const StatsOverview = () => {
   };
 
   const getUserStats = () => {
-    if (!user?.es_administrador || !stats?.users) return [];
+    if (!user?.es_administrador) return [];
+    
+    const { users } = currentStats || {};
+    if (!users) return [];
 
-    const { users } = stats;
     const activeRate = users.total > 0 ? Math.round((users.active / users.total) * 100) : 0;
 
     return [
       {
         title: 'Total Usuarios',
         value: users.total,
-        icon: '👥',
         color: 'primary',
-        subtitle: 'Usuarios registrados'
+        subtitle: 'Usuarios registrados',
+        testId: 'users-count'
       },
       {
         title: 'Usuarios Activos',
         value: users.active,
-        icon: '🟢',
         color: 'success',
         subtitle: 'Conectados recientemente',
         percentage: activeRate
-      },
-      {
-        title: 'Usuarios Inactivos',
-        value: users.inactive,
-        icon: '⚪',
-        color: 'secondary',
-        subtitle: 'Sin actividad reciente'
       }
     ];
   };
 
+  const handleTimeFilterChange = (filter) => {
+    setTimeFilter(filter);
+    addNotification({
+      type: 'info',
+      message: `Filtro de tiempo cambiado a: ${filter}`,
+      duration: 2000
+    });
+  };
+
+  const projectStats = getProjectStats();
+  const taskStats = getTaskStats();
+  const userStats = getUserStats();
+
   return (
-    <div className="stats-overview">
-      <div className="stats-overview__header">
-        <h2 className="stats-overview__title">Resumen General</h2>
-        <div className="stats-overview__controls">
-          <select 
-            className="time-filter"
-            value={timeFilter}
-            onChange={(e) => setTimeFilter(e.target.value)}
-            data-testid="time-filter"
-          >
-            <option value="week">Esta semana</option>
-            <option value="month">Este mes</option>
-            <option value="quarter">Este trimestre</option>
-            <option value="year">Este año</option>
-          </select>
-          <button 
-            className="stats-overview__refresh"
-            onClick={loadStats}
-            disabled={loading}
-            title="Actualizar estadísticas"
-          >
-            <span className={`refresh-icon ${loading ? 'spinning' : ''}`}>🔄</span>
-          </button>
+    <div className="stats-overview" data-testid="stats-overview">
+      {/* Header con filtros de tiempo */}
+      <div className="stats-header">
+        <h2 className="stats-title">Resumen General</h2>
+        <div className="time-filters">
+          {['week', 'month', 'quarter', 'year'].map(filter => (
+            <button
+              key={filter}
+              className={`time-filter ${timeFilter === filter ? 'active' : ''}`}
+              onClick={() => handleTimeFilterChange(filter)}
+              data-testid={`filter-${filter}`}
+            >
+              {filter === 'week' && 'Semana'}
+              {filter === 'month' && 'Mes'}
+              {filter === 'quarter' && 'Trimestre'}
+              {filter === 'year' && 'Año'}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Estadísticas de Proyectos */}
       <div className="stats-section">
-        <h3 className="stats-section__title">Proyectos</h3>
+        <h3 className="section-title">Proyectos</h3>
         <div className="stats-grid">
-          {getProjectStats().map((stat, index) => (
+          {projectStats.map((stat, index) => (
             <StatsCard
               key={`project-${index}`}
-              {...stat}
-              loading={loading}
+              title={stat.title}
+              value={stat.value}
+              color={stat.color}
+              subtitle={stat.subtitle}
+              percentage={stat.percentage}
+              testId={stat.testId}
             />
           ))}
         </div>
@@ -210,33 +195,54 @@ const StatsOverview = () => {
 
       {/* Estadísticas de Tareas */}
       <div className="stats-section">
-        <h3 className="stats-section__title">Tareas</h3>
+        <h3 className="section-title">Tareas</h3>
         <div className="stats-grid">
-          {getTaskStats().map((stat, index) => (
+          {taskStats.map((stat, index) => (
             <StatsCard
               key={`task-${index}`}
-              {...stat}
-              loading={loading}
+              title={stat.title}
+              value={stat.value}
+              color={stat.color}
+              subtitle={stat.subtitle}
+              percentage={stat.percentage}
+              testId={stat.testId}
             />
           ))}
         </div>
       </div>
 
-      {/* Estadísticas de Usuarios (solo admin) */}
-      {user?.es_administrador && (
+      {/* Estadísticas de Usuarios (solo para administradores) */}
+      {user?.es_administrador && userStats.length > 0 && (
         <div className="stats-section">
-          <h3 className="stats-section__title">Usuarios</h3>
+          <h3 className="section-title">Usuarios</h3>
           <div className="stats-grid">
-            {getUserStats().map((stat, index) => (
+            {userStats.map((stat, index) => (
               <StatsCard
                 key={`user-${index}`}
-                {...stat}
-                loading={loading}
+                title={stat.title}
+                value={stat.value}
+                color={stat.color}
+                subtitle={stat.subtitle}
+                percentage={stat.percentage}
+                testId={stat.testId}
               />
             ))}
           </div>
         </div>
       )}
+
+      {/* Información adicional */}
+      <div className="stats-footer">
+        <p className="stats-info">
+          Última actualización: {new Date().toLocaleString('es-ES')}
+        </p>
+        <p className="stats-period">
+          Período: {timeFilter === 'week' && 'Última semana'}
+          {timeFilter === 'month' && 'Último mes'}
+          {timeFilter === 'quarter' && 'Último trimestre'}
+          {timeFilter === 'year' && 'Último año'}
+        </p>
+      </div>
     </div>
   );
 };

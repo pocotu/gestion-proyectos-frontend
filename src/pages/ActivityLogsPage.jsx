@@ -1,50 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Badge } from '../components/ui/badge';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '../components/ui/select';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '../components/ui/table';
 import Modal from '../components/common/Modal';
-import { 
-  Calendar,
-  Download,
-  Filter,
-  Search,
-  User,
-  Activity,
-  Clock,
-  Database,
-  FileText,
-  Settings,
-  Users,
-  FolderOpen,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Plus,
-  Edit,
-  Trash2,
-  Eye
-} from 'lucide-react';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { activityService } from '../services/activityService';
@@ -197,52 +153,50 @@ const ActivityLogsPage = () => {
   // Obtener icono para el tipo de acción
   const getActionIcon = (action) => {
     const iconMap = {
-      'crear': Plus,
-      'actualizar': Edit,
-      'eliminar': Trash2,
-      'ver': Eye,
-      'login': User,
-      'logout': User,
-      'cambio_estado': Settings,
-      'asignacion': Users,
-      'subir_archivo': FileText,
-      'descargar_archivo': Download
+      'crear': 'bi-plus-lg',
+      'actualizar': 'bi-pencil',
+      'eliminar': 'bi-trash',
+      'ver': 'bi-eye',
+      'login': 'bi-box-arrow-in-right',
+      'logout': 'bi-box-arrow-left',
+      'cambio_estado': 'bi-gear',
+      'asignacion': 'bi-people',
+      'subir_archivo': 'bi-upload',
+      'descargar_archivo': 'bi-download'
     };
     
-    const IconComponent = iconMap[action] || Activity;
-    return <IconComponent className="h-4 w-4" />;
+    return iconMap[action] || 'bi-activity';
   };
 
   // Obtener color para el tipo de acción
   const getActionColor = (action) => {
     const colorMap = {
-      'crear': 'bg-green-100 text-green-800',
-      'actualizar': 'bg-blue-100 text-blue-800',
-      'eliminar': 'bg-red-100 text-red-800',
-      'ver': 'bg-gray-100 text-gray-800',
-      'login': 'bg-purple-100 text-purple-800',
-      'logout': 'bg-orange-100 text-orange-800',
-      'cambio_estado': 'bg-yellow-100 text-yellow-800',
-      'asignacion': 'bg-indigo-100 text-indigo-800',
-      'subir_archivo': 'bg-cyan-100 text-cyan-800',
-      'descargar_archivo': 'bg-teal-100 text-teal-800'
+      'crear': 'bg-success bg-opacity-10 text-success',
+      'actualizar': 'bg-primary bg-opacity-10 text-primary',
+      'eliminar': 'bg-danger bg-opacity-10 text-danger',
+      'ver': 'bg-secondary bg-opacity-10 text-secondary',
+      'login': 'bg-info bg-opacity-10 text-info',
+      'logout': 'bg-warning bg-opacity-10 text-warning',
+      'cambio_estado': 'bg-warning bg-opacity-10 text-warning',
+      'asignacion': 'bg-info bg-opacity-10 text-info',
+      'subir_archivo': 'bg-primary bg-opacity-10 text-primary',
+      'descargar_archivo': 'bg-success bg-opacity-10 text-success'
     };
     
-    return colorMap[action] || 'bg-gray-100 text-gray-800';
+    return colorMap[action] || 'bg-secondary bg-opacity-10 text-secondary';
   };
 
   // Obtener icono para el tipo de entidad
   const getEntityIcon = (entityType) => {
     const iconMap = {
-      'usuario': User,
-      'proyecto': FolderOpen,
-      'tarea': CheckCircle,
-      'archivo': FileText,
-      'rol': Settings
+      'usuario': 'bi-person',
+      'proyecto': 'bi-folder',
+      'tarea': 'bi-check-circle',
+      'archivo': 'bi-file-text',
+      'rol': 'bi-shield'
     };
     
-    const IconComponent = iconMap[entityType] || Database;
-    return <IconComponent className="h-4 w-4" />;
+    return iconMap[entityType] || 'bi-database';
   };
 
   // Verificar si el usuario es admin por el campo es_administrador o por roles
@@ -252,487 +206,463 @@ const ActivityLogsPage = () => {
   console.log('ActivityLogsPage - User in render:', user);
   
   if (!user) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Cargando...</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <LoadingSpinner message="Cargando..." />;
   }
   
   if (!isAdmin) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Acceso Denegado
-              </h3>
-              <p className="text-gray-600">
-                No tienes permisos para ver los logs de actividad del sistema.
-              </p>
+      <div className="container-fluid py-4">
+        <div className="row justify-content-center">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body text-center py-5">
+                <i className="bi bi-shield-x display-1 text-danger mb-3"></i>
+                <h3 className="card-title">Acceso Denegado</h3>
+                <p className="card-text text-muted">
+                  No tienes permisos para ver los logs de actividad del sistema.
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Logs de Actividad
-        </h1>
-        <p className="text-gray-600">
-          Monitorea y audita todas las actividades del sistema
-        </p>
+    <div className="container-fluid py-4">
+      {/* Header */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 className="h3 mb-1 text-dark fw-bold">Logs de Actividad</h1>
+              <p className="text-muted mb-0">Monitorea y audita todas las actividades del sistema</p>
+            </div>
+            <div className="d-flex gap-2">
+              <button
+                onClick={() => exportLogs('json')}
+                className="btn btn-outline-primary d-flex align-items-center"
+              >
+                <i className="bi bi-download me-2"></i>
+                Exportar JSON
+              </button>
+              <button
+                onClick={() => exportLogs('csv')}
+                className="btn btn-outline-success d-flex align-items-center"
+              >
+                <i className="bi bi-file-earmark-spreadsheet me-2"></i>
+                Exportar CSV
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Estadísticas */}
       {stats && stats.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Activity className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Actividades
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.reduce((acc, stat) => acc + stat.total, 0)}
-                  </p>
+        <div className="row mb-4">
+          <div className="col-lg-3 col-md-6 mb-3">
+            <div className="card h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                    <i className="bi bi-activity text-primary fs-4"></i>
+                  </div>
+                  <div>
+                    <h6 className="card-subtitle mb-1 text-muted">Total Actividades</h6>
+                    <h4 className="card-title mb-0 fw-bold">
+                      {stats.reduce((acc, stat) => acc + stat.total, 0)}
+                    </h4>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Usuarios Activos
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {new Set(logs.map(log => log.usuario_id)).size}
-                  </p>
+          <div className="col-lg-3 col-md-6 mb-3">
+            <div className="card h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center">
+                  <div className="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                    <i className="bi bi-people text-success fs-4"></i>
+                  </div>
+                  <div>
+                    <h6 className="card-subtitle mb-1 text-muted">Usuarios Activos</h6>
+                    <h4 className="card-title mb-0 fw-bold">
+                      {new Set(logs.map(log => log.usuario_id)).size}
+                    </h4>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Database className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Tipos de Entidad
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {new Set(stats.map(stat => stat.entidad_tipo)).size}
-                  </p>
+          <div className="col-lg-3 col-md-6 mb-3">
+            <div className="card h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center">
+                  <div className="bg-info bg-opacity-10 rounded-circle p-3 me-3">
+                    <i className="bi bi-database text-info fs-4"></i>
+                  </div>
+                  <div>
+                    <h6 className="card-subtitle mb-1 text-muted">Tipos de Entidad</h6>
+                    <h4 className="card-title mb-0 fw-bold">
+                      {new Set(stats.map(stat => stat.entidad_tipo)).size}
+                    </h4>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Clock className="h-8 w-8 text-orange-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Últimas 24h
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {logs.filter(log => {
-                      const logDate = new Date(log.created_at);
-                      const yesterday = new Date();
-                      yesterday.setDate(yesterday.getDate() - 1);
-                      return logDate >= yesterday;
-                    }).length}
-                  </p>
+          <div className="col-lg-3 col-md-6 mb-3">
+            <div className="card h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center">
+                  <div className="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
+                    <i className="bi bi-clock text-warning fs-4"></i>
+                  </div>
+                  <div>
+                    <h6 className="card-subtitle mb-1 text-muted">Últimas 24h</h6>
+                    <h4 className="card-title mb-0 fw-bold">
+                      {logs.filter(log => {
+                        const logDate = new Date(log.created_at);
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        return logDate >= yesterday;
+                      }).length}
+                    </h4>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Filtros */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Filter className="h-5 w-5 mr-2" />
-            Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha Inicio
-              </label>
-              <Input
-                type="date"
-                value={filters.startDate}
-                onChange={(e) => handleFilterChange('startDate', e.target.value)}
-              />
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header bg-light">
+              <h6 className="card-title mb-0 d-flex align-items-center">
+                <i className="bi bi-funnel me-2"></i>
+                Filtros
+              </h6>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha Fin
-              </label>
-              <Input
-                type="date"
-                value={filters.endDate}
-                onChange={(e) => handleFilterChange('endDate', e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo de Entidad
-              </label>
-              <Select
-                value={filters.entityType}
-                onValueChange={(value) => handleFilterChange('entityType', value)}
-              >
-                <SelectTrigger data-testid="entity-type-select">
-                  <SelectValue placeholder="Seleccionar tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
-                  <SelectItem value="proyecto">Proyecto</SelectItem>
-                  <SelectItem value="tarea">Tarea</SelectItem>
-                  <SelectItem value="usuario">Usuario</SelectItem>
-                  <SelectItem value="archivo">Archivo</SelectItem>
-                  <SelectItem value="rol">Rol</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Acción
-              </label>
-              <Select
-                value={filters.action}
-                onValueChange={(value) => handleFilterChange('action', value)}
-              >
-                <SelectTrigger data-testid="filter-select">
-                  <SelectValue placeholder="Todas las acciones" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Todas las acciones</SelectItem>
-                  <SelectItem value="crear">Crear</SelectItem>
-                  <SelectItem value="actualizar">Actualizar</SelectItem>
-                  <SelectItem value="eliminar">Eliminar</SelectItem>
-                  <SelectItem value="ver">Ver</SelectItem>
-                  <SelectItem value="login">Login</SelectItem>
-                  <SelectItem value="logout">Logout</SelectItem>
-                  <SelectItem value="cambio_estado">Cambio Estado</SelectItem>
-                  <SelectItem value="asignacion">Asignación</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <Input
-              type="text"
-              placeholder="Buscar por usuario, descripción o IP..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-md"
-              data-testid="search-input"
-            />
-          </div>
-
-          <div className="flex justify-between items-center">
-            <Button
-              variant="outline"
-              onClick={clearFilters}
-              className="flex items-center"
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              Limpiar Filtros
-            </Button>
-
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => exportLogs('json')}
-                className="flex items-center"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Exportar JSON
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => exportLogs('csv')}
-                className="flex items-center"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Exportar CSV
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabla de Logs */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Activity className="h-5 w-5 mr-2" />
-            Registro de Actividades
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2">Cargando logs...</span>
-            </div>
-          ) : logs.length === 0 ? (
-            <div className="text-center py-8" data-testid="no-data-message">
-              <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No hay logs disponibles
-              </h3>
-              <p className="text-gray-600">
-                No se encontraron registros de actividad con los filtros aplicados.
-              </p>
-            </div>
-          ) : (
-            <>
-              <Table data-testid="activity-logs-table">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha/Hora</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Acción</TableHead>
-                    <TableHead>Entidad</TableHead>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead>IP</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {logs.map((log) => (
-                    <TableRow 
-                      key={log.id} 
-                      data-testid="activity-log-row"
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleRowClick(log)}
-                    >
-                      <TableCell data-testid="timestamp">
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                          <div>
-                            <div className="font-medium">
-                              {format(new Date(log.created_at), 'dd/MM/yyyy', { locale: es })}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {format(new Date(log.created_at), 'HH:mm:ss', { locale: es })}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell data-testid="user-name">
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 text-gray-400 mr-2" />
-                          <div>
-                            <div className="font-medium">
-                              {log.usuario_nombre || 'Usuario desconocido'}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {log.usuario_email}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell data-testid="action-type">
-                        <Badge className={`flex items-center ${getActionColor(log.accion)}`}>
-                          {getActionIcon(log.accion)}
-                          <span className="ml-1 capitalize">{log.accion}</span>
-                        </Badge>
-                      </TableCell>
-                      <TableCell data-testid="resource-type">
-                        <div className="flex items-center">
-                          {getEntityIcon(log.entidad_tipo)}
-                          <div className="ml-2">
-                            <div className="font-medium capitalize">
-                              {log.entidad_tipo}
-                            </div>
-                            {log.entidad_id && (
-                              <div className="text-sm text-gray-500">
-                                ID: {log.entidad_id}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-xs truncate" title={log.descripcion}>
-                          {log.descripcion}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-gray-500 font-mono">
-                          {log.ip_address || 'N/A'}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {/* Paginación */}
-              <div className="flex items-center justify-between mt-6">
-                <div className="text-sm text-gray-700">
-                  Mostrando {((pagination.page - 1) * pagination.limit) + 1} a{' '}
-                  {Math.min(pagination.page * pagination.limit, logs.length)} de{' '}
-                  {logs.length} registros
+            <div className="card-body">
+              <div className="row mb-3">
+                <div className="col-lg-3 col-md-6 mb-3">
+                  <label className="form-label fw-semibold">Fecha Inicio</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={filters.startDate}
+                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                  />
                 </div>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleFilterChange('page', Math.max(1, pagination.page - 1))}
-                    disabled={pagination.page <= 1}
+
+                <div className="col-lg-3 col-md-6 mb-3">
+                  <label className="form-label fw-semibold">Fecha Fin</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={filters.endDate}
+                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                  />
+                </div>
+
+                <div className="col-lg-3 col-md-6 mb-3">
+                  <label className="form-label fw-semibold">Tipo de Entidad</label>
+                  <select
+                    className="form-select"
+                    value={filters.entityType}
+                    onChange={(e) => handleFilterChange('entityType', e.target.value)}
+                    data-testid="entity-type-select"
                   >
-                    Anterior
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleFilterChange('page', pagination.page + 1)}
-                    disabled={logs.length < pagination.limit}
+                    <option value="">Seleccionar tipo</option>
+                    <option value="proyecto">Proyecto</option>
+                    <option value="tarea">Tarea</option>
+                    <option value="usuario">Usuario</option>
+                    <option value="archivo">Archivo</option>
+                    <option value="rol">Rol</option>
+                  </select>
+                </div>
+
+                <div className="col-lg-3 col-md-6 mb-3">
+                  <label className="form-label fw-semibold">Acción</label>
+                  <select
+                    className="form-select"
+                    value={filters.action}
+                    onChange={(e) => handleFilterChange('action', e.target.value)}
+                    data-testid="filter-select"
                   >
-                    Siguiente
-                  </Button>
+                    <option value="">Todas las acciones</option>
+                    <option value="crear">Crear</option>
+                    <option value="actualizar">Actualizar</option>
+                    <option value="eliminar">Eliminar</option>
+                    <option value="ver">Ver</option>
+                    <option value="login">Login</option>
+                    <option value="logout">Logout</option>
+                    <option value="cambio_estado">Cambio Estado</option>
+                    <option value="asignacion">Asignación</option>
+                  </select>
                 </div>
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
 
-       {/* Modal de Detalles */}
-       <Modal
-         isOpen={isModalOpen}
-         onClose={closeModal}
-         title="Detalles del Log de Actividad"
-         data-testid="log-details-modal"
-       >
-         {selectedLog && (
-           <div className="space-y-4">
-             <div className="grid grid-cols-2 gap-4">
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                   Fecha y Hora
-                 </label>
-                 <p className="text-sm text-gray-900">
-                   {format(new Date(selectedLog.created_at), 'dd/MM/yyyy HH:mm:ss', { locale: es })}
-                 </p>
-               </div>
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                   Usuario
-                 </label>
-                 <p className="text-sm text-gray-900">
-                   {selectedLog.usuario_nombre || 'Usuario desconocido'}
-                 </p>
-                 <p className="text-xs text-gray-500">
-                   {selectedLog.usuario_email}
-                 </p>
-               </div>
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                   Acción
-                 </label>
-                 <Badge className={`inline-flex items-center ${getActionColor(selectedLog.accion)}`}>
-                   {getActionIcon(selectedLog.accion)}
-                   <span className="ml-1 capitalize">{selectedLog.accion}</span>
-                 </Badge>
-               </div>
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                   Tipo de Entidad
-                 </label>
-                 <div className="flex items-center">
-                   {getEntityIcon(selectedLog.entidad_tipo)}
-                   <span className="ml-2 text-sm text-gray-900 capitalize">
-                     {selectedLog.entidad_tipo}
-                   </span>
-                 </div>
-               </div>
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                   ID de Entidad
-                 </label>
-                 <p className="text-sm text-gray-900">
-                   {selectedLog.entidad_id || 'N/A'}
-                 </p>
-               </div>
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                   Dirección IP
-                 </label>
-                 <p className="text-sm text-gray-900 font-mono">
-                   {selectedLog.ip_address || 'N/A'}
-                 </p>
-               </div>
-             </div>
-             <div>
-               <label className="block text-sm font-medium text-gray-700 mb-1">
-                 Descripción
-               </label>
-               <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">
-                 {selectedLog.descripcion}
-               </p>
-             </div>
-             {selectedLog.detalles_adicionales && (
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                   Detalles Adicionales
-                 </label>
-                 <pre className="text-xs text-gray-900 bg-gray-50 p-3 rounded-md overflow-auto max-h-40">
-                   {JSON.stringify(selectedLog.detalles_adicionales, null, 2)}
-                 </pre>
-               </div>
-             )}
-           </div>
-         )}
-       </Modal>
-     </div>
-   );
- };
+              <div className="row mb-3">
+                <div className="col-md-6">
+                  <div className="input-group">
+                    <span className="input-group-text">
+                      <i className="bi bi-search"></i>
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Buscar por usuario, descripción o IP..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      data-testid="search-input"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-flex justify-content-between align-items-center">
+                <button
+                  onClick={clearFilters}
+                  className="btn btn-outline-secondary d-flex align-items-center"
+                >
+                  <i className="bi bi-x-circle me-2"></i>
+                  Limpiar Filtros
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabla de Logs */}
+      <div className="row">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header bg-light">
+              <h6 className="card-title mb-0 d-flex align-items-center">
+                <i className="bi bi-activity me-2"></i>
+                Registro de Actividades ({logs.length})
+              </h6>
+            </div>
+            <div className="card-body">
+              {loading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary me-3" role="status">
+                    <span className="visually-hidden">Cargando...</span>
+                  </div>
+                  <span>Cargando logs...</span>
+                </div>
+              ) : logs.length === 0 ? (
+                <div className="text-center py-5" data-testid="no-data-message">
+                  <i className="bi bi-exclamation-circle display-1 text-muted mb-3"></i>
+                  <h5 className="card-title">No hay logs disponibles</h5>
+                  <p className="card-text text-muted">
+                    No se encontraron registros de actividad con los filtros aplicados.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="table-responsive">
+                    <table className="table table-hover mb-0" data-testid="activity-logs-table">
+                      <thead className="table-light">
+                        <tr>
+                          <th scope="col" className="fw-semibold">Fecha/Hora</th>
+                          <th scope="col" className="fw-semibold">Usuario</th>
+                          <th scope="col" className="fw-semibold">Acción</th>
+                          <th scope="col" className="fw-semibold">Entidad</th>
+                          <th scope="col" className="fw-semibold">Descripción</th>
+                          <th scope="col" className="fw-semibold">IP</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {logs.map((log) => (
+                          <tr 
+                            key={log.id} 
+                            data-testid="activity-log-row"
+                            className="cursor-pointer"
+                            onClick={() => handleRowClick(log)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <td data-testid="timestamp">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-clock text-muted me-2"></i>
+                                <div>
+                                  <div className="fw-semibold">
+                                    {format(new Date(log.created_at), 'dd/MM/yyyy', { locale: es })}
+                                  </div>
+                                  <small className="text-muted">
+                                    {format(new Date(log.created_at), 'HH:mm:ss', { locale: es })}
+                                  </small>
+                                </div>
+                              </div>
+                            </td>
+                            <td data-testid="user-name">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-person text-muted me-2"></i>
+                                <div>
+                                  <div className="fw-semibold">
+                                    {log.usuario_nombre || 'Usuario desconocido'}
+                                  </div>
+                                  <small className="text-muted">
+                                    {log.usuario_email}
+                                  </small>
+                                </div>
+                              </div>
+                            </td>
+                            <td data-testid="action-type">
+                              <span className={`badge d-flex align-items-center ${getActionColor(log.accion)}`} style={{ width: 'fit-content' }}>
+                                <i className={`bi ${getActionIcon(log.accion)} me-1`}></i>
+                                <span className="text-capitalize">{log.accion}</span>
+                              </span>
+                            </td>
+                            <td data-testid="resource-type">
+                              <div className="d-flex align-items-center">
+                                <i className={`bi ${getEntityIcon(log.entidad_tipo)} text-muted me-2`}></i>
+                                <div>
+                                  <div className="fw-semibold text-capitalize">
+                                    {log.entidad_tipo}
+                                  </div>
+                                  {log.entidad_id && (
+                                    <small className="text-muted">
+                                      ID: {log.entidad_id}
+                                    </small>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="text-truncate" style={{ maxWidth: '200px' }} title={log.descripcion}>
+                                {log.descripcion}
+                              </div>
+                            </td>
+                            <td>
+                              <code className="text-muted small">
+                                {log.ip_address || 'N/A'}
+                              </code>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Paginación */}
+                  <div className="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <div className="text-muted small">
+                      Mostrando {((pagination.page - 1) * pagination.limit) + 1} a{' '}
+                      {Math.min(pagination.page * pagination.limit, logs.length)} de{' '}
+                      {logs.length} registros
+                    </div>
+                    <div className="d-flex gap-2">
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => handleFilterChange('page', Math.max(1, pagination.page - 1))}
+                        disabled={pagination.page <= 1}
+                      >
+                        <i className="bi bi-chevron-left me-1"></i>
+                        Anterior
+                      </button>
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => handleFilterChange('page', pagination.page + 1)}
+                        disabled={logs.length < pagination.limit}
+                      >
+                        Siguiente
+                        <i className="bi bi-chevron-right ms-1"></i>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal de Detalles */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title="Detalles del Log de Actividad"
+        data-testid="log-details-modal"
+      >
+        {selectedLog && (
+          <div>
+            <div className="row mb-3">
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-semibold">Fecha y Hora</label>
+                <p className="mb-0">
+                  {format(new Date(selectedLog.created_at), 'dd/MM/yyyy HH:mm:ss', { locale: es })}
+                </p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-semibold">Usuario</label>
+                <p className="mb-0">
+                  {selectedLog.usuario_nombre || 'Usuario desconocido'}
+                </p>
+                <small className="text-muted">
+                  {selectedLog.usuario_email}
+                </small>
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-semibold">Acción</label>
+                <div>
+                  <span className={`badge d-flex align-items-center ${getActionColor(selectedLog.accion)}`} style={{ width: 'fit-content' }}>
+                    <i className={`bi ${getActionIcon(selectedLog.accion)} me-1`}></i>
+                    <span className="text-capitalize">{selectedLog.accion}</span>
+                  </span>
+                </div>
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-semibold">Tipo de Entidad</label>
+                <div className="d-flex align-items-center">
+                  <i className={`bi ${getEntityIcon(selectedLog.entidad_tipo)} me-2`}></i>
+                  <span className="text-capitalize">
+                    {selectedLog.entidad_tipo}
+                  </span>
+                </div>
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-semibold">ID de Entidad</label>
+                <p className="mb-0">
+                  {selectedLog.entidad_id || 'N/A'}
+                </p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-semibold">Dirección IP</label>
+                <p className="mb-0">
+                  <code>{selectedLog.ip_address || 'N/A'}</code>
+                </p>
+              </div>
+            </div>
+            <div className="mb-3">
+              <label className="form-label fw-semibold">Descripción</label>
+              <div className="bg-light p-3 rounded">
+                {selectedLog.descripcion}
+              </div>
+            </div>
+            {selectedLog.detalles_adicionales && (
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Detalles Adicionales</label>
+                <pre className="bg-light p-3 rounded small" style={{ maxHeight: '200px', overflow: 'auto' }}>
+                  {JSON.stringify(selectedLog.detalles_adicionales, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+};
 
 export default ActivityLogsPage;
-
-  const fetchLogs = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/activity-logs');
-      setLogs(response.data);
-    } catch (error) {
-      setError('Error al cargar los logs de actividad');
-    } finally {
-      setLoading(false);
-    }
-  };

@@ -22,54 +22,28 @@ const RecentProjects = () => {
     try {
       setLoading(true);
       
-      // Datos simulados para las pruebas
-      const mockProjects = [
-        {
-          id: 1,
-          nombre: 'Sistema de Gestión',
-          descripcion: 'Sistema integral para gestión de proyectos y tareas',
-          estado: 'activo',
-          fecha_creacion: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 días atrás
-          fecha_limite: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 días adelante
-          progreso: 65,
-          responsable: 'Juan Pérez'
-        },
-        {
-          id: 2,
-          nombre: 'E-commerce Platform',
-          descripcion: 'Plataforma de comercio electrónico moderna',
-          estado: 'activo',
-          fecha_creacion: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 días atrás
-          fecha_limite: new Date(Date.now() + 1000 * 60 * 60 * 24 * 45), // 45 días adelante
-          progreso: 40,
-          responsable: 'María García'
-        },
-        {
-          id: 3,
-          nombre: 'Portal Web Corporativo',
-          descripcion: 'Sitio web institucional con panel administrativo',
-          estado: 'completado',
-          fecha_creacion: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10), // 10 días atrás
-          fecha_limite: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1), // 1 día atrás
-          progreso: 100,
-          responsable: 'Carlos López'
-        },
-        {
-          id: 4,
-          nombre: 'App Móvil',
-          descripcion: 'Aplicación móvil para gestión de tareas',
-          estado: 'activo',
-          fecha_creacion: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 días atrás
-          fecha_limite: new Date(Date.now() + 1000 * 60 * 60 * 24 * 60), // 60 días adelante
-          progreso: 25,
-          responsable: 'Ana Martínez'
-        }
-      ];
+      // Obtener proyectos reales del backend
+      const recentProjectsResponse = await dashboardService.getRecentProjects(4);
+      const recentProjects = recentProjectsResponse?.data || [];
 
-      setProjects(mockProjects);
+      // Formatear los proyectos para el componente
+      const formattedProjects = recentProjects.map(project => ({
+        id: project.id,
+        nombre: project.titulo || project.nombre,
+        descripcion: project.descripcion,
+        estado: project.estado,
+        fecha_creacion: new Date(project.fecha_creacion || project.created_at),
+        fecha_limite: project.fecha_fin ? new Date(project.fecha_fin) : null,
+        progreso: project.progreso || 0,
+        responsable: project.responsable_nombre || 'Sin asignar'
+      }));
+
+      setProjects(formattedProjects);
     } catch (error) {
       console.error('Error cargando proyectos recientes:', error);
       showError('Error al cargar los proyectos recientes');
+      // En caso de error, mostrar array vacío en lugar de datos mock
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -106,7 +80,10 @@ const RecentProjects = () => {
   };
 
   const formatDate = (date) => {
-    return date.toLocaleDateString('es-ES', {
+    if (!date) return 'Sin fecha';
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return 'Fecha inválida';
+    return dateObj.toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -216,7 +193,10 @@ const styles = {
     border: '1px solid #cccccc',
     borderRadius: '4px',
     padding: '20px',
-    fontFamily: 'Arial, sans-serif'
+    fontFamily: 'Arial, sans-serif',
+    maxHeight: '400px',
+    display: 'flex',
+    flexDirection: 'column'
   },
   header: {
     display: 'flex',
@@ -268,7 +248,10 @@ const styles = {
   projectsList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px'
+    gap: '16px',
+    overflowY: 'auto',
+    flex: 1,
+    paddingRight: '5px'
   },
   projectItem: {
     padding: '16px',

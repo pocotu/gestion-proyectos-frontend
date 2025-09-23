@@ -4,6 +4,7 @@ import DataTable from '../common/DataTable';
 import StatusBadge from '../common/StatusBadge';
 import ActionButton from '../common/ActionButton';
 import LoadingSpinner from '../common/LoadingSpinner';
+import ProjectFilters from './ProjectFilters';
 import projectService from '../../services/projectService';
 
 /**
@@ -23,7 +24,9 @@ const ProjectList = ({
   showActions = true,
   filters = {},
   searchTerm = '',
-  refreshTrigger = 0 
+  refreshTrigger = 0,
+  onFiltersChange,
+  onSearchChange 
 }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +36,7 @@ const ProjectList = ({
   // Cargar proyectos
   useEffect(() => {
     loadProjects();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, filters]);
 
   // Aplicar filtros y búsqueda
   useEffect(() => {
@@ -48,10 +51,11 @@ const ProjectList = ({
       setLoading(true);
       setError(null);
       
-      const response = await projectService.getAllProjects();
+      const response = await projectService.getAllProjects(filters);
       
       if (response.success) {
-        setProjects(response.data || []);
+        // El backend devuelve {success, projects, data} donde projects contiene la lista
+        setProjects(response.projects || response.data || []);
       } else {
         throw new Error(response.message || 'Error al cargar proyectos');
       }
@@ -309,7 +313,15 @@ const ProjectList = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="projects-list">
+      {/* Filtros */}
+      <ProjectFilters
+        filters={filters}
+        searchTerm={searchTerm}
+        onFiltersChange={onFiltersChange}
+        onSearchChange={onSearchChange}
+      />
+
       {/* Información de resultados */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-gray-700">
@@ -330,6 +342,7 @@ const ProjectList = ({
           columns={columns}
           keyField="id"
           className="shadow-sm"
+          rowTestId="project-row"
         />
       ) : (
         <div className="text-center py-12">

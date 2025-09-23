@@ -3,7 +3,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import Toast from './Toast';
 
 /**
- * Componente ToastContainer
+ * Componente ToastContainer con estilos inline
  * Principio de Responsabilidad Única: Solo se encarga de renderizar y posicionar los toasts
  * Principio de Inversión de Dependencias: Depende de la abstracción useNotifications
  */
@@ -12,22 +12,36 @@ const ToastContainer = ({ position = 'top-right' }) => {
 
   // Estilos de posicionamiento
   const getPositionStyles = (position) => {
-    const baseStyles = "fixed z-50 pointer-events-none";
+    const baseStyles = {
+      position: 'fixed',
+      zIndex: 9999,
+      pointerEvents: 'none'
+    };
     
     switch (position) {
       case 'top-left':
-        return `${baseStyles} top-4 left-4`;
+        return { ...baseStyles, top: '16px', left: '16px' };
       case 'top-center':
-        return `${baseStyles} top-4 left-1/2 transform -translate-x-1/2`;
+        return { 
+          ...baseStyles, 
+          top: '16px', 
+          left: '50%', 
+          transform: 'translateX(-50%)' 
+        };
       case 'top-right':
       default:
-        return `${baseStyles} top-4 right-4`;
+        return { ...baseStyles, top: '16px', right: '16px' };
       case 'bottom-left':
-        return `${baseStyles} bottom-4 left-4`;
+        return { ...baseStyles, bottom: '16px', left: '16px' };
       case 'bottom-center':
-        return `${baseStyles} bottom-4 left-1/2 transform -translate-x-1/2`;
+        return { 
+          ...baseStyles, 
+          bottom: '16px', 
+          left: '50%', 
+          transform: 'translateX(-50%)' 
+        };
       case 'bottom-right':
-        return `${baseStyles} bottom-4 right-4`;
+        return { ...baseStyles, bottom: '16px', right: '16px' };
     }
   };
 
@@ -36,9 +50,15 @@ const ToastContainer = ({ position = 'top-right' }) => {
     return null;
   }
 
+  const containerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px'
+  };
+
   return (
-    <div className={getPositionStyles(position)}>
-      <div className="flex flex-col space-y-2">
+    <div style={getPositionStyles(position)}>
+      <div style={containerStyle}>
         {notifications.map((notification) => (
           <Toast
             key={notification.id}

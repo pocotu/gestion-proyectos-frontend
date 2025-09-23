@@ -57,6 +57,7 @@ class AuthService {
       await api.post('/auth/logout', { refreshToken });
     } catch (error) {
       // Continuar con logout local aunque falle el servidor
+      console.warn('Error en logout del servidor (continuando con logout local):', error.message);
     } finally {
       // Limpiar datos locales
       this._clearAuthData();

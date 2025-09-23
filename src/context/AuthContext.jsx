@@ -197,10 +197,13 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.SET_LOADING });
 
     try {
+      // Intentar logout en el backend, pero no fallar si hay error
       await authService.logout();
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.warn('Error al cerrar sesión en el backend (continuando con logout local):', error);
+      // No mostrar error al usuario, solo limpiar sesión local
     } finally {
+      // Siempre limpiar la sesión local, independientemente del resultado del backend
       dispatch({ type: AUTH_ACTIONS.SET_UNAUTHENTICATED });
     }
   };

@@ -12,6 +12,7 @@ const DataTable = ({
   emptyMessage = 'No hay datos disponibles',
   onRowClick,
   className = '',
+  rowTestId = 'table-row',
   ...props
 }) => {
   if (loading) {
@@ -55,6 +56,7 @@ const DataTable = ({
             {data.map((row, index) => (
               <tr
                 key={row.id || index}
+                data-testid={rowTestId}
                 className={`${
                   onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''
                 } transition-colors duration-150`}

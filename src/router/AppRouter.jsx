@@ -12,6 +12,9 @@ import ProjectsPage from '../pages/ProjectsPage';
 import TasksPage from '../pages/TasksPage';
 import UsersPage from '../pages/UsersPage';
 import ActivityLogsPage from '../pages/ActivityLogsPage';
+import FilesPage from '../pages/FilesPage';
+import RolesPage from '../pages/RolesPage';
+import ReportsPage from '../pages/ReportsPage';
 
 // Componentes de layout y protección
 import Layout from '../components/common/Layout';
@@ -20,7 +23,12 @@ import ToastContainer from '../components/common/ToastContainer';
 
 const AppRouter = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <Routes>
         {/* Rutas públicas */}
         <Route 
@@ -63,6 +71,9 @@ const AppRouter = () => {
           {/* Gestión de tareas */}
           <Route path="tasks" element={<TasksPage />} />
           
+          {/* Gestión de archivos */}
+          <Route path="files" element={<FilesPage />} />
+          
           {/* Gestión de usuarios (solo admin) */}
           <Route 
             path="users" 
@@ -73,6 +84,19 @@ const AppRouter = () => {
             } 
           />
           
+          {/* Gestión de roles (solo admin) */}
+          <Route 
+            path="roles" 
+            element={
+              <AdminRoute>
+                <RolesPage />
+              </AdminRoute>
+            } 
+          />
+          
+          {/* Reportes y estadísticas */}
+          <Route path="reports" element={<ReportsPage />} />
+          
           {/* Logs de actividad (solo admin) */}
           <Route 
             path="activity-logs" 
@@ -82,6 +106,15 @@ const AppRouter = () => {
               </AdminRoute>
             } 
           />
+          
+          {/* Alias para logs */}
+          <Route path="logs" element={<Navigate to="/activity-logs" replace />} />
+          
+          {/* Alias para estadísticas */}
+          <Route path="stats" element={<Navigate to="/reports" replace />} />
+          
+          {/* Alias para actividad */}
+          <Route path="activity" element={<Navigate to="/activity-logs" replace />} />
         </Route>
 
         {/* Ruta 404 */}

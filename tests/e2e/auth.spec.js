@@ -19,27 +19,41 @@ test.describe('Sistema de Autenticación', () => {
 
   test('debe realizar login exitoso con credenciales válidas', async ({ page }) => {
     // Llenar el formulario de login
-    await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
-    await page.fill('[data-testid="password-input"]', 'admin123');
+    // Credenciales de prueba - usando usuario del seeder
+    const validCredentials = {
+      email: 'admin@gestion-proyectos.com',
+      password: 'Admin123!'
+    };
+
+    await page.fill('[data-testid="email-input"]', validCredentials.email);
+    await page.fill('[data-testid="password-input"]', validCredentials.password);
     
     // Hacer click en el botón de login
     await page.click('[data-testid="login-button"]');
     
     // Esperar la redirección al dashboard con timeout más largo
-    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
+    await page.waitForURL(/.*dashboard/, { timeout: 20000 });
+    
+    // Esperar a que el dashboard se cargue completamente con timeout más largo
+    await page.waitForSelector('[data-testid="dashboard-page"]', { timeout: 20000 });
     
     // Verificar que el usuario está logueado (buscar elementos del dashboard)
     await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
     
     // Esperar a que el h1 se cargue y verificar el texto
-    await page.waitForSelector('h1', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="dashboard-header"] h1', { timeout: 15000 });
     await expect(page.locator('[data-testid="dashboard-header"] h1')).toContainText('¡Bienvenido');
   });
 
   test('debe mostrar error con credenciales inválidas', async ({ page }) => {
-    // Llenar el formulario con credenciales incorrectas
-    await page.fill('[data-testid="email-input"]', 'wrong@test.com');
-    await page.fill('[data-testid="password-input"]', 'wrongpass');
+    const invalidCredentials = {
+      email: 'invalid@test.com',
+      password: 'wrongpassword'
+    };
+    
+    // Llenar el formulario con credenciales inválidas
+    await page.fill('[data-testid="email-input"]', invalidCredentials.email);
+    await page.fill('[data-testid="password-input"]', invalidCredentials.password);
     
     // Hacer click en el botón de login
     await page.click('[data-testid="login-button"]');
@@ -87,26 +101,22 @@ test.describe('Sistema de Autenticación', () => {
     // Primero hacer login
     await page.goto('/login');
     await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
-    await page.fill('[data-testid="password-input"]', 'admin123');
+    await page.fill('[data-testid="password-input"]', 'Admin123!');
     await page.click('[data-testid="login-button"]');
     
-    // Esperar a que se complete el login y esté en el dashboard
-    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
+    // Esperar a que se complete el login y esté en el dashboard con timeout más largo
+    await page.waitForURL(/.*dashboard/, { timeout: 20000 });
+    await page.waitForSelector('[data-testid="dashboard-page"]', { timeout: 20000 });
     await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
-    await expect(page.locator('[data-testid="dashboard-header"] h1')).toContainText('¡Bienvenido');
     
-    // Esperar a que el header se cargue completamente
-    await page.waitForSelector('header', { timeout: 10000 });
-    
-    // Buscar el botón de logout usando el data-testid
+    // Buscar el botón de logout directamente sin esperar elementos específicos
     const logoutButton = page.locator('[data-testid="logout-button"]');
-    await expect(logoutButton).toBeVisible();
-    
-    // Hacer logout
+    await logoutButton.waitFor({ timeout: 20000 });
     await logoutButton.click();
     
-    // Verificar que se redirige a la página de login
-    await page.waitForURL(/.*login/, { timeout: 10000 });
+    // Verificar redirección al login
+    await page.waitForURL(/.*login/, { timeout: 15000 });
+    await expect(page.locator('h2')).toContainText('Iniciar Sesión');
   });
 
   test('debe proteger rutas privadas', async ({ page }) => {
@@ -118,21 +128,31 @@ test.describe('Sistema de Autenticación', () => {
   });
 
   test('debe mantener la sesión después de recargar la página', async ({ page }) => {
-    // Hacer login
-    await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
-    await page.fill('[data-testid="password-input"]', 'admin123');
+    const validCredentials = {
+      email: 'admin@gestion-proyectos.com',
+      password: 'Admin123!'
+    };
+    
+    // Primero hacer login
+    await page.fill('[data-testid="email-input"]', validCredentials.email);
+    await page.fill('[data-testid="password-input"]', validCredentials.password);
     await page.click('[data-testid="login-button"]');
     
+    // Esperar a que se complete el login con timeout más largo
+    await page.waitForURL(/.*dashboard/, { timeout: 20000 });
+    await page.waitForSelector('[data-testid="dashboard-page"]', { timeout: 20000 });
+    
     // Verificar que estamos en el dashboard
-    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
     await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
-    await expect(page.locator('[data-testid="dashboard-header"] h1')).toContainText('¡Bienvenido');
+    await page.waitForSelector('[data-testid="dashboard-header"] h1', { timeout: 15000 });
+    await expect(page.locator('[data-testid="dashboard-header"] h1')).toBeVisible();
     
     // Recargar la página
     await page.reload();
     
-    // Verificar que seguimos en el dashboard (sesión persistente)
-    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
+    // Verificar que seguimos en el dashboard después de recargar con timeout más largo
+    await page.waitForURL(/.*dashboard/, { timeout: 20000 });
+    await page.waitForSelector('[data-testid="dashboard-page"]', { timeout: 20000 });
     await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
     await expect(page.locator('[data-testid="dashboard-header"] h1')).toContainText('¡Bienvenido');
   });

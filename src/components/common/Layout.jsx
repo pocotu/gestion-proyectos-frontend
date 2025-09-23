@@ -37,7 +37,8 @@ const styles = {
   container: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100vh'
+    height: '100vh',
+    backgroundColor: '#f8fafc'
   },
   body: {
     display: 'flex',
@@ -49,15 +50,22 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     marginLeft: '280px', // Ancho del sidebar estático
-    backgroundColor: '#f8fafc'
+    backgroundColor: '#f8fafc',
+    minHeight: '100vh'
   },
   main: {
     flex: 1,
-    overflow: 'auto'
+    overflow: 'auto',
+    position: 'relative'
   },
   content: {
-    padding: '20px',
-    minHeight: '100%'
+    padding: '2rem',
+    minHeight: '100%',
+    backgroundColor: '#ffffff',
+    margin: '1rem',
+    borderRadius: '12px',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
   }
 };
 

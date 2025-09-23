@@ -14,11 +14,24 @@ class ProjectService {
   /**
    * Obtener todos los proyectos
    * GET /api/projects
+   * @param {Object} filters - Filtros opcionales para la búsqueda
    * @returns {Promise<Object>} Lista de proyectos
    */
-  async getAllProjects() {
+  async getAllProjects(filters = {}) {
     try {
-      const response = await apiClient.get('/projects');
+      const params = new URLSearchParams();
+      
+      // Agregar filtros como parámetros de consulta
+      Object.keys(filters).forEach(key => {
+        if (filters[key] && filters[key] !== '') {
+          params.append(key, filters[key]);
+        }
+      });
+      
+      const queryString = params.toString();
+      const url = queryString ? `/projects?${queryString}` : '/projects';
+      
+      const response = await apiClient.get(url);
       return response.data;
     } catch (error) {
       console.error('Error al obtener proyectos:', error);

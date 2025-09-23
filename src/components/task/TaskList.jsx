@@ -72,11 +72,13 @@ const TaskList = ({
       }
 
       if (response.success) {
-        setTasks(response.data.tasks || []);
-        if (response.data.pagination) {
+        // El backend devuelve {success, data: {tasks, pagination}}
+        const responseData = response.data || {};
+        setTasks(responseData.tasks || []);
+        if (responseData.pagination) {
           setPagination(prev => ({
             ...prev,
-            ...response.data.pagination
+            ...responseData.pagination
           }));
         }
       } else {
@@ -304,6 +306,7 @@ const TaskList = ({
               size="sm"
               onClick={() => onEdit(task)}
               title="Editar tarea"
+              data-testid="edit-task-button"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -369,7 +372,7 @@ const TaskList = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="tasks-list">
       {/* Información de resultados */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-gray-700">
@@ -405,6 +408,7 @@ const TaskList = ({
             columns={columns}
             keyField="id"
             className="shadow-sm"
+            rowTestId="task-row"
           />
         )
       ) : (

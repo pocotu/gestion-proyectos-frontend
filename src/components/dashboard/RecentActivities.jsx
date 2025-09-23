@@ -21,57 +21,64 @@ const RecentActivities = () => {
     try {
       setLoading(true);
       
-      // Datos simulados para las pruebas
-      const mockActivities = [
-        {
-          id: 1,
-          type: 'project_created',
-          message: 'Nuevo proyecto "Sistema de Gestión" creado',
-          user: 'Juan Pérez',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutos atrás
-          icon: '📁'
-        },
-        {
-          id: 2,
-          type: 'task_completed',
-          message: 'Tarea "Diseño de base de datos" completada',
-          user: 'María García',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 horas atrás
-          icon: '✅'
-        },
-        {
-          id: 3,
-          type: 'user_assigned',
-          message: 'Usuario asignado al proyecto "E-commerce"',
-          user: 'Carlos López',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 horas atrás
-          icon: '👤'
-        },
-        {
-          id: 4,
-          type: 'task_created',
-          message: 'Nueva tarea "Implementar autenticación" creada',
-          user: 'Ana Martínez',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6 horas atrás
-          icon: '📝'
-        },
-        {
-          id: 5,
-          type: 'project_updated',
-          message: 'Proyecto "Portal Web" actualizado',
-          user: 'Luis Rodríguez',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8), // 8 horas atrás
-          icon: '🔄'
-        }
-      ];
+      // Obtener actividades reales del backend
+      const recentActivities = await dashboardService.getRecentActivity(user?.id);
+      
+      // Formatear las actividades para el componente
+      const formattedActivities = recentActivities.map(activity => ({
+        id: activity.id,
+        type: activity.tipo || activity.accion,
+        message: activity.elemento || activity.descripcion || `${activity.accion} en ${activity.tipo}`,
+        user: activity.usuario || 'Usuario desconocido',
+        timestamp: new Date(activity.fecha || activity.created_at),
+        icon: getActivityIcon(activity.accion, activity.tipo)
+      }));
 
-      setActivities(mockActivities);
+      setActivities(formattedActivities);
     } catch (error) {
       console.error('Error cargando actividades recientes:', error);
       showError('Error al cargar las actividades recientes');
+      // En caso de error, mostrar array vacío en lugar de datos mock
+      setActivities([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Función para obtener el icono según el tipo de actividad
+  const getActivityIcon = (accion, tipo) => {
+    const iconMap = {
+      'crear': {
+        'proyecto': '📁',
+        'tarea': '📝',
+        'usuario': '👤',
+        'default': '➕'
+      },
+      'actualizar': {
+        'proyecto': '🔄',
+        'tarea': '✏️',
+        'usuario': '👤',
+        'default': '🔄'
+      },
+      'completar': {
+        'tarea': '✅',
+        'default': '✅'
+      },
+      'eliminar': {
+        'default': '🗑️'
+      },
+      'asignar': {
+        'default': '👥'
+      },
+      'login': {
+        'default': '🔐'
+      },
+      'logout': {
+        'default': '🚪'
+      }
+    };
+
+    return iconMap[accion]?.[tipo] || iconMap[accion]?.['default'] || '📋';
   };
 
   const formatTimestamp = (timestamp) => {
@@ -154,7 +161,10 @@ const styles = {
     border: '1px solid #cccccc',
     borderRadius: '4px',
     padding: '20px',
-    fontFamily: 'Arial, sans-serif'
+    fontFamily: 'Arial, sans-serif',
+    maxHeight: '400px',
+    display: 'flex',
+    flexDirection: 'column'
   },
   header: {
     display: 'flex',
@@ -192,7 +202,10 @@ const styles = {
   activitiesList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '15px'
+    gap: '15px',
+    overflowY: 'auto',
+    flex: 1,
+    paddingRight: '5px'
   },
   activityItem: {
     display: 'flex',

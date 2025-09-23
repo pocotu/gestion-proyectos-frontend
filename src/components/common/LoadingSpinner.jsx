@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * Componente LoadingSpinner
+ * Componente LoadingSpinner con Bootstrap
  * Principio de Responsabilidad Única: Solo se encarga de mostrar un indicador de carga
  * Principio Abierto/Cerrado: Extensible mediante props sin modificar el código base
  */
@@ -11,32 +11,51 @@ const LoadingSpinner = ({
   text = 'Cargando...',
   fullScreen = false 
 }) => {
-  const sizeClasses = {
-    small: 'w-4 h-4',
-    medium: 'w-8 h-8',
-    large: 'w-12 h-12'
+  const getSizeClass = () => {
+    switch (size) {
+      case 'small':
+        return 'spinner-border-sm';
+      case 'large':
+        return '';
+      default:
+        return '';
+    }
   };
 
-  const colorClasses = {
-    white: 'text-white',
-    gray: 'text-gray-600',
-    slate: 'text-gray-600',
-    primary: 'text-gray-600',
-    blue: 'text-blue-600',
-    green: 'text-green-600',
-    red: 'text-red-600',
-    yellow: 'text-yellow-600'
+  const getColorClass = () => {
+    switch (color) {
+      case 'white':
+        return 'text-white';
+      case 'secondary':
+        return 'text-secondary';
+      case 'success':
+        return 'text-success';
+      case 'danger':
+        return 'text-danger';
+      case 'warning':
+        return 'text-warning';
+      case 'info':
+        return 'text-info';
+      default:
+        return 'text-primary';
+    }
   };
 
   const spinnerContent = (
-    <div className="flex flex-col items-center justify-center space-y-2">
+    <div className="d-flex flex-column align-items-center justify-content-center">
       <div 
-        className={`animate-spin rounded-full border-2 border-gray-300 border-t-current ${sizeClasses[size]} ${colorClasses[color]}`}
+        className={`spinner-border ${getSizeClass()} ${getColorClass()}`}
         role="status"
         aria-label="Cargando"
-      />
+        style={{ 
+          width: size === 'large' ? '3rem' : size === 'small' ? '1rem' : '2rem',
+          height: size === 'large' ? '3rem' : size === 'small' ? '1rem' : '2rem'
+        }}
+      >
+        <span className="visually-hidden">Cargando...</span>
+      </div>
       {text && (
-        <p className={`text-sm ${colorClasses[color]} font-medium`}>
+        <p className={`mt-2 mb-0 ${getColorClass()}`} style={{ fontSize: '0.9rem' }}>
           {text}
         </p>
       )}
@@ -45,7 +64,10 @@ const LoadingSpinner = ({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+      <div 
+        className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75"
+        style={{ zIndex: 9999 }}
+      >
         {spinnerContent}
       </div>
     );

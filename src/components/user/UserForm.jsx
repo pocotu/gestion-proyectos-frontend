@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import FormInput from '../common/FormInput';
-import LoadingButton from '../common/LoadingButton';
+import { useState, useEffect } from 'react';
 
 /**
  * UserForm - Formulario para crear y editar usuarios
@@ -171,140 +169,187 @@ const UserForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit}>
       {/* Información básica */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput
-          label="Nombre completo"
-          name="nombre"
-          type="text"
-          value={formData.nombre}
-          onChange={(e) => handleInputChange('nombre', e.target.value)}
-          error={errors.nombre}
-          required
-          placeholder="Ingresa el nombre completo"
-        />
+      <div className="row g-3 mb-3">
+        <div className="col-md-6">
+          <label className="form-label fw-medium">
+            Nombre completo *
+          </label>
+          <input
+            type="text"
+            required
+            value={formData.nombre}
+            onChange={(e) => handleInputChange('nombre', e.target.value)}
+            className={`form-control ${errors.nombre ? 'is-invalid' : ''}`}
+            placeholder="Ingresa el nombre completo"
+          />
+          {errors.nombre && (
+            <div className="invalid-feedback">{errors.nombre}</div>
+          )}
+        </div>
 
-        <FormInput
-          label="Email"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => handleInputChange('email', e.target.value)}
-          error={errors.email}
-          required
-          placeholder="usuario@ejemplo.com"
-        />
+        <div className="col-md-6">
+          <label className="form-label fw-medium">
+            Email *
+          </label>
+          <input
+            type="email"
+            required
+            value={formData.email}
+            onChange={(e) => handleInputChange('email', e.target.value)}
+            className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+            placeholder="usuario@ejemplo.com"
+          />
+          {errors.email && (
+            <div className="invalid-feedback">{errors.email}</div>
+          )}
+        </div>
       </div>
 
       {/* Contraseña */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput
-          label={mode === 'create' ? 'Contraseña' : 'Nueva contraseña (opcional)'}
-          name="contraseña"
-          type="password"
-          value={formData.contraseña}
-          onChange={(e) => handleInputChange('contraseña', e.target.value)}
-          error={errors.contraseña}
-          required={mode === 'create'}
-          placeholder="Mínimo 6 caracteres"
-        />
+      <div className="row g-3 mb-3">
+        <div className="col-md-6">
+          <label className="form-label fw-medium">
+            {mode === 'create' ? 'Contraseña *' : 'Nueva contraseña (opcional)'}
+          </label>
+          <input
+            type="password"
+            required={mode === 'create'}
+            value={formData.contraseña}
+            onChange={(e) => handleInputChange('contraseña', e.target.value)}
+            className={`form-control ${errors.contraseña ? 'is-invalid' : ''}`}
+            placeholder="Mínimo 6 caracteres"
+          />
+          {errors.contraseña && (
+            <div className="invalid-feedback">{errors.contraseña}</div>
+          )}
+        </div>
 
-        <FormInput
-          label="Confirmar contraseña"
-          name="confirmarContraseña"
-          type="password"
-          value={formData.confirmarContraseña}
-          onChange={(e) => handleInputChange('confirmarContraseña', e.target.value)}
-          error={errors.confirmarContraseña}
-          required={mode === 'create' || formData.contraseña}
-          placeholder="Repite la contraseña"
-        />
+        <div className="col-md-6">
+          <label className="form-label fw-medium">
+            Confirmar contraseña {(mode === 'create' || formData.contraseña) && '*'}
+          </label>
+          <input
+            type="password"
+            required={mode === 'create' || formData.contraseña}
+            value={formData.confirmarContraseña}
+            onChange={(e) => handleInputChange('confirmarContraseña', e.target.value)}
+            className={`form-control ${errors.confirmarContraseña ? 'is-invalid' : ''}`}
+            placeholder="Repite la contraseña"
+          />
+          {errors.confirmarContraseña && (
+            <div className="invalid-feedback">{errors.confirmarContraseña}</div>
+          )}
+        </div>
       </div>
 
       {/* Teléfono */}
-      <FormInput
-        label="Teléfono (opcional)"
-        name="telefono"
-        type="tel"
-        value={formData.telefono}
-        onChange={(e) => handleInputChange('telefono', e.target.value)}
-        error={errors.telefono}
-        placeholder="+1234567890"
-      />
+      <div className="mb-3">
+        <label className="form-label fw-medium">
+          Teléfono
+        </label>
+        <input
+          type="tel"
+          value={formData.telefono}
+          onChange={(e) => handleInputChange('telefono', e.target.value)}
+          className={`form-control ${errors.telefono ? 'is-invalid' : ''}`}
+          placeholder="+1234567890"
+        />
+        {errors.telefono && (
+          <div className="invalid-feedback">{errors.telefono}</div>
+        )}
+      </div>
 
       {/* Estado y administrador */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="flex items-center">
+      <div className="row g-3 mb-3">
+        <div className="col-md-6">
+          <div className="form-check">
             <input
               type="checkbox"
+              id="estado"
               checked={formData.estado}
               onChange={(e) => handleInputChange('estado', e.target.checked)}
-              className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              className="form-check-input"
             />
-            <span className="ml-2 text-sm text-gray-700">Usuario habilitado</span>
-          </label>
-          <p className="text-xs text-gray-500 mt-1">
+            <label className="form-check-label fw-medium" htmlFor="estado">
+              Usuario habilitado
+            </label>
+          </div>
+          <small className="text-muted">
             Los usuarios deshabilitados no pueden acceder al sistema
-          </p>
+          </small>
         </div>
 
-        <div>
-          <label className="flex items-center">
+        <div className="col-md-6">
+          <div className="form-check">
             <input
               type="checkbox"
+              id="es_administrador"
               checked={formData.es_administrador}
               onChange={(e) => handleInputChange('es_administrador', e.target.checked)}
-              className="rounded border-gray-300 text-red-600 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+              className="form-check-input"
             />
-            <span className="ml-2 text-sm text-gray-700">Administrador del sistema</span>
-          </label>
-          <p className="text-xs text-gray-500 mt-1">
+            <label className="form-check-label fw-medium" htmlFor="es_administrador">
+              Administrador del sistema
+            </label>
+          </div>
+          <small className="text-muted">
             Los administradores tienen acceso completo al sistema
-          </p>
+          </small>
         </div>
       </div>
 
       {/* Roles adicionales */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="mb-4">
+        <label className="form-label fw-medium">
           Roles adicionales
         </label>
-        <div className="space-y-2">
+        <div className="d-flex flex-column gap-2">
           {availableRoles.map((role) => (
-            <label key={role.id} className="flex items-center">
+            <div key={role.id} className="form-check">
               <input
                 type="checkbox"
+                id={`role-${role.id}`}
                 checked={formData.roles.includes(role.id)}
                 onChange={(e) => handleRoleChange(role.id, e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                className="form-check-input"
               />
-              <span className="ml-2 text-sm text-gray-700">{role.name}</span>
-            </label>
+              <label className="form-check-label" htmlFor={`role-${role.id}`}>
+                {role.name}
+              </label>
+            </div>
           ))}
         </div>
-        <p className="text-xs text-gray-500 mt-1">
+        <small className="text-muted">
           Los usuarios pueden tener múltiples roles según sus responsabilidades
-        </p>
+        </small>
       </div>
 
       {/* Botones de acción */}
-      <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+      <div className="d-flex justify-content-end gap-2 pt-3 border-top">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="btn btn-outline-secondary"
+          disabled={loading}
         >
           Cancelar
         </button>
-        <LoadingButton
+        <button
           type="submit"
-          loading={loading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="btn btn-primary"
+          disabled={loading}
         >
-          {mode === 'create' ? 'Crear Usuario' : 'Actualizar Usuario'}
-        </LoadingButton>
+          {loading ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              {mode === 'create' ? 'Creando...' : 'Actualizando...'}
+            </>
+          ) : (
+            mode === 'create' ? 'Crear Usuario' : 'Actualizar Usuario'
+          )}
+        </button>
       </div>
     </form>
   );

@@ -233,45 +233,46 @@ const TaskSummary = ({
       <style jsx>{`
         .task-summary {
           background: white;
-          border-radius: 12px;
-          padding: 24px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          border-radius: 6px;
+          padding: 12px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
           border: 1px solid #e5e7eb;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         .summary-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 20px;
-          padding-bottom: 12px;
-          border-bottom: 1px solid #f3f4f6;
+          margin-bottom: 12px;
+          padding-bottom: 6px;
+          border-bottom: 1px solid #e5e7eb;
         }
 
         .summary-header h3 {
           margin: 0;
-          color: #1f2937;
-          font-size: 1.25rem;
+          color: #374151;
+          font-size: 0.875rem;
           font-weight: 600;
         }
 
         .view-all-link {
-          color: var(--color-bright-blue);
+          color: var(--color-dark-teal);
           text-decoration: none;
           font-weight: 500;
-          font-size: 0.875rem;
+          font-size: 0.7rem;
         }
 
         .main-stats {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          gap: 16px;
-          margin-bottom: 24px;
+          grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+          gap: 8px;
+          margin-bottom: 12px;
         }
 
         .stat-card {
-          padding: 16px;
-          border-radius: 8px;
+          padding: 8px;
+          border-radius: 4px;
           text-align: center;
           border: 1px solid #e5e7eb;
         }
@@ -307,56 +308,57 @@ const TaskSummary = ({
         }
 
         .stat-number {
-          font-size: 2rem;
+          font-size: 1.25rem;
           font-weight: 700;
-          margin-bottom: 4px;
+          margin-bottom: 1px;
         }
 
         .stat-label {
-          font-size: 0.75rem;
+          font-size: 0.6rem;
           opacity: 0.9;
           font-weight: 500;
+          line-height: 1.1;
         }
 
         .stat-percentage {
-          font-size: 0.75rem;
-          margin-top: 4px;
+          font-size: 0.6rem;
+          margin-top: 1px;
           opacity: 0.8;
         }
 
         .priority-section {
-          margin-bottom: 24px;
+          margin-bottom: 12px;
         }
 
         .priority-section h4 {
-          margin: 0 0 16px 0;
+          margin: 0 0 6px 0;
           color: #374151;
-          font-size: 1rem;
+          font-size: 0.75rem;
           font-weight: 600;
         }
 
         .priority-stats {
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 6px;
         }
 
         .priority-item {
           background: #f9fafb;
-          border-radius: 8px;
-          padding: 12px;
+          border-radius: 4px;
+          padding: 6px;
         }
 
         .priority-header {
           display: flex;
           align-items: center;
-          gap: 8px;
-          margin-bottom: 8px;
+          gap: 6px;
+          margin-bottom: 4px;
         }
 
         .priority-dot {
-          width: 10px;
-          height: 10px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
         }
 
@@ -366,7 +368,7 @@ const TaskSummary = ({
 
         .priority-label {
           flex: 1;
-          font-size: 0.875rem;
+          font-size: 0.7rem;
           color: #374151;
           font-weight: 500;
         }
@@ -374,13 +376,14 @@ const TaskSummary = ({
         .priority-count {
           font-weight: 600;
           color: #1f2937;
+          font-size: 0.7rem;
         }
 
         .priority-bar {
           width: 100%;
-          height: 6px;
+          height: 4px;
           background: #e5e7eb;
-          border-radius: 3px;
+          border-radius: 2px;
           overflow: hidden;
           position: relative;
         }
@@ -395,26 +398,26 @@ const TaskSummary = ({
         .priority-fill.low { background: #10b981; }
 
         .progress-section {
-          margin-bottom: 24px;
+          margin-bottom: 12px;
         }
 
         .progress-header {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 8px;
-          font-size: 0.875rem;
+          margin-bottom: 4px;
+          font-size: 0.7rem;
           color: #374151;
           font-weight: 500;
         }
 
         .progress-bar {
           width: 100%;
-          height: 12px;
+          height: 8px;
           background: #f3f4f6;
-          border-radius: 6px;
+          border-radius: 4px;
           overflow: hidden;
           position: relative;
-          margin-bottom: 12px;
+          margin-bottom: 6px;
         }
 
         .progress-fill.completed {
@@ -433,21 +436,21 @@ const TaskSummary = ({
 
         .progress-legend {
           display: flex;
-          gap: 16px;
+          gap: 8px;
           flex-wrap: wrap;
         }
 
         .legend-item {
           display: flex;
           align-items: center;
-          gap: 6px;
-          font-size: 0.75rem;
+          gap: 4px;
+          font-size: 0.65rem;
           color: #6b7280;
         }
 
         .legend-dot {
-          width: 8px;
-          height: 8px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
         }
 
@@ -458,15 +461,15 @@ const TaskSummary = ({
         .insight-card {
           background: #fde68a;
           border: 1px solid #f59e0b;
-          border-radius: 8px;
-          padding: 16px;
-          margin-bottom: 24px;
+          border-radius: 4px;
+          padding: 8px;
+          margin-bottom: 12px;
           display: flex;
-          gap: 12px;
+          gap: 6px;
         }
 
         .insight-icon {
-          font-size: 1.5rem;
+          font-size: 1rem;
         }
 
         .insight-content {
@@ -476,27 +479,27 @@ const TaskSummary = ({
         .insight-title {
           font-weight: 600;
           color: #92400e;
-          margin-bottom: 4px;
-          font-size: 0.875rem;
+          margin-bottom: 2px;
+          font-size: 0.7rem;
         }
 
         .insight-text {
           color: #78350f;
-          font-size: 0.875rem;
-          line-height: 1.4;
+          font-size: 0.65rem;
+          line-height: 1.3;
         }
 
         .quick-actions {
           display: flex;
-          gap: 12px;
+          gap: 6px;
           flex-wrap: wrap;
         }
 
         .action-button {
-          padding: 8px 16px;
-          border-radius: 6px;
+          padding: 4px 8px;
+          border-radius: 3px;
           text-decoration: none;
-          font-size: 0.875rem;
+          font-size: 0.65rem;
           font-weight: 500;
           transition: all 0.2s ease;
         }
@@ -518,15 +521,15 @@ const TaskSummary = ({
         }
 
         .loading-content, .error-content {
-          padding: 20px;
+          padding: 12px;
           text-align: center;
         }
 
         .loading-skeleton {
-          height: 20px;
+          height: 12px;
           background: #f3f4f6;
-          border-radius: 4px;
-          margin-bottom: 12px;
+          border-radius: 2px;
+          margin-bottom: 6px;
           animation: pulse 1.5s ease-in-out infinite;
         }
 
@@ -538,11 +541,13 @@ const TaskSummary = ({
         .error-content p {
           color: #6b7280;
           margin: 0;
+          font-size: 0.75rem;
         }
 
         @media (max-width: 768px) {
           .main-stats {
             grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
           }
           
           .quick-actions {

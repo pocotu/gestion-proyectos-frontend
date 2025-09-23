@@ -45,6 +45,11 @@ const UnauthorizedPage = () => {
               <p className="text-red-800">
                 <strong>Motivo:</strong> Se requieren permisos de administrador para acceder a este recurso.
               </p>
+              {user && (
+                <p className="text-red-700 mt-2">
+                  <strong>Usuario actual:</strong> {user.nombre} ({user.email})
+                </p>
+              )}
             </div>
           </div>
         );
@@ -56,19 +61,22 @@ const UnauthorizedPage = () => {
               Permisos Insuficientes
             </h1>
             <p className="text-lg text-gray-600 mb-6">
-              No tienes los roles necesarios para acceder a esta página.
+              No tienes los permisos necesarios para acceder a esta página.
             </p>
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <p className="text-red-800 mb-2">
-                <strong>Roles requeridos:</strong>
+              <p className="text-red-800">
+                <strong>Roles requeridos:</strong> {requiredRoles?.join(', ') || 'No especificado'}
               </p>
-              <ul className="list-disc list-inside text-red-700">
-                {requiredRoles?.map((role, index) => (
-                  <li key={index} className="capitalize">
-                    {role.replace('_', ' ')}
-                  </li>
-                ))}
-              </ul>
+              {user && (
+                <>
+                  <p className="text-red-700 mt-2">
+                    <strong>Usuario actual:</strong> {user.nombre} ({user.email})
+                  </p>
+                  <p className="text-red-700 mt-1">
+                    <strong>Tus roles:</strong> {user.roles?.join(', ') || 'Sin roles asignados'}
+                  </p>
+                </>
+              )}
             </div>
           </div>
         );
@@ -77,11 +85,21 @@ const UnauthorizedPage = () => {
         return (
           <div className="text-center">
             <h1 className="text-4xl font-bold text-red-600 mb-4">
-              Acceso Denegado
+              Acceso No Autorizado
             </h1>
             <p className="text-lg text-gray-600 mb-6">
               No tienes permisos para acceder a esta página.
             </p>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-800">
+                Por favor, contacta al administrador si crees que esto es un error.
+              </p>
+              {user && (
+                <p className="text-red-700 mt-2">
+                  <strong>Usuario:</strong> {user.nombre} ({user.email})
+                </p>
+              )}
+            </div>
           </div>
         );
     }
@@ -95,10 +113,10 @@ const UnauthorizedPage = () => {
           <div className="flex justify-center mb-6">
             <div className="rounded-full bg-red-100 p-3">
               <svg 
-                className="w-12 h-12 text-red-600" 
+                className="h-12 w-12 text-red-600" 
                 fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
               >
                 <path 
                   strokeLinecap="round" 
@@ -113,17 +131,12 @@ const UnauthorizedPage = () => {
           {/* Mensaje de error */}
           {renderErrorMessage()}
 
-          {/* Información del usuario actual */}
-          {user && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-600">
-                <strong>Usuario actual:</strong> {user.nombre} ({user.email})
+          {/* Información adicional */}
+          {from && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p className="text-blue-800 text-sm">
+                <strong>Página solicitada:</strong> {from.pathname}
               </p>
-              {user.roles && user.roles.length > 0 && (
-                <p className="text-sm text-gray-600 mt-1">
-                  <strong>Roles:</strong> {user.roles.map(role => role.nombre).join(', ')}
-                </p>
-              )}
             </div>
           )}
 
@@ -131,31 +144,30 @@ const UnauthorizedPage = () => {
           <div className="flex flex-col space-y-3">
             <button
               onClick={goToDashboard}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Ir al Dashboard
             </button>
-
+            
             <button
               onClick={goBack}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out"
+              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Volver Atrás
             </button>
 
             <Link
-              to="/"
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out text-center"
+              to="/login"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              Ir al Inicio
+              Iniciar Sesión con Otra Cuenta
             </Link>
           </div>
 
-          {/* Información de contacto para solicitar permisos */}
+          {/* Información de contacto */}
           <div className="mt-6 text-center">
             <p className="text-xs text-gray-500">
-              Si crees que deberías tener acceso a esta página, 
-              contacta al administrador del sistema.
+              Si necesitas acceso a esta página, contacta al administrador del sistema.
             </p>
           </div>
         </div>
