@@ -5,7 +5,7 @@ import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import fileService from '../services/fileService.mock';
 import projectService from '../services/projectService';
-import taskService from '../services/taskService';
+import taskService from '../services/taskService.mock';
 import '../styles/projects.css';
 
 const FilesPage = () => {
