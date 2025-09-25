@@ -5,7 +5,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import taskService from '../services/taskService.mock';
-import projectService from '../services/projectService.mock';
+import projectService from '../services/projectService';
 import '../styles/projects.css';
 
 const TasksPage = () => {
