@@ -3,7 +3,7 @@ import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import fileService from '../services/fileService';
+import fileService from '../services/fileService.mock';
 import projectService from '../services/projectService';
 import taskService from '../services/taskService';
 import '../styles/projects.css';
