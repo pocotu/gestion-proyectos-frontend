@@ -3,7 +3,7 @@ import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { activityService } from '../services/activityService';
+import { activityService } from '../services/activityService.mock';
 import { useAuth } from '../hooks/useAuth';
 
 const ActivityLogsPage = () => {
