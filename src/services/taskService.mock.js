@@ -8,7 +8,7 @@ let tasks = [
     fecha_fin: "2025-09-05",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 1,
+    proyecto_id: 6,
     usuario_asignado_id: 1,
   },
   {
@@ -19,7 +19,7 @@ let tasks = [
     fecha_fin: "2025-09-07",
     estado: "pendiente",
     prioridad: "media",
-    proyecto_id: 1,
+    proyecto_id: 7,
     usuario_asignado_id: 2,
   },
   {
@@ -30,7 +30,7 @@ let tasks = [
     fecha_fin: "2025-09-10",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 1,
+    proyecto_id: 8,
     usuario_asignado_id: 3,
   },
   {
@@ -41,7 +41,7 @@ let tasks = [
     fecha_fin: "2025-09-18",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 1,
+    proyecto_id: 4,
     usuario_asignado_id: 4,
   },
   {
@@ -52,7 +52,7 @@ let tasks = [
     fecha_fin: "2025-09-13",
     estado: "completada",
     prioridad: "baja",
-    proyecto_id: 1,
+    proyecto_id: 4,
     usuario_asignado_id: 5,
   },
   {
@@ -63,7 +63,7 @@ let tasks = [
     fecha_fin: "2025-09-25",
     estado: "pendiente",
     prioridad: "media",
-    proyecto_id: 1,
+    proyecto_id: 4,
     usuario_asignado_id: 6,
   },
   {
@@ -74,7 +74,7 @@ let tasks = [
     fecha_fin: "2025-09-08",
     estado: "pendiente",
     prioridad: "baja",
-    proyecto_id: 1,
+    proyecto_id: 6,
     usuario_asignado_id: 7,
   },
   {
@@ -85,7 +85,7 @@ let tasks = [
     fecha_fin: "2025-09-22",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 1,
+    proyecto_id: 8,
     usuario_asignado_id: 8,
   },
 
@@ -98,7 +98,7 @@ let tasks = [
     fecha_fin: "2025-09-06",
     estado: "completada",
     prioridad: "baja",
-    proyecto_id: 2,
+    proyecto_id: 4,
     usuario_asignado_id: 9,
   },
   {
@@ -109,7 +109,7 @@ let tasks = [
     fecha_fin: "2025-09-12",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 2,
+    proyecto_id: 7,
     usuario_asignado_id: 10,
   },
   {
@@ -120,7 +120,7 @@ let tasks = [
     fecha_fin: "2025-09-15",
     estado: "pendiente",
     prioridad: "media",
-    proyecto_id: 2,
+    proyecto_id: 6,
     usuario_asignado_id: 11,
   },
   {
@@ -142,7 +142,7 @@ let tasks = [
     fecha_fin: "2025-09-21",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 2,
+    proyecto_id: 4,
     usuario_asignado_id: 13,
   },
   {
@@ -153,7 +153,7 @@ let tasks = [
     fecha_fin: "2025-09-24",
     estado: "pendiente",
     prioridad: "media",
-    proyecto_id: 2,
+    proyecto_id: 7,
     usuario_asignado_id: 14,
   },
   {
@@ -164,7 +164,7 @@ let tasks = [
     fecha_fin: "2025-09-28",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 2,
+    proyecto_id: 8,
     usuario_asignado_id: 15,
   },
   {
@@ -175,7 +175,7 @@ let tasks = [
     fecha_fin: "2025-09-29",
     estado: "pendiente",
     prioridad: "baja",
-    proyecto_id: 2,
+    proyecto_id: 4,
     usuario_asignado_id: 16,
   },
 
@@ -188,7 +188,7 @@ let tasks = [
     fecha_fin: "2025-09-12",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 3,
+    proyecto_id: 6,
     usuario_asignado_id: 17,
   },
   {
@@ -199,7 +199,7 @@ let tasks = [
     fecha_fin: "2025-09-16",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 3,
+    proyecto_id: 6,
     usuario_asignado_id: 18,
   },
   {
@@ -210,7 +210,7 @@ let tasks = [
     fecha_fin: "2025-09-20",
     estado: "pendiente",
     prioridad: "media",
-    proyecto_id: 3,
+    proyecto_id: 4,
     usuario_asignado_id: 19,
   },
   {
@@ -221,7 +221,7 @@ let tasks = [
     fecha_fin: "2025-09-25",
     estado: "pendiente",
     prioridad: "media",
-    proyecto_id: 3,
+    proyecto_id: 4,
     usuario_asignado_id: 20,
   },
   {
@@ -232,7 +232,7 @@ let tasks = [
     fecha_fin: "2025-09-22",
     estado: "pendiente",
     prioridad: "media",
-    proyecto_id: 3,
+    proyecto_id: 7,
     usuario_asignado_id: 21,
   },
   {
@@ -243,7 +243,7 @@ let tasks = [
     fecha_fin: "2025-09-21",
     estado: "pendiente",
     prioridad: "baja",
-    proyecto_id: 3,
+    proyecto_id: 8,
     usuario_asignado_id: 22,
   },
   {
@@ -254,7 +254,7 @@ let tasks = [
     fecha_fin: "2025-09-29",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 3,
+    proyecto_id: 6,
     usuario_asignado_id: 23,
   },
   {
@@ -265,7 +265,7 @@ let tasks = [
     fecha_fin: "2025-09-30",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 3,
+    proyecto_id: 7,
     usuario_asignado_id: 24,
   },
 
@@ -368,7 +368,7 @@ let tasks = [
     fecha_fin: "2025-09-24",
     estado: "pendiente",
     prioridad: "media",
-    proyecto_id: 5,
+    proyecto_id: 8,
     usuario_asignado_id: 33,
   },
   {
@@ -379,7 +379,7 @@ let tasks = [
     fecha_fin: "2025-09-30",
     estado: "pendiente",
     prioridad: "baja",
-    proyecto_id: 5,
+    proyecto_id: 7,
     usuario_asignado_id: 34,
   },
   {
@@ -390,7 +390,7 @@ let tasks = [
     fecha_fin: "2025-09-28",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 5,
+    proyecto_id: 7,
     usuario_asignado_id: 35,
   },
   {
@@ -401,7 +401,7 @@ let tasks = [
     fecha_fin: "2025-09-27",
     estado: "pendiente",
     prioridad: "media",
-    proyecto_id: 5,
+    proyecto_id: 8,
     usuario_asignado_id: 36,
   },
   {
@@ -412,7 +412,7 @@ let tasks = [
     fecha_fin: "2025-09-29",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 5,
+    proyecto_id: 6,
     usuario_asignado_id: 37,
   },
   {
@@ -423,7 +423,7 @@ let tasks = [
     fecha_fin: "2025-09-30",
     estado: "pendiente",
     prioridad: "media",
-    proyecto_id: 5,
+    proyecto_id: 6,
     usuario_asignado_id: 38,
   },
   {
@@ -434,7 +434,7 @@ let tasks = [
     fecha_fin: "2025-10-02",
     estado: "pendiente",
     prioridad: "alta",
-    proyecto_id: 5,
+    proyecto_id: 7,
     usuario_asignado_id: 39,
   },
   {
@@ -445,7 +445,7 @@ let tasks = [
     fecha_fin: "2025-10-05",
     estado: "pendiente",
     prioridad: "baja",
-    proyecto_id: 5,
+    proyecto_id: 8,
     usuario_asignado_id: 40,
   },
 ];
