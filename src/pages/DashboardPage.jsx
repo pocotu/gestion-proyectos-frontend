@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import dashboardService from '../services/dashboardService';
+import dashboardService from '../services/dashboardService.mock';
 
 /**
  * Página principal del Dashboard
