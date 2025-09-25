@@ -4,8 +4,8 @@ import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import taskService from '../services/taskService';
-import projectService from '../services/projectService';
+import taskService from '../services/taskService.mock';
+import projectService from '../services/projectService.mock';
 import '../styles/projects.css';
 
 const TasksPage = () => {
