@@ -159,7 +159,6 @@ p {
 
 .card:hover {
   box-shadow: var(--shadow);
-  transform: translateY(-2px);
 }
 
 .card-header {
