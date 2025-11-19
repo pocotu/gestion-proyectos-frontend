@@ -117,7 +117,7 @@ class AuthService {
    */
   async changePassword(currentPassword, newPassword) {
     try {
-      const response = await api.patch('/auth/change-password', {
+      const response = await api.put('/auth/change-password', {
         currentPassword,
         newPassword
       });

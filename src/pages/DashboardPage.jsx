@@ -406,7 +406,7 @@ const DashboardPage = () => {
                         <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
                           <i className="bi bi-activity text-primary"></i>
                         </div>
-                        <div className="flex-grow-1">
+                        <div className="grow">
                           <h6 className="mb-1">{activity.descripcion}</h6>
                           <small className="text-muted">
                             {activity.usuario_nombre} • {new Date(activity.created_at).toLocaleDateString()}
