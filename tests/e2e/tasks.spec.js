@@ -1,15 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { loginAsAdmin } from '../helpers/auth.helper.js';
 
 test.describe('Gestión de Tareas E2E', () => {
-  // Helper para hacer login como admin
-  const loginAsAdmin = async (page) => {
-    await page.goto('http://localhost:5173/login');
-    await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
-    await page.fill('[data-testid="password-input"]', 'Admin123!');
-    await page.click('[data-testid="login-button"]');
-    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
-  };
-
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
