@@ -178,15 +178,19 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.SET_LOADING });
 
     try {
-      const response = await authService.register(userData);
-      dispatch({ type: AUTH_ACTIONS.SET_UNAUTHENTICATED });
-      return { success: true, data: response };
+      const { user, token } = await authService.register(userData);
+      // Autenticar automáticamente después del registro exitoso
+      dispatch({
+        type: AUTH_ACTIONS.SET_AUTHENTICATED,
+        payload: { user, token }
+      });
+      return { success: true, user, token };
     } catch (error) {
       dispatch({
         type: AUTH_ACTIONS.SET_ERROR,
         payload: error.message || 'Error al registrar usuario'
       });
-      return { success: false, error: error.message, errors: error.errors };
+      throw error; // Propagar el error para que el componente lo maneje
     }
   };
 

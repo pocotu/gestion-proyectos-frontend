@@ -1,170 +1,144 @@
 import { test, expect } from '@playwright/test';
+import { loginAsAdmin } from '../helpers/auth.helper.js';
+
+test.describe.configure({ mode: 'serial' });
 
 test.describe('Dashboard E2E', () => {
-  // Helper para hacer login como admin
-  const loginAsAdmin = async (page) => {
-    await page.goto('http://localhost:5173/login');
-    await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
-    await page.fill('[data-testid="password-input"]', 'Admin123!');
-    await page.click('[data-testid="login-button"]');
-    await page.waitForURL(/.*dashboard/, { timeout: 10000 });
-  };
-
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
   test('debe cargar el dashboard correctamente', async ({ page }) => {
     // Verificar que estamos en el dashboard
-    await expect(page.locator('h1, h2')).toContainText(/Dashboard|Panel/);
+    await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
     
-    // Verificar que el layout tiene los componentes principales
-    await expect(page.locator('[data-testid="sidebar"], .sidebar')).toBeVisible();
-    await expect(page.locator('[data-testid="header"], .header')).toBeVisible();
+    // Verificar el header del dashboard
+    await expect(page.locator('[data-testid="dashboard-header"] h1')).toContainText('Dashboard');
     
     // Verificar que existe el botón de logout
     await expect(page.locator('[data-testid="logout-button"]')).toBeVisible();
   });
 
   test('debe mostrar estadísticas del dashboard', async ({ page }) => {
-    // Verificar que se muestran las tarjetas de estadísticas
-    const statsCards = page.locator('[data-testid="stats-card"], .stats-card, .metric-card');
-    await expect(statsCards).toHaveCount(4, { timeout: 10000 });
+    // Verificar que se muestra la sección de estadísticas
+    await expect(page.locator('[data-testid="dashboard-stats"]')).toBeVisible();
     
-    // Verificar que las estadísticas tienen contenido
-    await expect(page.locator('text=Proyectos Activos, text=Total Proyectos')).toBeVisible();
-    await expect(page.locator('text=Tareas Pendientes, text=Total Tareas')).toBeVisible();
-    await expect(page.locator('text=Usuarios Activos, text=Total Usuarios')).toBeVisible();
-    await expect(page.locator('text=Tareas Completadas')).toBeVisible();
+    // Verificar que las estadísticas tienen contenido usando selectores más específicos
+    await expect(page.locator('[data-testid="dashboard-stats"] h6:has-text("Total Proyectos")')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-stats"] h6:has-text("Proyectos Activos")')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-stats"] h6:has-text("Total Tareas")')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-stats"] h6:has-text("En Progreso")')).toBeVisible();
   });
 
-  test('debe mostrar proyectos recientes', async ({ page }) => {
-    // Verificar que existe la sección de proyectos recientes
-    await expect(page.locator('text=Proyectos Recientes, text=Recent Projects')).toBeVisible();
+  test('debe mostrar resumen de proyectos', async ({ page }) => {
+    // Verificar que existe la sección de resumen de proyectos
+    const projectSummary = page.locator('.card:has-text("Resumen de Proyectos")');
+    await expect(projectSummary).toBeVisible();
     
-    // Verificar que se muestran proyectos
-    const projectCards = page.locator('[data-testid="recent-project"], .recent-project, .project-card');
-    if (await projectCards.count() > 0) {
-      const firstProject = projectCards.first();
-      await expect(firstProject).toBeVisible();
-      
-      // Verificar que tiene información básica del proyecto
-      await expect(firstProject.locator('text=Fecha, text=Estado')).toBeVisible();
-    }
+    // Verificar que se muestran las estadísticas de proyectos dentro de esa card
+    await expect(projectSummary.locator('small:has-text("Total")')).toBeVisible();
+    await expect(projectSummary.locator('small:has-text("Activos")')).toBeVisible();
+    await expect(projectSummary.locator('small:has-text("Completados")')).toBeVisible();
+    
+    // Verificar que existe el botón para ver todos los proyectos
+    await expect(projectSummary.locator('a[href="/projects"]:has-text("Ver todos los proyectos")')).toBeVisible();
   });
 
-  test('debe mostrar tareas pendientes', async ({ page }) => {
-    // Verificar que existe la sección de tareas pendientes
-    await expect(page.locator('text=Tareas Pendientes, text=Pending Tasks')).toBeVisible();
+  test('debe mostrar resumen de tareas', async ({ page }) => {
+    // Verificar que existe la sección de resumen de tareas
+    const taskSummary = page.locator('.card:has-text("Resumen de Tareas")');
+    await expect(taskSummary).toBeVisible();
     
-    // Verificar que se muestran tareas
-    const taskCards = page.locator('[data-testid="pending-task"], .pending-task, .task-card');
-    if (await taskCards.count() > 0) {
-      const firstTask = taskCards.first();
-      await expect(firstTask).toBeVisible();
-      
-      // Verificar que tiene información básica de la tarea
-      await expect(firstTask.locator('text=Prioridad, text=Fecha límite')).toBeVisible();
-    }
+    // Verificar que se muestran las estadísticas de tareas dentro de esa card
+    await expect(taskSummary.locator('small:has-text("Pendientes")')).toBeVisible();
+    await expect(taskSummary.locator('small:has-text("En Progreso")')).toBeVisible();
+    await expect(taskSummary.locator('small:has-text("Completadas")')).toBeVisible();
+    
+    // Verificar que existe el botón para ver todas las tareas
+    await expect(taskSummary.locator('a[href="/tasks"]:has-text("Ver todas las tareas")')).toBeVisible();
   });
 
-  test('debe permitir completar tareas desde el dashboard', async ({ page }) => {
-    // Buscar botones de completar tarea
-    const completeButtons = page.locator('[data-testid="complete-task-button"], button:has-text("Completar")');
+  test('debe mostrar acciones rápidas', async ({ page }) => {
+    // Verificar que existe la sección de acciones rápidas
+    await expect(page.locator('text=Acciones Rápidas')).toBeVisible();
     
-    if (await completeButtons.count() > 0) {
-      const firstCompleteButton = completeButtons.first();
-      await firstCompleteButton.click();
-      
-      // Verificar que se muestra confirmación
-      await expect(page.locator('.toast-success, .notification-success')).toBeVisible({ timeout: 5000 });
-    }
+    // Verificar que existen los botones de acciones rápidas
+    await expect(page.locator('a[href="/projects"]:has-text("Crear Proyecto")')).toBeVisible();
+    await expect(page.locator('a[href="/tasks"]:has-text("Crear Tarea")')).toBeVisible();
+    await expect(page.locator('a[href="/files"]:has-text("Gestionar Archivos")')).toBeVisible();
   });
 
   test('debe navegar a proyectos desde el dashboard', async ({ page }) => {
-    // Hacer clic en "Ver todos los proyectos" o similar
-    const viewAllProjectsLink = page.locator('a:has-text("Ver todos"), a:has-text("Ver más"), a[href="/projects"]');
+    // Hacer clic en "Ver todos los proyectos"
+    await page.click('a[href="/projects"]:has-text("Ver todos los proyectos")');
     
-    if (await viewAllProjectsLink.count() > 0) {
-      await viewAllProjectsLink.first().click();
-      await page.waitForURL(/.*projects/, { timeout: 10000 });
-      
-      // Verificar que estamos en la página de proyectos
-      await expect(page.locator('h1')).toContainText(/Proyectos/);
-    }
+    // Esperar navegación
+    await page.waitForURL(/.*projects/, { timeout: 10000 });
+    
+    // Verificar que estamos en la página de proyectos
+    await expect(page).toHaveURL(/.*projects/);
   });
 
   test('debe navegar a tareas desde el dashboard', async ({ page }) => {
-    // Hacer clic en "Ver todas las tareas" o similar
-    const viewAllTasksLink = page.locator('a:has-text("Ver todas"), a:has-text("Ver más"), a[href="/tasks"]');
+    // Hacer clic en "Ver todas las tareas"
+    await page.click('a[href="/tasks"]:has-text("Ver todas las tareas")');
     
-    if (await viewAllTasksLink.count() > 0) {
-      await viewAllTasksLink.first().click();
-      await page.waitForURL(/.*tasks/, { timeout: 10000 });
-      
-      // Verificar que estamos en la página de tareas
-      await expect(page.locator('h1')).toContainText(/Tareas/);
-    }
+    // Esperar navegación
+    await page.waitForURL(/.*tasks/, { timeout: 10000 });
+    
+    // Verificar que estamos en la página de tareas
+    await expect(page).toHaveURL(/.*tasks/);
   });
 
-  test('debe mostrar gráficos o visualizaciones', async ({ page }) => {
-    // Verificar que existen elementos de gráficos
-    const charts = page.locator('[data-testid="chart"], .chart, canvas, svg');
+  test('debe mostrar actividades recientes', async ({ page }) => {
+    // Verificar que existe la sección de actividades recientes usando un selector más específico
+    await expect(page.locator('.card-header:has-text("Actividades Recientes")')).toBeVisible();
     
-    if (await charts.count() > 0) {
-      await expect(charts.first()).toBeVisible();
-    }
+    // La sección debe estar visible aunque no haya actividades
+    const activityCard = page.locator('.card:has(.card-header:has-text("Actividades Recientes"))');
+    await expect(activityCard).toBeVisible();
   });
 
-  test('debe actualizar datos en tiempo real', async ({ page }) => {
-    // Obtener el valor inicial de una estadística
-    const statsCard = page.locator('[data-testid="stats-card"]').first();
-    if (await statsCard.count() > 0) {
-      const initialText = await statsCard.textContent();
-      
-      // Esperar un momento y verificar que los datos se mantienen o actualizan
-      await page.waitForTimeout(2000);
-      const updatedText = await statsCard.textContent();
-      
-      // Los datos deben estar presentes (pueden ser iguales o diferentes)
-      expect(updatedText).toBeTruthy();
-    }
+  test('debe permitir actualizar datos', async ({ page }) => {
+    // Verificar que existe el botón de actualizar
+    const refreshButton = page.locator('button:has-text("Actualizar")');
+    await expect(refreshButton).toBeVisible();
+    
+    // El botón debe estar habilitado
+    await expect(refreshButton).toBeEnabled();
+    
+    // Verificar que el botón contiene el texto "Actualizar"
+    await expect(refreshButton).toContainText('Actualizar');
   });
 
-  test('debe mostrar notificaciones o alertas', async ({ page }) => {
-    // Verificar que existe un área de notificaciones
-    const notifications = page.locator('[data-testid="notifications"], .notifications, .alerts');
+  test('debe mostrar mis tareas pendientes', async ({ page }) => {
+    // Verificar que existe la sección de mis tareas pendientes
+    await expect(page.locator('text=Mis Tareas Pendientes')).toBeVisible();
     
-    if (await notifications.count() > 0) {
-      await expect(notifications).toBeVisible();
-    }
+    // Verificar que se muestra información de tareas asignadas
+    await expect(page.locator('text=Tareas asignadas a ti')).toBeVisible();
+    
+    // Verificar que existe el botón para ver mis tareas
+    await expect(page.locator('a[href="/tasks"]:has-text("Ver mis tareas")')).toBeVisible();
   });
 
-  test('debe permitir búsqueda rápida desde el dashboard', async ({ page }) => {
-    // Buscar campo de búsqueda global
-    const searchInput = page.locator('[data-testid="global-search"], input[placeholder*="Buscar"]');
+  test('debe mostrar grid del dashboard', async ({ page }) => {
+    // Verificar que existe el grid principal del dashboard
+    await expect(page.locator('[data-testid="dashboard-grid"]')).toBeVisible();
     
-    if (await searchInput.count() > 0) {
-      await searchInput.fill('Test');
-      await page.waitForTimeout(1000);
-      
-      // Verificar que aparecen resultados o sugerencias
-      const searchResults = page.locator('[data-testid="search-results"], .search-results');
-      if (await searchResults.count() > 0) {
-        await expect(searchResults).toBeVisible();
-      }
-    }
+    // Verificar que contiene las secciones principales
+    await expect(page.locator('text=Resumen de Proyectos')).toBeVisible();
+    await expect(page.locator('text=Resumen de Tareas')).toBeVisible();
+    await expect(page.locator('text=Acciones Rápidas')).toBeVisible();
   });
 
   test('debe mostrar información del usuario logueado', async ({ page }) => {
-    // Verificar que se muestra información del usuario
-    await expect(page.locator('text=admin@gestion-proyectos.com, text=Admin')).toBeVisible();
+    // Verificar que se muestra el mensaje de bienvenida en el header del dashboard
+    const dashboardHeader = page.locator('[data-testid="dashboard-header"]');
+    await expect(dashboardHeader.locator('p:has-text("Bienvenido")')).toBeVisible();
     
-    // Verificar que existe el menú de usuario
-    const userMenu = page.locator('[data-testid="user-menu"], .user-menu');
-    if (await userMenu.count() > 0) {
-      await expect(userMenu).toBeVisible();
-    }
+    // Verificar que se muestra el badge de administrador
+    await expect(dashboardHeader.locator('.badge:has-text("Administrador")')).toBeVisible();
   });
 
   test('debe ser responsive en diferentes tamaños de pantalla', async ({ page }) => {
@@ -172,22 +146,22 @@ test.describe('Dashboard E2E', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.waitForTimeout(1000);
     
-    // Verificar que el sidebar se adapta (puede colapsar)
-    const sidebar = page.locator('[data-testid="sidebar"], .sidebar');
-    await expect(sidebar).toBeVisible();
+    // Verificar que el dashboard sigue visible
+    await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
     
     // Probar en tamaño tablet
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.waitForTimeout(1000);
     
     // Verificar que sigue siendo funcional
-    await expect(page.locator('h1, h2')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-header"] h1')).toBeVisible();
     
     // Volver a tamaño desktop
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.waitForTimeout(1000);
     
     // Verificar que todo sigue visible
-    await expect(page.locator('[data-testid="sidebar"], .sidebar')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-page"]')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-stats"]')).toBeVisible();
   });
 });

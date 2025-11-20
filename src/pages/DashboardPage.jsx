@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import dashboardService from '../services/dashboardService.mock';
+import dashboardService from '../services/dashboardService';
 
 /**
  * Página principal del Dashboard
@@ -37,25 +37,35 @@ const DashboardPage = () => {
       setError(null);
 
       // Cargar datos reales del dashboard
-      const dashboardData = await dashboardService.getDashboardData();
+      const response = await dashboardService.getDashboardData();
+      const dashboardData = response.data || response;
+
+      // Cargar actividades recientes
+      let activities = [];
+      try {
+        const activityResponse = await dashboardService.getRecentActivity(user?.id);
+        activities = activityResponse.data || activityResponse || [];
+      } catch (actError) {
+        console.warn('No se pudieron cargar las actividades:', actError);
+      }
 
       setStats({
         projects: {
           total: dashboardData.projects?.total || 0,
-          active: dashboardData.projects?.active || 0,
-          completed: dashboardData.projects?.completed || 0,
-          myProjects: dashboardData.projects?.myProjects || 0
+          active: dashboardData.projects?.activos || dashboardData.projects?.active || 0,
+          completed: dashboardData.projects?.completados || dashboardData.projects?.completed || 0,
+          myProjects: dashboardData.projects?.mis_proyectos || dashboardData.projects?.myProjects || 0
         },
         tasks: {
           total: dashboardData.tasks?.total || 0,
-          pending: dashboardData.tasks?.pending || 0,
-          inProgress: dashboardData.tasks?.inProgress || 0,
-          completed: dashboardData.tasks?.completed || 0,
-          myTasks: dashboardData.tasks?.myTasks || 0
+          pending: dashboardData.tasks?.pendientes || dashboardData.tasks?.pending || 0,
+          inProgress: dashboardData.tasks?.en_progreso || dashboardData.tasks?.inProgress || 0,
+          completed: dashboardData.tasks?.completadas || dashboardData.tasks?.completed || 0,
+          myTasks: dashboardData.tasks?.mis_tareas || dashboardData.tasks?.myTasks || 0
         }
       });
 
-      setRecentActivities(dashboardData.recentActivities || []);
+      setRecentActivities(activities.slice(0, 5));
 
     } catch (error) {
       console.error('Error loading dashboard:', error);
@@ -72,25 +82,35 @@ const DashboardPage = () => {
       setError(null);
 
       // Cargar datos reales del dashboard
-      const dashboardData = await dashboardService.getDashboardData();
+      const response = await dashboardService.getDashboardData();
+      const dashboardData = response.data || response;
+
+      // Cargar actividades recientes
+      let activities = [];
+      try {
+        const activityResponse = await dashboardService.getRecentActivity(user?.id);
+        activities = activityResponse.data || activityResponse || [];
+      } catch (actError) {
+        console.warn('No se pudieron cargar las actividades:', actError);
+      }
 
       setStats({
         projects: {
           total: dashboardData.projects?.total || 0,
-          active: dashboardData.projects?.active || 0,
-          completed: dashboardData.projects?.completed || 0,
-          myProjects: dashboardData.projects?.myProjects || 0
+          active: dashboardData.projects?.activos || dashboardData.projects?.active || 0,
+          completed: dashboardData.projects?.completados || dashboardData.projects?.completed || 0,
+          myProjects: dashboardData.projects?.mis_proyectos || dashboardData.projects?.myProjects || 0
         },
         tasks: {
           total: dashboardData.tasks?.total || 0,
-          pending: dashboardData.tasks?.pending || 0,
-          inProgress: dashboardData.tasks?.inProgress || 0,
-          completed: dashboardData.tasks?.completed || 0,
-          myTasks: dashboardData.tasks?.myTasks || 0
+          pending: dashboardData.tasks?.pendientes || dashboardData.tasks?.pending || 0,
+          inProgress: dashboardData.tasks?.en_progreso || dashboardData.tasks?.inProgress || 0,
+          completed: dashboardData.tasks?.completadas || dashboardData.tasks?.completed || 0,
+          myTasks: dashboardData.tasks?.mis_tareas || dashboardData.tasks?.myTasks || 0
         }
       });
 
-      setRecentActivities(dashboardData.recentActivities || []);
+      setRecentActivities(activities.slice(0, 5));
       showSuccess('Datos actualizados correctamente');
 
     } catch (error) {
@@ -401,15 +421,15 @@ const DashboardPage = () => {
               ) : (
                 <div className="list-group list-group-flush">
                   {recentActivities.slice(0, 5).map((activity, index) => (
-                    <div key={index} className="list-group-item border-0 px-0">
+                    <div key={activity.id || index} className="list-group-item border-0 px-0">
                       <div className="d-flex align-items-center">
                         <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
                           <i className="bi bi-activity text-primary"></i>
                         </div>
-                        <div className="grow">
-                          <h6 className="mb-1">{activity.descripcion}</h6>
+                        <div className="flex-grow-1">
+                          <h6 className="mb-1">{activity.elemento || activity.descripcion}</h6>
                           <small className="text-muted">
-                            {activity.usuario_nombre} • {new Date(activity.created_at).toLocaleDateString()}
+                            {activity.usuario || activity.usuario_nombre} • {new Date(activity.fecha || activity.created_at).toLocaleDateString()}
                           </small>
                         </div>
                       </div>

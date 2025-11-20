@@ -94,10 +94,13 @@ test.describe('Sistema de Autenticación', () => {
     await page.fill('input[name="contraseña"]', 'password123');
     await page.fill('input[name="confirmarContraseña"]', 'password123');
     
-    // Hacer click en el botón de registro
-    await page.click('button[type="submit"]');
+    // Hacer click en el botón de registro y esperar navegación
+    await Promise.all([
+      page.waitForURL(/.*(?:dashboard|login)/, { timeout: 10000 }),
+      page.click('button[type="submit"]')
+    ]);
     
-    // Verificar redirección al dashboard o login
+    // Verificar que estamos en dashboard o login
     await expect(page).toHaveURL(/.*(?:dashboard|login)/);
   });
 

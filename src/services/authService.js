@@ -15,12 +15,13 @@ class AuthService {
   async register(userData) {
     try {
       const response = await api.post('/auth/register', userData);
-      const { user, accessToken, refreshToken } = response.data;
+      // Backend devuelve { success, user, token }
+      const { user, token } = response.data;
       
-      // Guardar datos en localStorage
-      this._setAuthData(user, accessToken, refreshToken);
+      // Guardar datos en localStorage (usar token como refreshToken para MVP)
+      this._setAuthData(user, token, token);
       
-      return response.data;
+      return { user, token };
     } catch (error) {
       throw this._handleError(error, 'Error al registrar usuario');
     }
