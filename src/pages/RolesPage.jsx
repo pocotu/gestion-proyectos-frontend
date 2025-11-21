@@ -7,7 +7,7 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 import RoleList from '../components/role/RoleList';
 import RoleForm from '../components/role/RoleForm';
 import RoleAssignForm from '../components/role/RoleAssignForm';
-import userService from '../services/userService.mock';
+import userService from '../services/userService';
 
 
 /**
@@ -77,7 +77,9 @@ const RolesPage = () => {
         // Backend format: { success: true, data: { roles: [...] } }
         rolesData = response.data.roles.map(role => ({
           id: role.id,
-          nombre: role.name || role.nombre
+          nombre: role.name || role.nombre,
+          created_at: role.created_at,
+          user_count: role.user_count || 0
         }));
       } else if (response?.data && Array.isArray(response.data)) {
         rolesData = response.data;
@@ -105,6 +107,8 @@ const RolesPage = () => {
       let usersData = [];
       if (Array.isArray(response)) {
         usersData = response;
+      } else if (response?.data?.users && Array.isArray(response.data.users)) {
+        usersData = response.data.users;
       } else if (response?.data && Array.isArray(response.data)) {
         usersData = response.data;
       } else if (response?.users && Array.isArray(response.users)) {
@@ -206,18 +210,18 @@ const RolesPage = () => {
 
   // Obtener conteo de usuarios por rol
   const getUserCountForRole = (roleId) => {
-    if (!Array.isArray(userRoles)) return 0;
-    return userRoles.filter(ur => ur.rol_id === roleId).length;
+    const role = roles.find(r => r.id === roleId);
+    return role?.user_count || 0;
   };
 
   // Obtener usuarios asignados a un rol
   const getUsersForRole = (roleId) => {
-    if (!Array.isArray(userRoles) || !Array.isArray(users)) return '';
-    const roleUsers = userRoles.filter(ur => ur.rol_id === roleId);
-    return roleUsers.map(ur => {
-      const user = users.find(u => u.id === ur.usuario_id);
-      return user ? user.nombre : 'Usuario no encontrado';
-    }).join(', ');
+    if (!Array.isArray(users)) return '';
+    // Filtrar usuarios que tienen este rol
+    const usersWithRole = users.filter(user => 
+      user.roles && user.roles.some(role => role.id === roleId)
+    );
+    return usersWithRole.map(user => user.nombre).join(', ');
   };
 
   if (loading) {

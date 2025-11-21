@@ -38,65 +38,65 @@ const RoleList = ({
           <thead className="table-light">
             <tr>
               <th scope="col" className="fw-semibold">Rol</th>
+              <th scope="col" className="fw-semibold">Descripción</th>
               <th scope="col" className="fw-semibold">Usuarios Asignados</th>
-              <th scope="col" className="fw-semibold">Fecha Creación</th>
-              <th scope="col" className="fw-semibold text-end">Acciones</th>
+              <th scope="col" className="fw-semibold">Estado</th>
             </tr>
           </thead>
           <tbody>
-            {roles.map((role) => (
-              <tr key={role.id}>
-                <td>
-                  <div className="d-flex align-items-center">
-                    <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                      <i className="bi bi-shield text-primary"></i>
+            {roles.map((role) => {
+              const userCount = getUserCountForRole ? getUserCountForRole(role.id) : 0;
+              const usersList = getUsersForRole ? getUsersForRole(role.id) : '';
+              
+              // Descripciones de los roles del sistema
+              const roleDescriptions = {
+                'admin': 'Acceso completo al sistema, gestión de usuarios y configuración',
+                'responsable_proyecto': 'Puede crear y gestionar proyectos, asignar tareas',
+                'responsable_tarea': 'Puede gestionar tareas asignadas y actualizar su estado'
+              };
+              
+              return (
+                <tr key={role.id}>
+                  <td>
+                    <div className="d-flex align-items-center">
+                      <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                        <i className="bi bi-shield text-primary"></i>
+                      </div>
+                      <div>
+                        <div className="fw-semibold text-dark">{role.nombre}</div>
+                        <small className="text-muted">ID: {role.id}</small>
+                      </div>
                     </div>
-                    <div>
-                      <div className="fw-semibold text-dark">{role.nombre}</div>
-                      <small className="text-muted">ID: {role.id}</small>
+                  </td>
+                  <td>
+                    <small className="text-muted">
+                      {roleDescriptions[role.nombre] || 'Rol del sistema'}
+                    </small>
+                  </td>
+                  <td>
+                    <div className="d-flex align-items-center gap-2">
+                      <span className={`badge ${userCount > 0 ? 'bg-success' : 'bg-secondary'} bg-opacity-10 ${userCount > 0 ? 'text-success' : 'text-secondary'}`}>
+                        {userCount} {userCount === 1 ? 'usuario' : 'usuarios'}
+                      </span>
                     </div>
-                  </div>
-                </td>
-                <td>
-                  <span className="badge bg-info bg-opacity-10 text-info">
-                    {getUserCountForRole ? getUserCountForRole(role.id) : 0} usuarios
-                  </span>
-                  {getUsersForRole && getUsersForRole(role.id) && (
-                    <div className="small text-muted mt-1" title={getUsersForRole(role.id)}>
-                      {getUsersForRole(role.id).length > 30 
-                        ? getUsersForRole(role.id).substring(0, 30) + '...'
-                        : getUsersForRole(role.id)
-                      }
-                    </div>
-                  )}
-                </td>
-                <td>
-                  <small className="text-muted">
-                    {role.created_at ? new Date(role.created_at).toLocaleDateString() : 'N/A'}
-                  </small>
-                </td>
-                <td>
-                  <div className="d-flex justify-content-end gap-1">
-                    <button
-                      onClick={() => onEdit && onEdit(role)}
-                      className="btn btn-sm btn-outline-primary"
-                      title="Editar rol (no disponible)"
-                      disabled={true}
-                    >
-                      <i className="bi bi-pencil"></i>
-                    </button>
-                    <button
-                      onClick={() => onDelete && onDelete(role)}
-                      className="btn btn-sm btn-outline-danger"
-                      title="Eliminar rol (no disponible)"
-                      disabled={true}
-                    >
-                      <i className="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                    {usersList && (
+                      <div className="small text-muted mt-1" title={usersList}>
+                        {usersList.length > 40 
+                          ? usersList.substring(0, 40) + '...'
+                          : usersList
+                        }
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    <span className="badge bg-primary bg-opacity-10 text-primary">
+                      <i className="bi bi-check-circle me-1"></i>
+                      Activo
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
