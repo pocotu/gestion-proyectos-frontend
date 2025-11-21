@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import dashboardService from '../services/dashboardService';
 
@@ -12,7 +11,6 @@ import dashboardService from '../services/dashboardService';
  */
 const DashboardPage = () => {
   const { user, isAuthenticated } = useAuth();
-  const { showSuccess, showError } = useNotifications();
 
   // Escala tipográfica consistente (DRY - Don't Repeat Yourself)
   const typography = {
@@ -50,13 +48,18 @@ const DashboardPage = () => {
       const response = await dashboardService.getDashboardData();
       const dashboardData = response.data || response;
 
-      // Cargar actividades recientes
+      // Cargar actividades recientes (solo si es admin)
       let activities = [];
-      try {
-        const activityResponse = await dashboardService.getRecentActivity(user?.id);
-        activities = activityResponse.data || activityResponse || [];
-      } catch (actError) {
-        console.warn('No se pudieron cargar las actividades:', actError);
+      if (user?.es_administrador) {
+        try {
+          const activityResponse = await dashboardService.getRecentActivity(user?.id);
+          activities = activityResponse.data || activityResponse || [];
+        } catch (actError) {
+          // Silenciosamente ignorar errores de permisos
+          if (actError.response?.status !== 403) {
+            console.error('Error al cargar actividades:', actError);
+          }
+        }
       }
 
       setStats({
@@ -80,7 +83,6 @@ const DashboardPage = () => {
     } catch (error) {
       console.error('Error loading dashboard:', error);
       setError('Error al cargar los datos del dashboard');
-      showError('Error al cargar los datos del dashboard');
     } finally {
       setIsLoading(false);
     }
@@ -95,13 +97,18 @@ const DashboardPage = () => {
       const response = await dashboardService.getDashboardData();
       const dashboardData = response.data || response;
 
-      // Cargar actividades recientes
+      // Cargar actividades recientes (solo si es admin)
       let activities = [];
-      try {
-        const activityResponse = await dashboardService.getRecentActivity(user?.id);
-        activities = activityResponse.data || activityResponse || [];
-      } catch (actError) {
-        console.warn('No se pudieron cargar las actividades:', actError);
+      if (user?.es_administrador) {
+        try {
+          const activityResponse = await dashboardService.getRecentActivity(user?.id);
+          activities = activityResponse.data || activityResponse || [];
+        } catch (actError) {
+          // Silenciosamente ignorar errores de permisos
+          if (actError.response?.status !== 403) {
+            console.error('Error al cargar actividades:', actError);
+          }
+        }
       }
 
       setStats({
@@ -121,12 +128,10 @@ const DashboardPage = () => {
       });
 
       setRecentActivities(activities.slice(0, 5));
-      showSuccess('Datos actualizados correctamente');
 
     } catch (error) {
       console.error('Error refreshing dashboard:', error);
       setError('Error al actualizar los datos');
-      showError('Error al actualizar los datos');
     } finally {
       setIsRefreshing(false);
     }

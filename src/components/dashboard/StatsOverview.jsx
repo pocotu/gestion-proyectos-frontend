@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
 import StatsCard from './StatsCard';
 import './StatsOverview.css';
 
@@ -15,8 +14,7 @@ import './StatsOverview.css';
  */
 const StatsOverview = ({ stats }) => {
   const { user } = useAuth();
-  const { addNotification } = useNotifications();
-  const [timeFilter, setTimeFilter] = useState('month'); // 'week', 'month', 'quarter', 'year'
+    const [timeFilter, setTimeFilter] = useState('month'); // 'week', 'month', 'quarter', 'year'
 
   // Usar stats por defecto si no se pasan como prop
   const defaultStats = {
@@ -142,12 +140,7 @@ const StatsOverview = ({ stats }) => {
 
   const handleTimeFilterChange = (filter) => {
     setTimeFilter(filter);
-    addNotification({
-      type: 'info',
-      message: `Filtro de tiempo cambiado a: ${filter}`,
-      duration: 2000
-    });
-  };
+      };
 
   const projectStats = getProjectStats();
   const taskStats = getTaskStats();

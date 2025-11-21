@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -18,8 +17,7 @@ import userService from '../services/userService.mock';
 const RolesPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { addNotification } = useNotifications();
-
+  
   // Estados principales
   const [roles, setRoles] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
@@ -45,12 +43,11 @@ const RolesPage = () => {
   // Verificar permisos de administrador
   useEffect(() => {
     if (!user?.es_administrador) {
-      addNotification('No tienes permisos para acceder a esta página', 'error');
-      navigate('/dashboard');
+            navigate('/dashboard');
       return;
     }
     loadData();
-  }, [user, navigate, addNotification]);
+  }, [user, navigate]);
 
   // Cargar todos los datos
   const loadData = async () => {
@@ -62,8 +59,7 @@ const RolesPage = () => {
     } catch (error) {
       console.error('Error al cargar datos:', error);
       setError('Error al cargar los datos');
-      addNotification('Error al cargar los datos', 'error');
-    } finally {
+          } finally {
       setLoading(false);
     }
   };
@@ -139,11 +135,9 @@ const RolesPage = () => {
       
       if (formMode === 'create') {
         await userService.createRole(roleData);
-        addNotification('Rol creado exitosamente', 'success');
-      } else {
+              } else {
         await userService.updateRole(selectedRole.id, roleData);
-        addNotification('Rol actualizado exitosamente', 'success');
-      }
+              }
       
       setShowRoleForm(false);
       setSelectedRole(null);
@@ -152,8 +146,7 @@ const RolesPage = () => {
       console.error('Error al guardar rol:', error);
       const message = error.response?.data?.message || 
         (formMode === 'create' ? 'Error al crear el rol' : 'Error al actualizar el rol');
-      addNotification(message, 'error');
-    } finally {
+          } finally {
       setSubmitting(false);
     }
   };
@@ -171,27 +164,23 @@ const RolesPage = () => {
       
       // The backend expects { userId, roleIdentifier }
       await userService.assignRole(assignData.usuario_id, selectedRole.nombre);
-      addNotification('Rol asignado exitosamente', 'success');
-      setShowAssignForm(false);
+            setShowAssignForm(false);
       loadUserRoles();
     } catch (error) {
       console.error('Error al asignar rol:', error);
       const message = error.response?.data?.message || 'Error al asignar el rol';
-      addNotification(message, 'error');
-    } finally {
+          } finally {
       setSubmitting(false);
     }
   };
 
   // Manejar edición de rol (no disponible)
   const handleEditRole = (role) => {
-    addNotification('La edición de roles no está disponible actualmente', 'info');
-  };
+      };
 
   // Confirmar eliminación de rol (no disponible)
   const confirmDeleteRole = (role) => {
-    addNotification('La eliminación de roles no está disponible actualmente', 'info');
-  };
+      };
 
   // Manejar eliminación de rol (no disponible)
   const handleDeleteRole = async () => {

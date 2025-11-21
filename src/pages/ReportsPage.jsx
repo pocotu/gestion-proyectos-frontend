@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 /**
@@ -10,14 +9,13 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
  * - Single Responsibility: Solo maneja la generación y visualización de reportes
  * - Open/Closed: Abierto para extensión (nuevos tipos de reportes)
  * - Liskov Substitution: Puede ser sustituido por otros componentes de reportes
- * - Interface Segregation: Usa interfaces específicas (useAuth, useNotifications)
+ * - Interface Segregation: Usa interfaces específicas (useAuth)
  * - Dependency Inversion: Depende de abstracciones (hooks, contextos)
  */
 const ReportsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { addNotification } = useNotifications();
-
+  
   // Estados principales
   const [stats, setStats] = useState({
     users: { total: 0, active: 0, inactive: 0 },
@@ -80,8 +78,7 @@ const ReportsPage = () => {
       }
     } catch (err) {
       setError(err.message);
-      addNotification('Error al cargar estadísticas', 'error');
-    } finally {
+          } finally {
       setLoading(false);
     }
   };
@@ -131,13 +128,11 @@ const ReportsPage = () => {
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
-        addNotification('Reporte generado exitosamente', 'success');
-      } else {
+              } else {
         throw new Error('Error al generar reporte');
       }
     } catch (err) {
-      addNotification(err.message, 'error');
-    }
+          }
   };
 
   // Función para formatear números

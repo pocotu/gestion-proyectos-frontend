@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
 import dashboardService from '../../services/dashboardService';
 import taskService from '../../services/taskService';
 
@@ -11,7 +10,6 @@ import taskService from '../../services/taskService';
  */
 const PendingTasks = () => {
   const { user } = useAuth();
-  const { showError, showSuccess } = useNotifications();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [completingTask, setCompletingTask] = useState(null);
@@ -43,7 +41,6 @@ const PendingTasks = () => {
       setTasks(formattedTasks);
     } catch (error) {
       console.error('Error cargando tareas pendientes:', error);
-      showError('Error al cargar las tareas pendientes');
       setTasks([]); // Fallback a array vacío en caso de error
     } finally {
       setLoading(false);
@@ -67,13 +64,12 @@ const PendingTasks = () => {
           ).filter(task => task.estado !== 'completada')
         );
         
-        showSuccess('Tarea completada exitosamente');
+        console.log('Tarea completada exitosamente');
       } else {
         throw new Error(response.message || 'Error al completar la tarea');
       }
     } catch (error) {
       console.error('Error completando tarea:', error);
-      showError(error.message || 'Error al completar la tarea');
     } finally {
       setCompletingTask(null);
     }

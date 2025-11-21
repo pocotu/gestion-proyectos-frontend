@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { useNotifications } from '../../context/NotificationContext';
 
 /**
  * FileUpload - Componente para subir archivos
@@ -13,8 +12,7 @@ const FileUpload = ({
   disabled = false,
   className = ''
 }) => {
-  const { addNotification } = useNotifications();
-  const fileInputRef = useRef(null);
+    const fileInputRef = useRef(null);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
 
@@ -57,8 +55,7 @@ const FileUpload = ({
 
     // Validar límite de archivos
     if (selectedFiles.length + fileArray.length > maxFiles) {
-      addNotification(`Solo puedes subir un máximo de ${maxFiles} archivos`, 'error');
-      return;
+            return;
     }
 
     // Validar cada archivo
@@ -74,8 +71,7 @@ const FileUpload = ({
     // Mostrar errores si los hay
     if (allErrors.length > 0) {
       allErrors.forEach(error => {
-        addNotification(error, 'error');
-      });
+              });
     }
 
     // Agregar archivos válidos
@@ -83,7 +79,7 @@ const FileUpload = ({
       const newFiles = [...selectedFiles, ...validFiles];
       setSelectedFiles(newFiles);
       onFilesSelected(newFiles);
-      addNotification(`${validFiles.length} archivo(s) seleccionado(s)`, 'success');
+       seleccionado(s)`, 'success');
     }
   };
 

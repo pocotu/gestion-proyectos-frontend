@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 
 /**
  * RegisterPage - Página de registro de usuarios con diseño moderno usando Bootstrap
@@ -25,8 +24,7 @@ const RegisterPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { register, isAuthenticated } = useAuth();
-  const { showSuccess, showError } = useNotifications();
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
   // Redirigir si ya está autenticado
   useEffect(() => {
@@ -146,8 +144,7 @@ const RegisterPage = () => {
 
       await register(registrationData);
       
-      showSuccess('Registro exitoso. ¡Bienvenido!');
-      
+            
       // Redirigir al dashboard después del registro exitoso
       navigate('/dashboard', { replace: true });
 
@@ -158,8 +155,7 @@ const RegisterPage = () => {
                           error.message || 
                           'Error al registrar usuario. Intenta nuevamente.';
       
-      showError(errorMessage);
-      
+            
       // Si el email ya existe, enfocar el campo email
       if (errorMessage.includes('email') || errorMessage.includes('existe')) {
         setErrors(prev => ({

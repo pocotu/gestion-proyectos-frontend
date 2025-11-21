@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
 import dashboardService from '../../services/dashboardService';
 
 /**
@@ -9,8 +8,7 @@ import dashboardService from '../../services/dashboardService';
  */
 const RecentActivities = () => {
   const { user } = useAuth();
-  const { showError } = useNotifications();
-  const [activities, setActivities] = useState([]);
+    const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,8 +35,7 @@ const RecentActivities = () => {
       setActivities(formattedActivities);
     } catch (error) {
       console.error('Error cargando actividades recientes:', error);
-      showError('Error al cargar las actividades recientes');
-      // En caso de error, mostrar array vacío en lugar de datos mock
+            // En caso de error, mostrar array vacío en lugar de datos mock
       setActivities([]);
     } finally {
       setLoading(false);

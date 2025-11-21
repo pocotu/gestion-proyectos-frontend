@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNotifications } from '../../context/NotificationContext';
 import ConfirmDialog from '../common/ConfirmDialog';
 
 /**
@@ -13,8 +12,7 @@ const FileList = ({
   loading = false,
   className = ''
 }) => {
-  const { addNotification } = useNotifications();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
 
   /**
@@ -116,11 +114,9 @@ const FileList = ({
       link.click();
       document.body.removeChild(link);
       
-      addNotification('Descarga iniciada', 'success');
-    } catch (error) {
+          } catch (error) {
       console.error('Error al descargar archivo:', error);
-      addNotification('Error al descargar el archivo', 'error');
-    }
+          }
   };
 
   /**
@@ -139,11 +135,9 @@ const FileList = ({
 
     try {
       await onDelete(fileToDelete.id);
-      addNotification('Archivo eliminado exitosamente', 'success');
-    } catch (error) {
+          } catch (error) {
       console.error('Error al eliminar archivo:', error);
-      addNotification('Error al eliminar el archivo', 'error');
-    } finally {
+          } finally {
       setShowDeleteDialog(false);
       setFileToDelete(null);
     }

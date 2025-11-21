@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -10,8 +9,7 @@ import '../styles/projects.css';
 
 const TasksPage = () => {
   const navigate = useNavigate();
-  const { addNotification } = useNotifications();
-
+  
   // Estados principales
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -64,8 +62,7 @@ const TasksPage = () => {
     } catch (error) {
       console.error('Error al cargar tareas:', error);
       setError('Error al cargar las tareas');
-      addNotification('Error al cargar las tareas', 'error');
-      setTasks([]);
+            setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -88,22 +85,16 @@ const TasksPage = () => {
     try {
       if (formMode === 'create') {
         await taskService.createTask(taskForm);
-        addNotification('Tarea creada exitosamente', 'success');
-      } else {
+              } else {
         await taskService.updateTask(selectedTask.id, taskForm);
-        addNotification('Tarea actualizada exitosamente', 'success');
-      }
+              }
 
       setShowTaskForm(false);
       resetForm();
       loadTasks();
     } catch (error) {
       console.error('Error al guardar tarea:', error);
-      addNotification(
-        formMode === 'create' ? 'Error al crear la tarea' : 'Error al actualizar la tarea',
-        'error'
-      );
-    }
+          }
   };
 
   // Resetear formulario
@@ -155,14 +146,12 @@ const TasksPage = () => {
   const handleDelete = async () => {
     try {
       await taskService.deleteTask(selectedTask.id);
-      addNotification('Tarea eliminada exitosamente', 'success');
-      setShowConfirmDialog(false);
+            setShowConfirmDialog(false);
       setSelectedTask(null);
       loadTasks();
     } catch (error) {
       console.error('Error al eliminar tarea:', error);
-      addNotification('Error al eliminar la tarea', 'error');
-    }
+          }
   };
 
   // Navegar a detalles de la tarea

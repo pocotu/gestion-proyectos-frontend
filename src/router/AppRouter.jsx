@@ -19,7 +19,6 @@ import ReportsPage from '../pages/ReportsPage';
 // Componentes de layout y protección
 import Layout from '../components/common/Layout';
 import ProtectedRoute, { PublicRoute, AdminRoute } from '../components/common/ProtectedRoute';
-import ToastContainer from '../components/common/ToastContainer';
 
 const AppRouter = () => {
   return (
@@ -120,9 +119,6 @@ const AppRouter = () => {
         {/* Ruta 404 */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
-      
-      {/* ToastContainer global para mostrar notificaciones */}
-      <ToastContainer />
     </BrowserRouter>
   );
 };

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 
 /**
  * LoginPage - Página de inicio de sesión con diseño moderno usando Bootstrap
@@ -23,8 +22,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const { login, isAuthenticated } = useAuth();
-  const { showSuccess, showError, showInfo } = useNotifications();
-  const navigate = useNavigate();
+    const navigate = useNavigate();
   const location = useLocation();
 
   // Redirigir si ya está autenticado
@@ -88,35 +86,32 @@ const LoginPage = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      showError('Por favor, corrige los errores en el formulario');
-      return;
+            return;
     }
 
     setIsLoading(true);
 
     try {
       await login(formData.email, formData.contraseña);
-      showSuccess('¡Bienvenido! Has iniciado sesión correctamente');
-
+      
       // Redirigir a la página solicitada o al dashboard
       const from = location.state?.from?.pathname || '/dashboard';
       navigate(from, { replace: true });
     } catch (error) {
       console.error('Error en login:', error);
-      showError(error.message || 'Error al iniciar sesión');
-    } finally {
+          } finally {
       setIsLoading(false);
     }
   };
 
-  // Mostrar mensaje si viene de una ruta protegida (solo una vez)
+  // Limpiar el estado de navegación si viene de una ruta protegida
   useEffect(() => {
     if (location.state?.from && !isAuthenticated) {
-      showInfo('Debes iniciar sesión para acceder a esa página');
+      console.log('Redirigido desde:', location.state.from);
       // Limpiar el estado para evitar que se muestre de nuevo
       window.history.replaceState({}, document.title);
     }
-  }, [location.state, showInfo, isAuthenticated]);
+  }, [location.state, isAuthenticated]);
 
   return (
     <div className="gradient-bg min-vh-100 d-flex align-items-center py-5">

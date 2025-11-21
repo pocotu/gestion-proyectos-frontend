@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -9,8 +8,7 @@ import taskService from '../services/taskService.mock';
 import '../styles/projects.css';
 
 const FilesPage = () => {
-  const { addNotification } = useNotifications();
-
+  
   // Escala tipográfica consistente (DRY - Don't Repeat Yourself)
   const typography = {
     pageTitle: '1.75rem',
@@ -76,8 +74,7 @@ const FilesPage = () => {
     } catch (error) {
       console.error('Error al cargar archivos:', error);
       setError('Error al cargar los archivos');
-      addNotification('Error al cargar los archivos', 'error');
-      setFiles([]);
+            setFiles([]);
     } finally {
       setLoading(false);
     }
@@ -110,13 +107,11 @@ const FilesPage = () => {
     e.preventDefault();
     
     if (uploadForm.files.length === 0) {
-      addNotification('Selecciona al menos un archivo', 'error');
-      return;
+            return;
     }
 
     if (!uploadForm.entidad_id) {
-      addNotification('Selecciona un proyecto o tarea', 'error');
-      return;
+            return;
     }
 
     setUploading(true);
@@ -134,14 +129,12 @@ const FilesPage = () => {
         await fileService.uploadFile(formData);
       }
 
-      addNotification('Archivos subidos exitosamente', 'success');
-      setShowUploadModal(false);
+            setShowUploadModal(false);
       resetUploadForm();
       loadFiles();
     } catch (error) {
       console.error('Error al subir archivos:', error);
-      addNotification('Error al subir archivos', 'error');
-    } finally {
+          } finally {
       setUploading(false);
     }
   };
@@ -166,11 +159,9 @@ const FilesPage = () => {
   const handleDownload = async (file) => {
     try {
       await fileService.downloadFile(file.id, file.nombre_original);
-      addNotification('Archivo descargado', 'success');
-    } catch (error) {
+          } catch (error) {
       console.error('Error al descargar archivo:', error);
-      addNotification('Error al descargar el archivo', 'error');
-    }
+          }
   };
 
   // Confirmar eliminación
@@ -183,14 +174,12 @@ const FilesPage = () => {
   const handleDelete = async () => {
     try {
       await fileService.deleteFile(selectedFile.id);
-      addNotification('Archivo eliminado exitosamente', 'success');
-      setShowDeleteDialog(false);
+            setShowDeleteDialog(false);
       setSelectedFile(null);
       loadFiles();
     } catch (error) {
       console.error('Error al eliminar archivo:', error);
-      addNotification('Error al eliminar el archivo', 'error');
-    }
+          }
   };
 
   // Filtrar archivos

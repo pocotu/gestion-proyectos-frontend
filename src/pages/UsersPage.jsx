@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 import UserList from '../components/user/UserList';
 import UserForm from '../components/user/UserForm';
 import Modal from '../components/common/Modal';
@@ -22,8 +21,7 @@ import '../styles/projects.css';
 const UsersPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { addNotification } = useNotifications();
-
+  
   // Estados principales
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,8 +67,7 @@ const UsersPage = () => {
     } catch (err) {
       console.error('Error al cargar usuarios:', err);
       setError('Error al cargar la lista de usuarios');
-      addNotification('Error al cargar usuarios', 'error');
-    } finally {
+          } finally {
       setLoading(false);
     }
   };
@@ -109,12 +106,10 @@ const UsersPage = () => {
 
     try {
       await userService.deleteUser(selectedUser.id);
-      addNotification('Usuario eliminado exitosamente', 'success');
-      loadUsers(); // Recargar lista
+            loadUsers(); // Recargar lista
     } catch (err) {
       console.error('Error al eliminar usuario:', err);
-      addNotification('Error al eliminar usuario', 'error');
-    } finally {
+          } finally {
       setShowConfirmDialog(false);
       setSelectedUser(null);
     }
@@ -127,22 +122,16 @@ const UsersPage = () => {
     try {
       if (formMode === 'create') {
         await userService.createUser(userData);
-        addNotification('Usuario creado exitosamente', 'success');
-      } else {
+              } else {
         await userService.updateUser(selectedUser.id, userData);
-        addNotification('Usuario actualizado exitosamente', 'success');
-      }
+              }
       
       setShowUserForm(false);
       setSelectedUser(null);
       loadUsers(); // Recargar lista
     } catch (err) {
       console.error('Error al guardar usuario:', err);
-      addNotification(
-        formMode === 'create' ? 'Error al crear usuario' : 'Error al actualizar usuario',
-        'error'
-      );
-    }
+          }
   };
 
   /**
@@ -152,15 +141,10 @@ const UsersPage = () => {
     try {
       const newStatus = !currentStatus;
       await userService.updateUserStatus(userId, newStatus);
-      addNotification(
-        `Usuario ${newStatus ? 'habilitado' : 'deshabilitado'} exitosamente`,
-        'success'
-      );
-      loadUsers(); // Recargar lista
+            loadUsers(); // Recargar lista
     } catch (err) {
       console.error('Error al cambiar estado del usuario:', err);
-      addNotification('Error al cambiar estado del usuario', 'error');
-    }
+          }
   };
 
   /**

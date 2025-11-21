@@ -23,11 +23,11 @@ test.describe('Dashboard E2E', () => {
     // Verificar que se muestra la sección de estadísticas
     await expect(page.locator('[data-testid="dashboard-stats"]')).toBeVisible();
     
-    // Verificar que las estadísticas tienen contenido usando selectores más específicos
-    await expect(page.locator('[data-testid="dashboard-stats"] h6:has-text("Total Proyectos")')).toBeVisible();
-    await expect(page.locator('[data-testid="dashboard-stats"] h6:has-text("Proyectos Activos")')).toBeVisible();
-    await expect(page.locator('[data-testid="dashboard-stats"] h6:has-text("Total Tareas")')).toBeVisible();
-    await expect(page.locator('[data-testid="dashboard-stats"] h6:has-text("En Progreso")')).toBeVisible();
+    // Verificar que las estadísticas tienen contenido (texto en mayúsculas)
+    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("TOTAL PROYECTOS")')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("PROYECTOS ACTIVOS")')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("TOTAL TAREAS")')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("EN PROGRESO")')).toBeVisible();
   });
 
   test('debe mostrar resumen de proyectos', async ({ page }) => {
@@ -91,11 +91,11 @@ test.describe('Dashboard E2E', () => {
   });
 
   test('debe mostrar actividades recientes', async ({ page }) => {
-    // Verificar que existe la sección de actividades recientes usando un selector más específico
-    await expect(page.locator('.card-header:has-text("Actividades Recientes")')).toBeVisible();
+    // Verificar que existe la sección de actividades recientes (nuevo diseño compacto)
+    await expect(page.locator('h6:has-text("Actividades Recientes")')).toBeVisible();
     
     // La sección debe estar visible aunque no haya actividades
-    const activityCard = page.locator('.card:has(.card-header:has-text("Actividades Recientes"))');
+    const activityCard = page.locator('.card:has(h6:has-text("Actividades Recientes"))');
     await expect(activityCard).toBeVisible();
   });
 

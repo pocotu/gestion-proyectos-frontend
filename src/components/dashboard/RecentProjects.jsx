@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
 import dashboardService from '../../services/dashboardService';
 
 /**
@@ -10,8 +9,7 @@ import dashboardService from '../../services/dashboardService';
  */
 const RecentProjects = () => {
   const { user } = useAuth();
-  const { showError } = useNotifications();
-  const [projects, setProjects] = useState([]);
+    const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,8 +39,7 @@ const RecentProjects = () => {
       setProjects(formattedProjects);
     } catch (error) {
       console.error('Error cargando proyectos recientes:', error);
-      showError('Error al cargar los proyectos recientes');
-      // En caso de error, mostrar array vacío en lugar de datos mock
+            // En caso de error, mostrar array vacío en lugar de datos mock
       setProjects([]);
     } finally {
       setLoading(false);

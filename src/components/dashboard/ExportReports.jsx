@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
 import Modal from '../common/Modal';
 import dashboardService from '../../services/dashboardService';
 import './ExportReports.css';
@@ -24,7 +23,6 @@ const ExportReports = () => {
   const [endDate, setEndDate] = useState('2024-12-31');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const { user } = useAuth();
-  const { addNotification } = useNotifications();
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -54,20 +52,14 @@ const ExportReports = () => {
       }
       
       setShowSuccessMessage(true);
-      addNotification({
-        type: 'success',
-        message: `Reporte ${exportFormat.toUpperCase()} exportado exitosamente`
-      });
+      console.log(`Reporte ${exportFormat.toUpperCase()} exportado exitosamente`);
       
       // Cerrar modal después de mostrar mensaje de éxito
       setTimeout(() => {
         handleCloseModal();
       }, 2000);
     } catch (error) {
-      addNotification({
-        type: 'error',
-        message: 'Error al exportar el reporte'
-      });
+      console.error('Error al exportar el reporte:', error);
     } finally {
       setIsExporting(false);
     }

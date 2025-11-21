@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -20,8 +19,7 @@ const ProjectsPage = () => {
     input: '0.875rem'          // Inputs y selects
   };
   const navigate = useNavigate();
-  const { addNotification } = useNotifications();
-
+  
   // Estados principales
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,8 +67,7 @@ const ProjectsPage = () => {
     } catch (error) {
       console.error('Error al cargar proyectos:', error);
       setError('Error al cargar los proyectos');
-      addNotification('Error al cargar los proyectos', 'error');
-      setProjects([]); // Asegurar que projects sea siempre un array
+            setProjects([]); // Asegurar que projects sea siempre un array
     } finally {
       setLoading(false);
     }
@@ -82,22 +79,16 @@ const ProjectsPage = () => {
     try {
       if (formMode === 'create') {
         await projectService.createProject(projectForm);
-        addNotification('Proyecto creado exitosamente', 'success');
-      } else {
+              } else {
         await projectService.updateProject(selectedProject.id, projectForm);
-        addNotification('Proyecto actualizado exitosamente', 'success');
-      }
+              }
 
       setShowProjectForm(false);
       resetForm();
       loadProjects();
     } catch (error) {
       console.error('Error al guardar proyecto:', error);
-      addNotification(
-        formMode === 'create' ? 'Error al crear el proyecto' : 'Error al actualizar el proyecto',
-        'error'
-      );
-    }
+          }
   };
 
   // Resetear formulario
@@ -144,14 +135,12 @@ const ProjectsPage = () => {
   const handleDelete = async () => {
     try {
       await projectService.deleteProject(selectedProject.id);
-      addNotification('Proyecto eliminado exitosamente', 'success');
-      setShowConfirmDialog(false);
+            setShowConfirmDialog(false);
       setSelectedProject(null);
       loadProjects();
     } catch (error) {
       console.error('Error al eliminar proyecto:', error);
-      addNotification('Error al eliminar el proyecto', 'error');
-    }
+          }
   };
 
   // Navegar a detalles del proyecto

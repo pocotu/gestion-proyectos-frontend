@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ActionButton from '../components/common/ActionButton';
 
@@ -11,14 +10,13 @@ import ActionButton from '../components/common/ActionButton';
  * - Single Responsibility: Solo maneja la visualización de logs de auditoría
  * - Open/Closed: Abierto para extensión (nuevos tipos de logs, filtros)
  * - Liskov Substitution: Puede ser sustituido por otros componentes de auditoría
- * - Interface Segregation: Usa interfaces específicas (useAuth, useNotifications)
+ * - Interface Segregation: Usa interfaces específicas (useAuth)
  * - Dependency Inversion: Depende de abstracciones (hooks, contextos)
  */
 const AuditPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { addNotification } = useNotifications();
-
+  
   // Estados principales
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -105,8 +103,7 @@ const AuditPage = () => {
       }
     } catch (err) {
       setError(err.message);
-      addNotification('Error al cargar logs de auditoría', 'error');
-    } finally {
+          } finally {
       setLoading(false);
     }
   };
@@ -137,13 +134,11 @@ const AuditPage = () => {
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
-        addNotification('Logs exportados exitosamente', 'success');
-      } else {
+              } else {
         throw new Error('Error al exportar logs');
       }
     } catch (err) {
-      addNotification(err.message, 'error');
-    }
+          }
   };
 
   // Función para limpiar filtros
