@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -8,6 +8,17 @@ import projectService from '../services/projectService';
 import '../styles/projects.css';
 
 const ProjectsPage = () => {
+  // Escala tipográfica consistente (DRY - Don't Repeat Yourself)
+  const typography = {
+    pageTitle: '1.75rem',      // H1 - Título de página
+    subtitle: '0.875rem',      // Subtítulo y contador
+    cardTitle: '0.9375rem',    // Título de tarjeta (15px)
+    body: '0.8125rem',         // Texto normal (13px)
+    small: '0.75rem',          // Texto pequeño (12px)
+    tiny: '0.6875rem',         // Texto muy pequeño (11px)
+    button: '0.875rem',        // Botones
+    input: '0.875rem'          // Inputs y selects
+  };
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
 
@@ -157,26 +168,35 @@ const ProjectsPage = () => {
     return matchesSearch && matchesEstado;
   });
 
-  // Obtener clase de badge para el estado
-  const getStatusBadgeClass = (estado) => {
-    const classes = {
-      planificacion: 'bg-primary text-white',
-      en_progreso: 'bg-warning text-dark',
-      completado: 'bg-success text-white',
-      cancelado: 'bg-danger text-white'
+  // Obtener configuración de estado (SRP - Single Responsibility Principle)
+  const getStatusConfig = (estado) => {
+    const configs = {
+      planificacion: { 
+        icon: '📋', 
+        label: 'Planificación',
+        color: '#6c757d',
+        bgColor: '#6c757d15'
+      },
+      en_progreso: { 
+        icon: '🔄', 
+        label: 'En Progreso',
+        color: '#0d6efd',
+        bgColor: '#0d6efd15'
+      },
+      completado: { 
+        icon: '✅', 
+        label: 'Completado',
+        color: '#198754',
+        bgColor: '#19875415'
+      },
+      cancelado: { 
+        icon: '❌', 
+        label: 'Cancelado',
+        color: '#dc3545',
+        bgColor: '#dc354515'
+      }
     };
-    return classes[estado] || 'bg-secondary text-white';
-  };
-
-  // Formatear estado para mostrar
-  const formatStatus = (estado) => {
-    const formats = {
-      planificacion: 'Planificación',
-      en_progreso: 'En Progreso',
-      completado: 'Completado',
-      cancelado: 'Cancelado'
-    };
-    return formats[estado] || 'Sin estado';
+    return configs[estado] || configs.planificacion;
   };
 
   if (loading) {
@@ -188,75 +208,99 @@ const ProjectsPage = () => {
   }
 
   return (
-    <div className="projects-page">
-      {/* Header limpio y profesional */}
-      <div className="page-header mb-4">
-        <div className="d-flex justify-content-between align-items-start">
-          <div>
-            <h1 className="h2 mb-2 text-primary fw-bold">Proyectos</h1>
-            <p className="text-muted mb-0">Gestiona y supervisa todos tus proyectos</p>
+    <div className="container-fluid py-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+      {/* Header Moderno */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 className="mb-1 fw-bold" style={{ color: '#1a1a1a', letterSpacing: '-0.5px', fontSize: typography.pageTitle }}>
+                Proyectos
+              </h1>
+              <p className="text-muted mb-0" style={{ fontSize: typography.subtitle }}>
+                {filteredProjects.length} {filteredProjects.length === 1 ? 'proyecto' : 'proyectos'} en total
+              </p>
+            </div>
+            <button
+              onClick={openCreateForm}
+              className="btn btn-dark d-flex align-items-center"
+              style={{ 
+                borderRadius: '8px',
+                fontSize: typography.button,
+                padding: '0.5rem 1.25rem',
+                fontWeight: '500'
+              }}
+            >
+              <i className="bi bi-plus-lg me-2"></i>
+              Nuevo Proyecto
+            </button>
           </div>
-          <button
-            onClick={openCreateForm}
-            className="btn btn-primary d-flex align-items-center gap-2"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Nuevo Proyecto
-          </button>
         </div>
       </div>
 
-      {/* Barra de filtros moderna */}
-      <div className="card mb-4 border-0 shadow-sm">
-        <div className="card-body p-3">
-          <div className="row g-3">
-            <div className="col-md-4">
-              <div className="position-relative">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="position-absolute text-muted"
-                  style={{ left: '12px', top: '50%', transform: 'translateY(-50%)', zIndex: 1 }}
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="M21 21l-4.35-4.35" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Buscar proyectos..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                  className="form-control ps-5"
-                  style={{ paddingLeft: '2.5rem' }}
-                />
+      {/* Filtros Minimalistas */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
+            <div className="card-body p-3">
+              <div className="row g-2 align-items-center">
+                <div className="col-lg-5 col-md-6">
+                  <div className="position-relative">
+                    <i className="bi bi-search position-absolute" style={{ 
+                      left: '12px', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)',
+                      color: '#6c757d',
+                      fontSize: typography.small
+                    }}></i>
+                    <input
+                      type="text"
+                      placeholder="Buscar proyectos..."
+                      value={filters.search}
+                      onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                      className="form-control"
+                      style={{ 
+                        paddingLeft: '2.5rem',
+                        border: '1px solid #e9ecef',
+                        borderRadius: '8px',
+                        fontSize: typography.input
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="col-lg-4 col-md-6">
+                  <select
+                    value={filters.estado}
+                    onChange={(e) => setFilters({ ...filters, estado: e.target.value })}
+                    className="form-select"
+                    style={{ 
+                      border: '1px solid #e9ecef',
+                      borderRadius: '8px',
+                      fontSize: typography.input
+                    }}
+                  >
+                    <option value="">Todos los estados</option>
+                    <option value="planificacion">📋 Planificación</option>
+                    <option value="en_progreso">🔄 En Progreso</option>
+                    <option value="completado">✅ Completado</option>
+                    <option value="cancelado">❌ Cancelado</option>
+                  </select>
+                </div>
+                <div className="col-lg-3 col-md-12">
+                  <button
+                    onClick={() => setFilters({ search: '', estado: '' })}
+                    className="btn btn-outline-secondary w-100"
+                    style={{ 
+                      borderRadius: '8px',
+                      fontSize: typography.button,
+                      border: '1px solid #e9ecef'
+                    }}
+                  >
+                    <i className="bi bi-arrow-clockwise me-1"></i>
+                    Limpiar filtros
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="col-md-4">
-              <select
-                value={filters.estado}
-                onChange={(e) => setFilters({ ...filters, estado: e.target.value })}
-                className="form-select"
-              >
-                <option value="">Todos los estados</option>
-                <option value="planificacion">Planificación</option>
-                <option value="en_progreso">En Progreso</option>
-                <option value="completado">Completado</option>
-                <option value="cancelado">Cancelado</option>
-              </select>
-            </div>
-            <div className="col-md-4">
-              <button
-                onClick={() => setFilters({ search: '', estado: '' })}
-                className="btn btn-outline-secondary w-100"
-              >
-                Limpiar Filtros
-              </button>
             </div>
           </div>
         </div>
@@ -264,182 +308,197 @@ const ProjectsPage = () => {
 
       {/* Mensaje de error */}
       {error && (
-        <div className="alert alert-danger d-flex align-items-center mb-4" role="alert">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2 shrink-0">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          {error}
+        <div className="row mb-4">
+          <div className="col-12">
+            <div className="alert alert-danger d-flex align-items-center" role="alert">
+              <i className="bi bi-exclamation-triangle-fill me-2"></i>
+              {error}
+            </div>
+          </div>
         </div>
       )}
 
       {/* Contenido principal */}
-      <div className="projects-content">
-        {filteredProjects.length === 0 && !error ? (
-          <div className="empty-state text-center py-5">
-            <div className="empty-state-icon mb-4">
-              <div className="d-inline-flex align-items-center justify-content-center bg-light rounded-3 p-3">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                </svg>
-              </div>
+      {filteredProjects.length === 0 && !error ? (
+        <div className="text-center py-5">
+          <div className="mb-4">
+            <div className="d-inline-flex align-items-center justify-content-center rounded-circle" 
+                 style={{ width: '80px', height: '80px', backgroundColor: '#f8f9fa' }}>
+              <i className="bi bi-folder" style={{ fontSize: '2rem', color: '#6c757d' }}></i>
             </div>
-            <h3 className="h4 mb-3 text-dark">Sin proyectos aún</h3>
-            <p className="text-muted mb-4 mx-auto" style={{ maxWidth: '400px' }}>
-              Crea tu primer proyecto para comenzar a organizar tus tareas y colaborar con tu equipo.
-            </p>
-            <button
-              onClick={openCreateForm}
-              className="btn btn-primary d-inline-flex align-items-center gap-2"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-              Crear primer proyecto
-            </button>
           </div>
-        ) : (
-          <div className="row g-4">
-            {filteredProjects.map((project) => (
-              <div key={project.id} className="col-lg-4 col-md-6">
-                <div
-                  className="card h-100 border-0 shadow-sm project-card"
-                  style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
-                  onClick={() => navigateToProject(project.id)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.08)';
-                  }}
-                >
-                  <div className="card-body p-4">
-                    {/* Header con acciones */}
-                    <div className="d-flex justify-content-between align-items-start mb-3">
-                      <h5 className="card-title mb-0 text-dark fw-semibold" style={{ fontSize: '1.1rem' }}>
+          <h3 className="h4 mb-3" style={{ color: '#1a1a1a', fontWeight: '600', fontSize: typography.pageTitle }}>Sin proyectos aún</h3>
+          <p className="text-muted mb-4" style={{ fontSize: typography.body }}>
+            Crea tu primer proyecto para comenzar a organizar tu trabajo
+          </p>
+          <button
+            onClick={openCreateForm}
+            className="btn btn-dark"
+            style={{ borderRadius: '8px', padding: '0.625rem 1.5rem', fontSize: typography.button }}
+          >
+            <i className="bi bi-plus-lg me-2"></i>
+            Crear primer proyecto
+          </button>
+        </div>
+      ) : (
+        <div className="row g-3">
+          {filteredProjects.map((project) => (
+            <div key={project.id} className="col-xl-3 col-lg-4 col-md-6">
+              <div
+                className="card border-0 shadow-sm h-100"
+                style={{
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  borderRadius: '12px',
+                  borderLeft: `4px solid ${
+                    project.estado === 'completado' ? '#198754' :
+                    project.estado === 'en_progreso' ? '#0d6efd' :
+                    project.estado === 'cancelado' ? '#dc3545' : '#6c757d'
+                  }`
+                }}
+                onClick={() => navigateToProject(project.id)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                }}
+              >
+                <div className="card-body p-3">
+                  {/* Header compacto */}
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <div className="flex-grow-1 pe-2">
+                      <h6 className="mb-1 fw-semibold" style={{ 
+                        fontSize: typography.cardTitle,
+                        color: '#1a1a1a',
+                        lineHeight: '1.3',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>
                         {project.titulo}
-                      </h5>
-                      <div className="dropdown">
-                        <button
-                          className="btn btn-sm btn-outline-light text-muted border-0 p-1"
-                          type="button"
-                          data-bs-toggle="dropdown"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ opacity: 0.7 }}
-                          onMouseEnter={(e) => e.target.style.opacity = 1}
-                          onMouseLeave={(e) => e.target.style.opacity = 0.7}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="1" />
-                            <circle cx="12" cy="5" r="1" />
-                            <circle cx="12" cy="19" r="1" />
-                          </svg>
-                        </button>
-                        <ul className="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                          <li>
-                            <button
-                              className="dropdown-item d-flex align-items-center gap-2"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditForm(project);
-                              }}
-                            >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                              </svg>
-                              Editar
-                            </button>
-                          </li>
-                          <li><hr className="dropdown-divider" /></li>
-                          <li>
-                            <button
-                              className="dropdown-item d-flex align-items-center gap-2 text-danger"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                confirmDelete(project);
-                              }}
-                            >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                <line x1="10" y1="11" x2="10" y2="17" />
-                                <line x1="14" y1="11" x2="14" y2="17" />
-                              </svg>
-                              Eliminar
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
+                      </h6>
                     </div>
+                    <div className="dropdown">
+                      <button
+                        className="btn btn-sm p-0 border-0"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ 
+                          opacity: 0.5,
+                          width: '20px',
+                          height: '20px'
+                        }}
+                        onMouseEnter={(e) => e.target.style.opacity = 1}
+                        onMouseLeave={(e) => e.target.style.opacity = 0.5}
+                      >
+                        <i className="bi bi-three-dots" style={{ fontSize: typography.small, color: '#6c757d' }}></i>
+                      </button>
+                      <ul className="dropdown-menu dropdown-menu-end shadow-sm border-0" style={{ borderRadius: '8px' }}>
+                        <li>
+                          <button
+                            className="dropdown-item d-flex align-items-center gap-2"
+                            style={{ fontSize: typography.body }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditForm(project);
+                            }}
+                          >
+                            <i className="bi bi-pencil"></i>
+                            Editar
+                          </button>
+                        </li>
+                        <li><hr className="dropdown-divider my-1" /></li>
+                        <li>
+                          <button
+                            className="dropdown-item d-flex align-items-center gap-2 text-danger"
+                            style={{ fontSize: typography.body }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              confirmDelete(project);
+                            }}
+                          >
+                            <i className="bi bi-trash"></i>
+                            Eliminar
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
 
-                    {/* Descripción */}
-                    <p className="card-text text-muted mb-3" style={{
-                      fontSize: '0.9rem',
+                  {/* Descripción compacta */}
+                  {project.descripcion && (
+                    <p className="text-muted mb-2" style={{
+                      fontSize: typography.small,
                       lineHeight: '1.4',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden'
                     }}>
-                      {project.descripcion || 'Sin descripción'}
+                      {project.descripcion}
                     </p>
+                  )}
 
-                    {/* Estado */}
-                    <div className="d-flex gap-2 mb-3">
-                      <span className={`badge ${getStatusBadgeClass(project.estado)} px-2 py-1`} style={{ fontSize: '0.75rem' }}>
-                        {formatStatus(project.estado)}
-                      </span>
-                    </div>
-
-                    {/* Fechas */}
-                    {(project.fecha_inicio || project.fecha_fin) && (
-                      <div className="border-top pt-3 mt-auto">
-                        <div className="row g-0 text-muted" style={{ fontSize: '0.8rem' }}>
-                          {project.fecha_inicio && (
-                            <div className="col-6">
-                              <div className="d-flex align-items-center gap-1">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                  <line x1="16" y1="2" x2="16" y2="6" />
-                                  <line x1="8" y1="2" x2="8" y2="6" />
-                                  <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
-                                <span>Inicio</span>
-                              </div>
-                              <div className="fw-medium text-dark" style={{ fontSize: '0.8rem' }}>
-                                {new Date(project.fecha_inicio).toLocaleDateString('es-ES')}
-                              </div>
-                            </div>
-                          )}
-                          {project.fecha_fin && (
-                            <div className="col-6">
-                              <div className="d-flex align-items-center gap-1">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                  <line x1="16" y1="2" x2="16" y2="6" />
-                                  <line x1="8" y1="2" x2="8" y2="6" />
-                                  <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
-                                <span>Fin</span>
-                              </div>
-                              <div className="fw-medium text-dark" style={{ fontSize: '0.8rem' }}>
-                                {new Date(project.fecha_fin).toLocaleDateString('es-ES')}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                  {/* Estado minimalista */}
+                  <div className="mb-2">
+                    <span style={{
+                      fontSize: typography.tiny,
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '4px',
+                      backgroundColor: 
+                        project.estado === 'completado' ? '#19875415' :
+                        project.estado === 'en_progreso' ? '#0d6efd15' :
+                        project.estado === 'cancelado' ? '#dc354515' : '#6c757d15',
+                      color: 
+                        project.estado === 'completado' ? '#198754' :
+                        project.estado === 'en_progreso' ? '#0d6efd' :
+                        project.estado === 'cancelado' ? '#dc3545' : '#6c757d',
+                      fontWeight: '600'
+                    }}>
+                      {project.estado === 'completado' ? '✅ Completado' :
+                       project.estado === 'en_progreso' ? '🔄 En Progreso' :
+                       project.estado === 'cancelado' ? '❌ Cancelado' : '📋 Planificación'}
+                    </span>
                   </div>
+
+                  {/* Fechas compactas */}
+                  {(project.fecha_inicio || project.fecha_fin) && (
+                    <div className="d-flex gap-3 mt-2 pt-2 border-top">
+                      {project.fecha_inicio && (
+                        <div className="flex-fill">
+                          <small className="text-muted d-block" style={{ fontSize: typography.tiny, fontWeight: '600', letterSpacing: '0.5px' }}>
+                            INICIO
+                          </small>
+                          <small className="d-flex align-items-center gap-1" style={{ fontSize: typography.small, color: '#1a1a1a' }}>
+                            <i className="bi bi-calendar3"></i>
+                            {new Date(project.fecha_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                          </small>
+                        </div>
+                      )}
+                      {project.fecha_fin && (
+                        <div className="flex-fill">
+                          <small className="text-muted d-block" style={{ fontSize: typography.tiny, fontWeight: '600', letterSpacing: '0.5px' }}>
+                            FIN
+                          </small>
+                          <small className="d-flex align-items-center gap-1" style={{ fontSize: typography.small, color: '#1a1a1a' }}>
+                            <i className="bi bi-calendar3"></i>
+                            {new Date(project.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                          </small>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Modal de formulario */}
       <Modal

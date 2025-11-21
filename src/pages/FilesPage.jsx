@@ -11,6 +11,18 @@ import '../styles/projects.css';
 const FilesPage = () => {
   const { addNotification } = useNotifications();
 
+  // Escala tipográfica consistente (DRY - Don't Repeat Yourself)
+  const typography = {
+    pageTitle: '1.75rem',
+    subtitle: '0.875rem',
+    fileName: '0.875rem',
+    body: '0.8125rem',
+    small: '0.75rem',
+    tiny: '0.6875rem',
+    button: '0.875rem',
+    input: '0.875rem'
+  };
+
   // Estados principales
   const [files, setFiles] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -40,8 +52,8 @@ const FilesPage = () => {
     entidad_id: ''
   });
 
-  // Estados de vista
-  const [viewMode, setViewMode] = useState('grid');
+  // Estados de vista - Por defecto lista para ser más compacto
+  const [viewMode, setViewMode] = useState('list');
 
   // Cargar datos al montar el componente
   useEffect(() => {
@@ -205,46 +217,29 @@ const FilesPage = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Obtener icono según tipo de archivo (solo tipos permitidos en BD)
-  const getFileIcon = (tipo) => {
-    const iconMap = {
-      PDF: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-danger">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14,2 14,8 20,8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10,9 9,9 8,9"/>
-        </svg>
-      ),
-      DOCX: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14,2 14,8 20,8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-          <line x1="12" y1="9" x2="8" y2="9"/>
-        </svg>
-      ),
-      JPG: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-success">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21,15 16,10 5,21"/>
-        </svg>
-      )
+  // Obtener configuración de tipo de archivo (SRP - Single Responsibility Principle)
+  const getFileTypeConfig = (tipo) => {
+    const configs = {
+      PDF: {
+        icon: 'bi-file-earmark-pdf',
+        color: '#dc3545',
+        bgColor: '#dc354515',
+        label: 'PDF'
+      },
+      DOCX: {
+        icon: 'bi-file-earmark-word',
+        color: '#0d6efd',
+        bgColor: '#0d6efd15',
+        label: 'DOCX'
+      },
+      JPG: {
+        icon: 'bi-file-earmark-image',
+        color: '#198754',
+        bgColor: '#19875415',
+        label: 'JPG'
+      }
     };
-    return iconMap[tipo] || iconMap.PDF;
-  };
-
-  // Obtener clase de badge para el tipo
-  const getTypeBadgeClass = (tipo) => {
-    const classes = {
-      PDF: 'bg-danger text-white',
-      DOCX: 'bg-primary text-white',
-      JPG: 'bg-success text-white'
-    };
-    return classes[tipo] || 'bg-secondary text-white';
+    return configs[tipo] || configs.PDF;
   };
 
   // Obtener nombre de la entidad asociada
@@ -269,134 +264,155 @@ const FilesPage = () => {
   }
 
   return (
-    <div className="projects-page">
-      {/* Header limpio y profesional */}
-      <div className="page-header mb-4">
-        <div className="d-flex justify-content-between align-items-start">
-          <div>
-            <h1 className="h2 mb-2 text-primary fw-bold">Archivos</h1>
-            <p className="text-muted mb-0">Administra y organiza todos los archivos del sistema</p>
+    <div className="container-fluid py-4" style={{ backgroundColor: '#f8f9fa' }}>
+      {/* Header Moderno */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 className="mb-1 fw-bold" style={{ color: '#1a1a1a', letterSpacing: '-0.5px', fontSize: typography.pageTitle }}>
+                Archivos
+              </h1>
+              <p className="text-muted mb-0" style={{ fontSize: typography.subtitle }}>
+                {filteredFiles.length} {filteredFiles.length === 1 ? 'archivo' : 'archivos'} en total
+              </p>
+            </div>
+            <button
+              onClick={openUploadModal}
+              className="btn btn-dark d-flex align-items-center"
+              style={{ 
+                borderRadius: '8px',
+                fontSize: typography.button,
+                padding: '0.5rem 1.25rem',
+                fontWeight: '500'
+              }}
+            >
+              <i className="bi bi-upload me-2"></i>
+              Subir Archivos
+            </button>
           </div>
-          <button
-            onClick={openUploadModal}
-            className="btn btn-primary d-flex align-items-center gap-2"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7,10 12,15 17,10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Subir Archivos
-          </button>
         </div>
       </div>
 
-      {/* Barra de filtros moderna */}
-      <div className="card mb-4 border-0 shadow-sm">
-        <div className="card-body p-3">
-          <div className="row g-3">
-            <div className="col-md-3">
-              <div className="position-relative">
-                <svg 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2"
-                  className="position-absolute text-muted"
-                  style={{ left: '12px', top: '50%', transform: 'translateY(-50%)', zIndex: 1 }}
-                >
-                  <circle cx="11" cy="11" r="8"/>
-                  <path d="M21 21l-4.35-4.35"/>
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Buscar archivos..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                  className="form-control ps-5"
-                  style={{ paddingLeft: '2.5rem' }}
-                />
-              </div>
-            </div>
-            <div className="col-md-2">
-              <select
-                value={filters.tipo}
-                onChange={(e) => setFilters({ ...filters, tipo: e.target.value })}
-                className="form-select"
-              >
-                <option value="">Todos los tipos</option>
-                <option value="PDF">PDF</option>
-                <option value="DOCX">DOCX</option>
-                <option value="JPG">JPG</option>
-              </select>
-            </div>
-            <div className="col-md-2">
-              <select
-                value={filters.tipo_entidad}
-                onChange={(e) => setFilters({ ...filters, tipo_entidad: e.target.value, entidad_id: '' })}
-                className="form-select"
-              >
-                <option value="">Todos</option>
-                <option value="proyecto">Proyectos</option>
-                <option value="tarea">Tareas</option>
-              </select>
-            </div>
-            <div className="col-md-3">
-              <select
-                value={filters.entidad_id}
-                onChange={(e) => setFilters({ ...filters, entidad_id: e.target.value })}
-                className="form-select"
-                disabled={!filters.tipo_entidad}
-              >
-                <option value="">
-                  {filters.tipo_entidad === 'proyecto' ? 'Todos los proyectos' : 
-                   filters.tipo_entidad === 'tarea' ? 'Todas las tareas' : 'Selecciona tipo primero'}
-                </option>
-                {filters.tipo_entidad === 'proyecto' && projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.titulo}
-                  </option>
-                ))}
-                {filters.tipo_entidad === 'tarea' && tasks.map((task) => (
-                  <option key={task.id} value={task.id}>
-                    {task.titulo}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-2">
-              <div className="d-flex gap-1">
-                <button
-                  onClick={() => setFilters({ search: '', tipo: '', tipo_entidad: '', entidad_id: '' })}
-                  className="btn btn-outline-secondary flex-grow-1"
-                >
-                  Limpiar
-                </button>
-                <button
-                  onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                  className="btn btn-outline-primary"
-                  title={viewMode === 'grid' ? 'Vista de lista' : 'Vista de cuadrícula'}
-                >
-                  {viewMode === 'grid' ? (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="8" y1="6" x2="21" y2="6"/>
-                      <line x1="8" y1="12" x2="21" y2="12"/>
-                      <line x1="8" y1="18" x2="21" y2="18"/>
-                      <line x1="3" y1="6" x2="3.01" y2="6"/>
-                      <line x1="3" y1="12" x2="3.01" y2="12"/>
-                      <line x1="3" y1="18" x2="3.01" y2="18"/>
-                    </svg>
-                  ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="3" width="7" height="7"/>
-                      <rect x="14" y="3" width="7" height="7"/>
-                      <rect x="14" y="14" width="7" height="7"/>
-                      <rect x="3" y="14" width="7" height="7"/>
-                    </svg>
-                  )}
-                </button>
+      {/* Filtros Minimalistas */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
+            <div className="card-body p-3">
+              <div className="row g-2 align-items-center">
+                <div className="col-lg-3 col-md-6">
+                  <div className="position-relative">
+                    <i className="bi bi-search position-absolute" style={{ 
+                      left: '12px', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)',
+                      color: '#6c757d',
+                      fontSize: typography.small
+                    }}></i>
+                    <input
+                      type="text"
+                      placeholder="Buscar archivos..."
+                      value={filters.search}
+                      onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                      className="form-control"
+                      style={{ 
+                        paddingLeft: '2.5rem',
+                        border: '1px solid #e9ecef',
+                        borderRadius: '8px',
+                        fontSize: typography.input
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="col-lg-2 col-md-6">
+                  <select
+                    value={filters.tipo}
+                    onChange={(e) => setFilters({ ...filters, tipo: e.target.value })}
+                    className="form-select"
+                    style={{ 
+                      border: '1px solid #e9ecef',
+                      borderRadius: '8px',
+                      fontSize: typography.input
+                    }}
+                  >
+                    <option value="">Todos los tipos</option>
+                    <option value="PDF">📄 PDF</option>
+                    <option value="DOCX">📝 DOCX</option>
+                    <option value="JPG">🖼️ JPG</option>
+                  </select>
+                </div>
+                <div className="col-lg-2 col-md-6">
+                  <select
+                    value={filters.tipo_entidad}
+                    onChange={(e) => setFilters({ ...filters, tipo_entidad: e.target.value, entidad_id: '' })}
+                    className="form-select"
+                    style={{ 
+                      border: '1px solid #e9ecef',
+                      borderRadius: '8px',
+                      fontSize: typography.input
+                    }}
+                  >
+                    <option value="">Todos</option>
+                    <option value="proyecto">📁 Proyectos</option>
+                    <option value="tarea">✓ Tareas</option>
+                  </select>
+                </div>
+                <div className="col-lg-3 col-md-6">
+                  <select
+                    value={filters.entidad_id}
+                    onChange={(e) => setFilters({ ...filters, entidad_id: e.target.value })}
+                    className="form-select"
+                    disabled={!filters.tipo_entidad}
+                    style={{ 
+                      border: '1px solid #e9ecef',
+                      borderRadius: '8px',
+                      fontSize: typography.input
+                    }}
+                  >
+                    <option value="">
+                      {filters.tipo_entidad === 'proyecto' ? 'Todos los proyectos' : 
+                       filters.tipo_entidad === 'tarea' ? 'Todas las tareas' : 'Selecciona tipo'}
+                    </option>
+                    {filters.tipo_entidad === 'proyecto' && projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.titulo}
+                      </option>
+                    ))}
+                    {filters.tipo_entidad === 'tarea' && tasks.map((task) => (
+                      <option key={task.id} value={task.id}>
+                        {task.titulo}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-lg-2 col-md-12">
+                  <div className="d-flex gap-2">
+                    <button
+                      onClick={() => setFilters({ search: '', tipo: '', tipo_entidad: '', entidad_id: '' })}
+                      className="btn btn-outline-secondary flex-grow-1"
+                      style={{ 
+                        borderRadius: '8px',
+                        fontSize: typography.button,
+                        border: '1px solid #e9ecef'
+                      }}
+                    >
+                      <i className="bi bi-arrow-clockwise me-1"></i>
+                      Limpiar
+                    </button>
+                    <button
+                      onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                      className="btn btn-outline-secondary"
+                      title={viewMode === 'grid' ? 'Vista de lista' : 'Vista de cuadrícula'}
+                      style={{ 
+                        borderRadius: '8px',
+                        fontSize: typography.button,
+                        border: '1px solid #e9ecef'
+                      }}
+                    >
+                      <i className={`bi ${viewMode === 'grid' ? 'bi-list-ul' : 'bi-grid-3x3-gap'}`}></i>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -405,185 +421,267 @@ const FilesPage = () => {
 
       {/* Mensaje de error */}
       {error && (
-        <div className="alert alert-danger d-flex align-items-center mb-4" role="alert">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2 flex-shrink-0">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          {error}
+        <div className="row mb-4">
+          <div className="col-12">
+            <div className="alert alert-danger d-flex align-items-center" role="alert">
+              <i className="bi bi-exclamation-triangle-fill me-2"></i>
+              {error}
+            </div>
+          </div>
         </div>
       )}
 
       {/* Contenido principal */}
-      <div className="projects-content">
-        {filteredFiles.length === 0 && !error ? (
-          <div className="empty-state text-center py-5">
-            <div className="empty-state-icon mb-4">
-              <div className="d-inline-flex align-items-center justify-content-center bg-light rounded-3 p-3">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14,2 14,8 20,8"/>
-                  <line x1="16" y1="13" x2="8" y2="13"/>
-                  <line x1="16" y1="17" x2="8" y2="17"/>
-                  <polyline points="10,9 9,9 8,9"/>
-                </svg>
+      {filteredFiles.length === 0 && !error ? (
+        <div className="text-center py-5">
+          <div className="mb-4">
+            <div className="d-inline-flex align-items-center justify-content-center rounded-circle" 
+                 style={{ width: '80px', height: '80px', backgroundColor: '#f8f9fa' }}>
+              <i className="bi bi-file-earmark" style={{ fontSize: '2rem', color: '#6c757d' }}></i>
+            </div>
+          </div>
+          <h3 className="h4 mb-3" style={{ color: '#1a1a1a', fontWeight: '600', fontSize: typography.pageTitle }}>Sin archivos aún</h3>
+          <p className="text-muted mb-4" style={{ fontSize: typography.body }}>
+            Sube tu primer archivo para comenzar a organizar documentos
+          </p>
+          <button
+            onClick={openUploadModal}
+            className="btn btn-dark"
+            style={{ borderRadius: '8px', padding: '0.625rem 1.5rem', fontSize: typography.button }}
+          >
+            <i className="bi bi-upload me-2"></i>
+            Subir primer archivo
+          </button>
+        </div>
+      ) : viewMode === 'list' ? (
+        /* Vista de Lista Compacta con Scroll */
+        <div className="row">
+          <div className="col-12">
+            <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
+              <div className="card-body p-0">
+                {/* Contenedor con scroll limitado */}
+                <div style={{ 
+                  maxHeight: 'calc(100vh - 320px)', 
+                  overflowY: 'auto',
+                  overflowX: 'auto'
+                }}>
+                  <table className="table table-hover mb-0">
+                    <thead style={{ 
+                      backgroundColor: '#f8f9fa',
+                      position: 'sticky',
+                      top: 0,
+                      zIndex: 10
+                    }}>
+                      <tr>
+                        <th className="border-0 py-3 px-4" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>ARCHIVO</th>
+                        <th className="border-0 py-3" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>TIPO</th>
+                        <th className="border-0 py-3" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>TAMAÑO</th>
+                        <th className="border-0 py-3" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>ASOCIADO A</th>
+                        <th className="border-0 py-3" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>FECHA</th>
+                        <th className="border-0 py-3 px-4" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>ACCIONES</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredFiles.map((file) => {
+                        const typeConfig = getFileTypeConfig(file.tipo);
+                        return (
+                          <tr key={file.id} style={{ cursor: 'pointer' }}>
+                            <td className="px-4 py-3">
+                              <div className="d-flex align-items-center gap-2">
+                                <i className={`bi ${typeConfig.icon}`} style={{ fontSize: '1.25rem', color: typeConfig.color }}></i>
+                                <span className="fw-medium" style={{ fontSize: typography.fileName, color: '#1a1a1a' }}>
+                                  {file.nombre_original}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-3">
+                              <span style={{
+                                fontSize: typography.tiny,
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: '4px',
+                                backgroundColor: typeConfig.bgColor,
+                                color: typeConfig.color,
+                                fontWeight: '600'
+                              }}>
+                                {typeConfig.label}
+                              </span>
+                            </td>
+                            <td className="py-3">
+                              <span style={{ fontSize: typography.small, color: '#6c757d' }}>
+                                {formatFileSize(file.tamaño_bytes)}
+                              </span>
+                            </td>
+                            <td className="py-3">
+                              <span style={{ fontSize: typography.small, color: '#6c757d' }}>
+                                {getEntityName(file)}
+                              </span>
+                            </td>
+                            <td className="py-3">
+                              <span style={{ fontSize: typography.small, color: '#6c757d' }}>
+                                {new Date(file.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="d-flex gap-1">
+                                <button
+                                  className="btn btn-sm btn-outline-secondary"
+                                  style={{ borderRadius: '6px', fontSize: typography.tiny }}
+                                  onClick={() => handleDownload(file)}
+                                  title="Descargar"
+                                >
+                                  <i className="bi bi-download"></i>
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-outline-danger"
+                                  style={{ borderRadius: '6px', fontSize: typography.tiny }}
+                                  onClick={() => confirmDelete(file)}
+                                  title="Eliminar"
+                                >
+                                  <i className="bi bi-trash"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-            <h3 className="h4 mb-3 text-dark">Sin archivos aún</h3>
-            <p className="text-muted mb-4 mx-auto" style={{ maxWidth: '400px' }}>
-              Sube tu primer archivo para comenzar a organizar documentos de proyectos y tareas.
-            </p>
-            <button
-              onClick={openUploadModal}
-              className="btn btn-primary d-inline-flex align-items-center gap-2"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7,10 12,15 17,10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              Subir primer archivo
-            </button>
           </div>
-        ) : (
-          <div className={viewMode === 'grid' ? 'row g-4' : 'list-group'}>
-            {filteredFiles.map((file) => (
-              viewMode === 'grid' ? (
-                <div key={file.id} className="col-lg-4 col-md-6">
-                  <div className="card h-100 border-0 shadow-sm project-card">
-                    <div className="card-body p-4">
-                      {/* Header con acciones */}
-                      <div className="d-flex justify-content-between align-items-start mb-3">
-                        <div className="d-flex align-items-center gap-2">
-                          {getFileIcon(file.tipo)}
-                          <span className={`badge ${getTypeBadgeClass(file.tipo)} px-2 py-1`} style={{ fontSize: '0.7rem' }}>
-                            {file.tipo}
-                          </span>
-                        </div>
-                        <div className="dropdown">
-                          <button 
-                            className="btn btn-sm btn-outline-light text-muted border-0 p-1"
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            style={{ opacity: 0.7 }}
-                            onMouseEnter={(e) => e.target.style.opacity = 1}
-                            onMouseLeave={(e) => e.target.style.opacity = 0.7}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <circle cx="12" cy="12" r="1"/>
-                              <circle cx="12" cy="5" r="1"/>
-                              <circle cx="12" cy="19" r="1"/>
-                            </svg>
-                          </button>
-                          <ul className="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                            <li>
-                              <button 
-                                className="dropdown-item d-flex align-items-center gap-2"
-                                onClick={() => handleDownload(file)}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                  <polyline points="7,10 12,15 17,10"/>
-                                  <line x1="12" y1="15" x2="12" y2="3"/>
-                                </svg>
-                                Descargar
-                              </button>
-                            </li>
-                            <li><hr className="dropdown-divider"/></li>
-                            <li>
-                              <button 
-                                className="dropdown-item d-flex align-items-center gap-2 text-danger"
-                                onClick={() => confirmDelete(file)}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                  <line x1="10" y1="11" x2="10" y2="17"/>
-                                  <line x1="14" y1="11" x2="14" y2="17"/>
-                                </svg>
-                                Eliminar
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
+        </div>
+      ) : (
+        /* Vista de Cuadrícula con Scroll */
+        <div style={{ 
+          maxHeight: 'calc(100vh - 320px)', 
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          paddingRight: '8px'
+        }}>
+          <div className="row g-3">
+            {filteredFiles.map((file) => {
+              const typeConfig = getFileTypeConfig(file.tipo);
+              return (
+              <div key={file.id} className="col-xl-3 col-lg-4 col-md-6">
+                <div
+                  className="card border-0 shadow-sm h-100"
+                  style={{
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    borderRadius: '12px',
+                    borderLeft: `4px solid ${typeConfig.color}`
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                  }}
+                >
+                  <div className="card-body p-3">
+                    {/* Header compacto */}
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <div className="d-flex align-items-center gap-2">
+                        <i className={`bi ${typeConfig.icon}`} style={{ fontSize: '1.5rem', color: typeConfig.color }}></i>
+                        <span style={{
+                          fontSize: typography.tiny,
+                          padding: '0.2rem 0.5rem',
+                          borderRadius: '4px',
+                          backgroundColor: typeConfig.bgColor,
+                          color: typeConfig.color,
+                          fontWeight: '600'
+                        }}>
+                          {typeConfig.label}
+                        </span>
                       </div>
-
-                      {/* Nombre del archivo */}
-                      <h5 className="card-title mb-2 text-dark fw-semibold" style={{ fontSize: '1rem' }}>
-                        {file.nombre_original}
-                      </h5>
-
-                      {/* Información del archivo */}
-                      <div className="mb-3">
-                        <small className="text-muted d-block">
-                          {formatFileSize(file.tamaño_bytes)}
-                        </small>
-                        <small className="text-muted d-block">
-                          {getEntityName(file)}
-                        </small>
+                      <div className="dropdown">
+                        <button
+                          className="btn btn-sm p-0 border-0"
+                          type="button"
+                          data-bs-toggle="dropdown"
+                          style={{ 
+                            opacity: 0.5,
+                            width: '20px',
+                            height: '20px'
+                          }}
+                          onMouseEnter={(e) => e.target.style.opacity = 1}
+                          onMouseLeave={(e) => e.target.style.opacity = 0.5}
+                        >
+                          <i className="bi bi-three-dots" style={{ fontSize: typography.small, color: '#6c757d' }}></i>
+                        </button>
+                        <ul className="dropdown-menu dropdown-menu-end shadow-sm border-0" style={{ borderRadius: '8px' }}>
+                          <li>
+                            <button
+                              className="dropdown-item d-flex align-items-center gap-2"
+                              style={{ fontSize: typography.body }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownload(file);
+                              }}
+                            >
+                              <i className="bi bi-download"></i>
+                              Descargar
+                            </button>
+                          </li>
+                          <li><hr className="dropdown-divider my-1" /></li>
+                          <li>
+                            <button
+                              className="dropdown-item d-flex align-items-center gap-2 text-danger"
+                              style={{ fontSize: typography.body }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                confirmDelete(file);
+                              }}
+                            >
+                              <i className="bi bi-trash"></i>
+                              Eliminar
+                            </button>
+                          </li>
+                        </ul>
                       </div>
+                    </div>
 
-                      {/* Fecha */}
-                      <div className="border-top pt-3 mt-auto">
-                        <small className="text-muted d-flex align-items-center gap-1">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                          </svg>
-                          {new Date(file.created_at).toLocaleDateString('es-ES')}
-                        </small>
-                      </div>
+                    {/* Nombre del archivo */}
+                    <h6 className="mb-2 fw-semibold" style={{ 
+                      fontSize: typography.fileName,
+                      color: '#1a1a1a',
+                      lineHeight: '1.3',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}>
+                      {file.nombre_original}
+                    </h6>
+
+                    {/* Información compacta */}
+                    <div className="mb-2">
+                      <small className="text-muted d-block" style={{ fontSize: typography.small }}>
+                        {formatFileSize(file.tamaño_bytes)}
+                      </small>
+                      <small className="text-muted d-block" style={{ fontSize: typography.small }}>
+                        {getEntityName(file)}
+                      </small>
+                    </div>
+
+                    {/* Fecha */}
+                    <div className="border-top pt-2 mt-2">
+                      <small className="d-flex align-items-center gap-1" style={{ fontSize: typography.small, color: '#6c757d' }}>
+                        <i className="bi bi-calendar3"></i>
+                        {new Date(file.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                      </small>
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div key={file.id} className="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
-                  <div className="d-flex align-items-center gap-2">
-                    {getFileIcon(file.tipo)}
-                    <span className={`badge ${getTypeBadgeClass(file.tipo)} px-2 py-1`} style={{ fontSize: '0.7rem' }}>
-                      {file.tipo}
-                    </span>
-                  </div>
-                  
-                  <div className="flex-grow-1">
-                    <h6 className="mb-1 fw-semibold">{file.nombre_original}</h6>
-                    <small className="text-muted">
-                      {formatFileSize(file.tamaño_bytes)} • {getEntityName(file)} • {new Date(file.created_at).toLocaleDateString('es-ES')}
-                    </small>
-                  </div>
-
-                  <div className="d-flex gap-1">
-                    <button
-                      onClick={() => handleDownload(file)}
-                      className="btn btn-sm btn-outline-primary"
-                      title="Descargar"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="7,10 12,15 17,10"/>
-                        <line x1="12" y1="15" x2="12" y2="3"/>
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => confirmDelete(file)}
-                      className="btn btn-sm btn-outline-danger"
-                      title="Eliminar"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        <line x1="10" y1="11" x2="10" y2="17"/>
-                        <line x1="14" y1="11" x2="14" y2="17"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              )
-            ))}
+              </div>
+            );
+          })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Modal de subida */}
       <Modal
