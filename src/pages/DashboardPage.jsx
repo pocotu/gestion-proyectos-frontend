@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -13,6 +13,16 @@ import dashboardService from '../services/dashboardService';
 const DashboardPage = () => {
   const { user, isAuthenticated } = useAuth();
   const { showSuccess, showError } = useNotifications();
+
+  // Escala tipográfica consistente (DRY - Don't Repeat Yourself)
+  const typography = {
+    pageTitle: '1.75rem',
+    cardTitle: '0.875rem',
+    statNumber: '1.5rem',
+    body: '0.8125rem',
+    small: '0.75rem',
+    tiny: '0.6875rem'
+  };
 
   // Estados del componente
   const [stats, setStats] = useState({
@@ -152,17 +162,27 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="container-fluid py-4" data-testid="dashboard-page">
-      {/* Header */}
-      <div className="row mb-4" data-testid="dashboard-header">
+    <div className="container-fluid py-4" style={{ backgroundColor: '#f8f9fa' }} data-testid="dashboard-page">
+      {/* Header Moderno */}
+      <div className="row mb-3" data-testid="dashboard-header">
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center">
             <div>
-              <h1 className="h3 mb-1 text-dark fw-bold">Dashboard</h1>
-              <p className="text-muted mb-0">
+              <h1 className="mb-1 fw-bold" style={{ color: '#1a1a1a', letterSpacing: '-0.5px', fontSize: typography.pageTitle }}>
+                Dashboard
+              </h1>
+              <p className="text-muted mb-0" style={{ fontSize: typography.body }}>
                 Bienvenido, {user?.nombre || 'Usuario'}
                 {user?.es_administrador && (
-                  <span className="badge bg-primary bg-opacity-10 text-primary ms-2">
+                  <span style={{
+                    fontSize: typography.tiny,
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '4px',
+                    backgroundColor: '#0d6efd15',
+                    color: '#0d6efd',
+                    fontWeight: '600',
+                    marginLeft: '0.5rem'
+                  }}>
                     Administrador
                   </span>
                 )}
@@ -171,9 +191,15 @@ const DashboardPage = () => {
             <button
               onClick={refreshData}
               disabled={isRefreshing}
-              className="btn btn-outline-primary d-flex align-items-center"
+              className="btn btn-dark d-flex align-items-center"
+              style={{ 
+                borderRadius: '8px',
+                fontSize: typography.body,
+                padding: '0.4rem 1rem',
+                fontWeight: '500'
+              }}
             >
-              <i className={`bi ${isRefreshing ? 'bi-arrow-clockwise' : 'bi-arrow-clockwise'} me-2 ${isRefreshing ? 'spin' : ''}`}></i>
+              <i className={`bi bi-arrow-clockwise me-2 ${isRefreshing ? 'spin' : ''}`}></i>
               {isRefreshing ? 'Actualizando...' : 'Actualizar'}
             </button>
           </div>
@@ -192,82 +218,126 @@ const DashboardPage = () => {
         </div>
       )}
 
-      {/* Estadísticas principales */}
-      <div className="row mb-4" data-testid="dashboard-stats">
-        <div className="col-lg-3 col-md-6 mb-3">
-          <div className="card h-100">
-            <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-folder text-primary fs-4"></i>
-                </div>
+      {/* Estadísticas Compactas */}
+      <div className="row g-2 mb-3" data-testid="dashboard-stats">
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '4px solid #0d6efd' }}>
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center justify-content-between">
                 <div>
-                  <h6 className="card-subtitle mb-1 text-muted">Total Proyectos</h6>
-                  <h4 className="card-title mb-0 fw-bold">{stats.projects.total}</h4>
-                  <small className="text-primary">
-                    <i className="bi bi-check-circle me-1"></i>
+                  <p className="text-muted mb-1" style={{ fontSize: typography.tiny, fontWeight: '600', letterSpacing: '0.5px' }}>
+                    TOTAL PROYECTOS
+                  </p>
+                  <h3 className="mb-0 fw-bold" style={{ fontSize: typography.statNumber, color: '#1a1a1a' }}>
+                    {stats.projects.total}
+                  </h3>
+                  <small style={{ fontSize: typography.tiny, color: '#6c757d' }}>
                     {stats.projects.completed} completados
                   </small>
                 </div>
+                <div style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  borderRadius: '10px',
+                  backgroundColor: '#0d6efd15',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <i className="bi bi-folder" style={{ fontSize: '1.25rem', color: '#0d6efd' }}></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-lg-3 col-md-6 mb-3">
-          <div className="card h-100">
-            <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-play-circle text-primary fs-4"></i>
-                </div>
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '4px solid #198754' }}>
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center justify-content-between">
                 <div>
-                  <h6 className="card-subtitle mb-1 text-muted">Proyectos Activos</h6>
-                  <h4 className="card-title mb-0 fw-bold">{stats.projects.active}</h4>
-                  <small className="text-primary">
-                    <i className="bi bi-person me-1"></i>
+                  <p className="text-muted mb-1" style={{ fontSize: typography.tiny, fontWeight: '600', letterSpacing: '0.5px' }}>
+                    PROYECTOS ACTIVOS
+                  </p>
+                  <h3 className="mb-0 fw-bold" style={{ fontSize: typography.statNumber, color: '#1a1a1a' }}>
+                    {stats.projects.active}
+                  </h3>
+                  <small style={{ fontSize: typography.tiny, color: '#6c757d' }}>
                     {stats.projects.myProjects} míos
                   </small>
                 </div>
+                <div style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  borderRadius: '10px',
+                  backgroundColor: '#19875415',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <i className="bi bi-play-circle" style={{ fontSize: '1.25rem', color: '#198754' }}></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-lg-3 col-md-6 mb-3">
-          <div className="card h-100">
-            <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-clipboard-check text-primary fs-4"></i>
-                </div>
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '4px solid #ffc107' }}>
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center justify-content-between">
                 <div>
-                  <h6 className="card-subtitle mb-1 text-muted">Total Tareas</h6>
-                  <h4 className="card-title mb-0 fw-bold">{stats.tasks.total}</h4>
-                  <small className="text-primary">
-                    <i className="bi bi-clock me-1"></i>
+                  <p className="text-muted mb-1" style={{ fontSize: typography.tiny, fontWeight: '600', letterSpacing: '0.5px' }}>
+                    TOTAL TAREAS
+                  </p>
+                  <h3 className="mb-0 fw-bold" style={{ fontSize: typography.statNumber, color: '#1a1a1a' }}>
+                    {stats.tasks.total}
+                  </h3>
+                  <small style={{ fontSize: typography.tiny, color: '#6c757d' }}>
                     {stats.tasks.pending} pendientes
                   </small>
                 </div>
+                <div style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  borderRadius: '10px',
+                  backgroundColor: '#ffc10715',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <i className="bi bi-clipboard-check" style={{ fontSize: '1.25rem', color: '#ffc107' }}></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="col-lg-3 col-md-6 mb-3">
-          <div className="card h-100">
-            <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                  <i className="bi bi-hourglass-split text-primary fs-4"></i>
-                </div>
+        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '4px solid #6c757d' }}>
+            <div className="card-body p-3">
+              <div className="d-flex align-items-center justify-content-between">
                 <div>
-                  <h6 className="card-subtitle mb-1 text-muted">En Progreso</h6>
-                  <h4 className="card-title mb-0 fw-bold">{stats.tasks.inProgress}</h4>
-                  <small className="text-primary">
-                    <i className="bi bi-person-check me-1"></i>
+                  <p className="text-muted mb-1" style={{ fontSize: typography.tiny, fontWeight: '600', letterSpacing: '0.5px' }}>
+                    EN PROGRESO
+                  </p>
+                  <h3 className="mb-0 fw-bold" style={{ fontSize: typography.statNumber, color: '#1a1a1a' }}>
+                    {stats.tasks.inProgress}
+                  </h3>
+                  <small style={{ fontSize: typography.tiny, color: '#6c757d' }}>
                     {stats.tasks.myTasks} asignadas
                   </small>
+                </div>
+                <div style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  borderRadius: '10px',
+                  backgroundColor: '#6c757d15',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <i className="bi bi-hourglass-split" style={{ fontSize: '1.25rem', color: '#6c757d' }}></i>
                 </div>
               </div>
             </div>
@@ -275,125 +345,103 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Contenido principal */}
-      <div className="row" data-testid="dashboard-grid">
+      {/* Contenido Compacto */}
+      <div className="row g-2" data-testid="dashboard-grid">
         {/* Resumen de Proyectos */}
-        <div className="col-lg-4 col-md-6 mb-4">
-          <div className="card h-100">
-            <div className="card-header bg-light">
-              <h6 className="card-title mb-0 d-flex align-items-center">
-                <i className="bi bi-folder me-2"></i>
+        <div className="col-lg-4 col-md-6">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
+            <div className="card-body p-3">
+              <h6 className="mb-2 fw-semibold d-flex align-items-center" style={{ fontSize: typography.cardTitle, color: '#1a1a1a' }}>
+                <i className="bi bi-folder me-2" style={{ color: '#0d6efd' }}></i>
                 Resumen de Proyectos
               </h6>
-            </div>
-            <div className="card-body">
-              <div className="row text-center">
-                <div className="col-4">
-                  <div className="border-end">
-                    <h5 className="text-primary fw-bold">{stats.projects.total}</h5>
-                    <small className="text-muted">Total</small>
-                  </div>
+              <div className="d-flex justify-content-around text-center py-2">
+                <div>
+                  <h5 className="mb-0 fw-bold" style={{ fontSize: '1.25rem', color: '#0d6efd' }}>{stats.projects.total}</h5>
+                  <small className="text-muted" style={{ fontSize: typography.tiny }}>Total</small>
                 </div>
-                <div className="col-4">
-                  <div className="border-end">
-                    <h5 className="text-primary fw-bold">{stats.projects.active}</h5>
-                    <small className="text-muted">Activos</small>
-                  </div>
+                <div className="border-start ps-3">
+                  <h5 className="mb-0 fw-bold" style={{ fontSize: '1.25rem', color: '#198754' }}>{stats.projects.active}</h5>
+                  <small className="text-muted" style={{ fontSize: typography.tiny }}>Activos</small>
                 </div>
-                <div className="col-4">
-                  <h5 className="text-primary fw-bold">{stats.projects.completed}</h5>
-                  <small className="text-muted">Completados</small>
+                <div className="border-start ps-3">
+                  <h5 className="mb-0 fw-bold" style={{ fontSize: '1.25rem', color: '#6c757d' }}>{stats.projects.completed}</h5>
+                  <small className="text-muted" style={{ fontSize: typography.tiny }}>Completados</small>
                 </div>
               </div>
-              <div className="mt-3 pt-3 border-top">
-                <Link to="/projects" className="btn btn-outline-primary btn-sm w-100">
-                  <i className="bi bi-eye me-2"></i>
-                  Ver todos los proyectos
-                </Link>
-              </div>
+              <Link to="/projects" className="btn btn-outline-secondary btn-sm w-100 mt-2" style={{ borderRadius: '6px', fontSize: typography.small }}>
+                Ver todos los proyectos
+              </Link>
             </div>
           </div>
         </div>
 
         {/* Resumen de Tareas */}
-        <div className="col-lg-4 col-md-6 mb-4">
-          <div className="card h-100">
-            <div className="card-header bg-light">
-              <h6 className="card-title mb-0 d-flex align-items-center">
-                <i className="bi bi-clipboard-check me-2"></i>
+        <div className="col-lg-4 col-md-6">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
+            <div className="card-body p-3">
+              <h6 className="mb-2 fw-semibold d-flex align-items-center" style={{ fontSize: typography.cardTitle, color: '#1a1a1a' }}>
+                <i className="bi bi-clipboard-check me-2" style={{ color: '#ffc107' }}></i>
                 Resumen de Tareas
               </h6>
-            </div>
-            <div className="card-body">
-              <div className="row text-center">
-                <div className="col-3">
-                  <div className="border-end">
-                    <h5 className="text-primary fw-bold">{stats.tasks.total}</h5>
-                    <small className="text-muted">Total</small>
-                  </div>
+              <div className="d-flex justify-content-around text-center py-2">
+                <div>
+                  <h5 className="mb-0 fw-bold" style={{ fontSize: '1.25rem', color: '#ffc107' }}>{stats.tasks.total}</h5>
+                  <small className="text-muted" style={{ fontSize: typography.tiny }}>Total</small>
                 </div>
-                <div className="col-3">
-                  <div className="border-end">
-                    <h5 className="text-primary fw-bold">{stats.tasks.pending}</h5>
-                    <small className="text-muted">Pendientes</small>
-                  </div>
+                <div className="border-start ps-2">
+                  <h5 className="mb-0 fw-bold" style={{ fontSize: '1.25rem', color: '#dc3545' }}>{stats.tasks.pending}</h5>
+                  <small className="text-muted" style={{ fontSize: typography.tiny }}>Pendientes</small>
                 </div>
-                <div className="col-3">
-                  <div className="border-end">
-                    <h5 className="text-primary fw-bold">{stats.tasks.inProgress}</h5>
-                    <small className="text-muted">En Progreso</small>
-                  </div>
+                <div className="border-start ps-2">
+                  <h5 className="mb-0 fw-bold" style={{ fontSize: '1.25rem', color: '#0d6efd' }}>{stats.tasks.inProgress}</h5>
+                  <small className="text-muted" style={{ fontSize: typography.tiny }}>En Progreso</small>
                 </div>
-                <div className="col-3">
-                  <h5 className="text-primary fw-bold">{stats.tasks.completed}</h5>
-                  <small className="text-muted">Completadas</small>
+                <div className="border-start ps-2">
+                  <h5 className="mb-0 fw-bold" style={{ fontSize: '1.25rem', color: '#198754' }}>{stats.tasks.completed}</h5>
+                  <small className="text-muted" style={{ fontSize: typography.tiny }}>Completadas</small>
                 </div>
               </div>
-              <div className="mt-3 pt-3 border-top">
-                <Link to="/tasks" className="btn btn-outline-primary btn-sm w-100">
-                  <i className="bi bi-eye me-2"></i>
-                  Ver todas las tareas
-                </Link>
-              </div>
+              <Link to="/tasks" className="btn btn-outline-secondary btn-sm w-100 mt-2" style={{ borderRadius: '6px', fontSize: typography.small }}>
+                Ver todas las tareas
+              </Link>
             </div>
           </div>
         </div>
 
         {/* Acciones Rápidas */}
-        <div className="col-lg-4 col-md-12 mb-4">
-          <div className="card h-100">
-            <div className="card-header bg-light">
-              <h6 className="card-title mb-0 d-flex align-items-center">
-                <i className="bi bi-lightning me-2"></i>
+        <div className="col-lg-4 col-md-12">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
+            <div className="card-body p-3">
+              <h6 className="mb-2 fw-semibold d-flex align-items-center" style={{ fontSize: typography.cardTitle, color: '#1a1a1a' }}>
+                <i className="bi bi-lightning me-2" style={{ color: '#6c757d' }}></i>
                 Acciones Rápidas
               </h6>
-            </div>
-            <div className="card-body">
-              <div className="d-grid gap-2">
-                <Link to="/projects" className="btn btn-primary btn-sm">
-                  <i className="bi bi-plus-lg me-2"></i>
+              <div className="d-grid gap-1">
+                <Link to="/projects" className="btn btn-dark btn-sm" style={{ borderRadius: '6px', fontSize: typography.small, padding: '0.4rem' }}>
+                  <i className="bi bi-plus-lg me-1"></i>
                   Crear Proyecto
                 </Link>
-                <Link to="/tasks" className="btn btn-outline-primary btn-sm">
-                  <i className="bi bi-plus-lg me-2"></i>
+                <Link to="/tasks" className="btn btn-outline-secondary btn-sm" style={{ borderRadius: '6px', fontSize: typography.small, padding: '0.4rem' }}>
+                  <i className="bi bi-plus-lg me-1"></i>
                   Crear Tarea
                 </Link>
-                <Link to="/files" className="btn btn-outline-primary btn-sm">
-                  <i className="bi bi-file-earmark me-2"></i>
+                <Link to="/files" className="btn btn-outline-secondary btn-sm" style={{ borderRadius: '6px', fontSize: typography.small, padding: '0.4rem' }}>
+                  <i className="bi bi-file-earmark me-1"></i>
                   Gestionar Archivos
                 </Link>
                 {user?.es_administrador && (
                   <>
-                    <Link to="/users" className="btn btn-outline-primary btn-sm">
-                      <i className="bi bi-people me-2"></i>
+                    <Link to="/users" className="btn btn-outline-secondary btn-sm" style={{ borderRadius: '6px', fontSize: typography.small, padding: '0.4rem' }}>
+                      <i className="bi bi-people me-1"></i>
                       Gestionar Usuarios
                     </Link>
-                    <Link to="/roles" className="btn btn-outline-primary btn-sm">
-                      <i className="bi bi-shield me-2"></i>
+                    <Link to="/roles" className="btn btn-outline-secondary btn-sm" style={{ borderRadius: '6px', fontSize: typography.small, padding: '0.4rem' }}>
+                      <i className="bi bi-shield me-1"></i>
                       Gestionar Roles
                     </Link>
-                    <Link to="/activity-logs" className="btn btn-outline-primary btn-sm">
-                      <i className="bi bi-activity me-2"></i>
+                    <Link to="/activity-logs" className="btn btn-outline-secondary btn-sm" style={{ borderRadius: '6px', fontSize: typography.small, padding: '0.4rem' }}>
+                      <i className="bi bi-activity me-1"></i>
                       Ver Logs de Actividad
                     </Link>
                   </>
@@ -404,34 +452,41 @@ const DashboardPage = () => {
         </div>
 
         {/* Actividades Recientes */}
-        <div className="col-lg-6 col-md-12 mb-4">
-          <div className="card h-100">
-            <div className="card-header bg-light">
-              <h6 className="card-title mb-0 d-flex align-items-center">
-                <i className="bi bi-clock-history me-2"></i>
+        <div className="col-lg-6 col-md-12 mt-2">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
+            <div className="card-body p-3">
+              <h6 className="mb-2 fw-semibold d-flex align-items-center" style={{ fontSize: typography.cardTitle, color: '#1a1a1a' }}>
+                <i className="bi bi-clock-history me-2" style={{ color: '#6c757d' }}></i>
                 Actividades Recientes
               </h6>
-            </div>
-            <div className="card-body">
               {recentActivities.length === 0 ? (
-                <div className="text-center py-4">
-                  <i className="bi bi-inbox display-4 text-muted mb-3"></i>
-                  <p className="text-muted mb-0">No hay actividades recientes</p>
+                <div className="text-center py-3">
+                  <i className="bi bi-inbox" style={{ fontSize: '2rem', color: '#6c757d' }}></i>
+                  <p className="text-muted mb-0 mt-2" style={{ fontSize: typography.small }}>No hay actividades recientes</p>
                 </div>
               ) : (
-                <div className="list-group list-group-flush">
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                   {recentActivities.slice(0, 5).map((activity, index) => (
-                    <div key={activity.id || index} className="list-group-item border-0 px-0">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                          <i className="bi bi-activity text-primary"></i>
-                        </div>
-                        <div className="flex-grow-1">
-                          <h6 className="mb-1">{activity.elemento || activity.descripcion}</h6>
-                          <small className="text-muted">
-                            {activity.usuario || activity.usuario_nombre} • {new Date(activity.fecha || activity.created_at).toLocaleDateString()}
-                          </small>
-                        </div>
+                    <div key={activity.id || index} className="d-flex align-items-center py-2 border-bottom">
+                      <div style={{ 
+                        width: '32px', 
+                        height: '32px', 
+                        borderRadius: '8px',
+                        backgroundColor: '#0d6efd15',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: '0.75rem'
+                      }}>
+                        <i className="bi bi-activity" style={{ fontSize: '0.875rem', color: '#0d6efd' }}></i>
+                      </div>
+                      <div className="flex-grow-1">
+                        <p className="mb-0 fw-medium" style={{ fontSize: typography.small, color: '#1a1a1a' }}>
+                          {activity.elemento || activity.descripcion}
+                        </p>
+                        <small className="text-muted" style={{ fontSize: typography.tiny }}>
+                          {activity.usuario || activity.usuario_nombre} • {new Date(activity.fecha || activity.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                        </small>
                       </div>
                     </div>
                   ))}
@@ -442,39 +497,41 @@ const DashboardPage = () => {
         </div>
 
         {/* Mis Tareas Pendientes */}
-        <div className="col-lg-6 col-md-12 mb-4">
-          <div className="card h-100">
-            <div className="card-header bg-light">
-              <h6 className="card-title mb-0 d-flex align-items-center">
-                <i className="bi bi-person-check me-2"></i>
+        <div className="col-lg-6 col-md-12 mt-2">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
+            <div className="card-body p-3">
+              <h6 className="mb-2 fw-semibold d-flex align-items-center" style={{ fontSize: typography.cardTitle, color: '#1a1a1a' }}>
+                <i className="bi bi-person-check me-2" style={{ color: '#6c757d' }}></i>
                 Mis Tareas Pendientes
               </h6>
-            </div>
-            <div className="card-body">
-              <div className="text-center py-4">
-                <div className="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-3">
-                  <i className="bi bi-clipboard-check text-primary fs-4"></i>
+              <div className="text-center py-2">
+                <div style={{ 
+                  width: '50px', 
+                  height: '50px', 
+                  borderRadius: '12px',
+                  backgroundColor: '#0d6efd15',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '0.75rem'
+                }}>
+                  <i className="bi bi-clipboard-check" style={{ fontSize: '1.5rem', color: '#0d6efd' }}></i>
                 </div>
-                <h4 className="text-primary fw-bold mb-2">{stats.tasks.myTasks}</h4>
-                <p className="text-muted mb-3">Tareas asignadas a ti</p>
-                <div className="row text-center">
-                  <div className="col-6">
-                    <div className="border-end">
-                      <h6 className="text-primary fw-bold">{stats.tasks.pending}</h6>
-                      <small className="text-muted">Pendientes</small>
-                    </div>
+                <h3 className="mb-1 fw-bold" style={{ fontSize: '2rem', color: '#0d6efd' }}>{stats.tasks.myTasks}</h3>
+                <p className="text-muted mb-2" style={{ fontSize: typography.small }}>Tareas asignadas a ti</p>
+                <div className="d-flex justify-content-center gap-4 py-2">
+                  <div>
+                    <h5 className="mb-0 fw-bold" style={{ fontSize: '1.25rem', color: '#dc3545' }}>{stats.tasks.pending}</h5>
+                    <small className="text-muted" style={{ fontSize: typography.tiny }}>Pendientes</small>
                   </div>
-                  <div className="col-6">
-                    <h6 className="text-primary fw-bold">{stats.tasks.inProgress}</h6>
-                    <small className="text-muted">En Progreso</small>
+                  <div className="border-start ps-4">
+                    <h5 className="mb-0 fw-bold" style={{ fontSize: '1.25rem', color: '#0d6efd' }}>{stats.tasks.inProgress}</h5>
+                    <small className="text-muted" style={{ fontSize: typography.tiny }}>En Progreso</small>
                   </div>
                 </div>
-                <div className="mt-3 pt-3 border-top">
-                  <Link to="/tasks" className="btn btn-outline-primary btn-sm">
-                    <i className="bi bi-eye me-2"></i>
-                    Ver mis tareas
-                  </Link>
-                </div>
+                <Link to="/tasks" className="btn btn-outline-secondary btn-sm mt-2" style={{ borderRadius: '6px', fontSize: typography.small }}>
+                  Ver mis tareas
+                </Link>
               </div>
             </div>
           </div>
