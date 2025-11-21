@@ -10,10 +10,10 @@ import { test, expect } from '@playwright/test';
 // Helper para login como admin (DRY)
 async function loginAsAdmin(page) {
   await page.goto('http://localhost:5173/login');
-  await page.fill('input[type="email"]', 'admin@test.com');
-  await page.fill('input[type="password"]', 'admin123');
-  await page.click('button[type="submit"]');
-  await page.waitForURL('http://localhost:5173/dashboard');
+  await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
+  await page.fill('[data-testid="password-input"]', 'Admin123!');
+  await page.click('[data-testid="login-button"]');
+  await page.waitForURL('http://localhost:5173/dashboard', { timeout: 10000 });
 }
 
 test.describe('Activity Logs E2E', () => {
