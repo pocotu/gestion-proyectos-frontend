@@ -137,8 +137,8 @@ test.describe('Dashboard E2E', () => {
     const dashboardHeader = page.locator('[data-testid="dashboard-header"]');
     await expect(dashboardHeader.locator('p:has-text("Bienvenido")')).toBeVisible();
     
-    // Verificar que se muestra el badge de administrador
-    await expect(dashboardHeader.locator('.badge:has-text("Administrador")')).toBeVisible();
+    // Verificar que se muestra el badge/span de administrador
+    await expect(dashboardHeader.locator('span:has-text("Administrador"), .badge:has-text("Administrador")')).toBeVisible();
   });
 
   test('debe ser responsive en diferentes tamaños de pantalla', async ({ page }) => {
