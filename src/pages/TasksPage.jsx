@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import taskService from '../services/taskService.mock';
+import taskService from '../services/taskService';
 import projectService from '../services/projectService';
 import '../styles/projects.css';
 
@@ -56,7 +56,7 @@ const TasksPage = () => {
       console.log('Response from tasks API:', response);
 
       // Manejar diferentes estructuras de respuesta
-      const tasksData = response.tasks || response.data || [];
+      const tasksData = response.data?.tasks || response.tasks || response.data || [];
       setTasks(Array.isArray(tasksData) ? tasksData : []);
       setError(null);
     } catch (error) {
@@ -237,25 +237,25 @@ const TasksPage = () => {
       id: 'pendiente', 
       title: 'Pendiente', 
       color: '#6c757d',
-      icon: '⏸️'
+      icon: 'bi-pause-circle'
     },
     { 
       id: 'en_progreso', 
       title: 'En Progreso', 
       color: '#0d6efd',
-      icon: '🔄'
+      icon: 'bi-arrow-repeat'
     },
     { 
       id: 'completada', 
       title: 'Completada', 
       color: '#198754',
-      icon: '✅'
+      icon: 'bi-check-circle'
     },
     { 
       id: 'cancelada', 
       title: 'Cancelada', 
       color: '#dc3545',
-      icon: '❌'
+      icon: 'bi-x-circle'
     }
   ];
 
@@ -372,9 +372,9 @@ const TasksPage = () => {
                     }}
                   >
                     <option value="">Prioridad</option>
-                    <option value="baja">🟢 Baja</option>
-                    <option value="media">🟡 Media</option>
-                    <option value="alta">🔴 Alta</option>
+                    <option value="baja">Baja</option>
+                    <option value="media">Media</option>
+                    <option value="alta">Alta</option>
                   </select>
                 </div>
                 <div className="col-lg-3 col-md-6">
@@ -463,7 +463,7 @@ const TasksPage = () => {
                 <div className="card-header border-0 bg-transparent pt-3 pb-2 px-3">
                   <div className="d-flex align-items-center justify-content-between">
                     <div className="d-flex align-items-center gap-2">
-                      <span style={{ fontSize: '1.25rem' }}>{column.icon}</span>
+                      <i className={column.icon} style={{ fontSize: '1rem', color: column.color }}></i>
                       <h6 className="mb-0 fw-semibold" style={{ 
                         fontSize: '0.875rem',
                         color: '#1a1a1a'
@@ -595,8 +595,8 @@ const TasksPage = () => {
                                        task.prioridad === 'media' ? '#ffc107' : '#198754',
                                 fontWeight: '600'
                               }}>
-                                {task.prioridad === 'alta' ? '🔴 Alta' : 
-                                 task.prioridad === 'media' ? '🟡 Media' : '🟢 Baja'}
+                                {task.prioridad === 'alta' ? 'Alta' : 
+                                 task.prioridad === 'media' ? 'Media' : 'Baja'}
                               </span>
                             </div>
                           )}
@@ -686,7 +686,7 @@ const TasksPage = () => {
                             </span>
                           </td>
                           <td className="py-3">
-                            <span style={{
+                            <span className="d-flex align-items-center gap-1" style={{
                               fontSize: '0.75rem',
                               padding: '0.25rem 0.5rem',
                               borderRadius: '4px',
@@ -696,6 +696,9 @@ const TasksPage = () => {
                                      task.prioridad === 'media' ? '#ffc107' : '#198754',
                               fontWeight: '600'
                             }}>
+                              <i className={`bi ${task.prioridad === 'alta' ? 'bi-exclamation-circle' : 
+                                                  task.prioridad === 'media' ? 'bi-dash-circle' : 'bi-arrow-down-circle'}`}
+                                 style={{ fontSize: '0.7rem' }}></i>
                               {task.prioridad || 'Media'}
                             </span>
                           </td>

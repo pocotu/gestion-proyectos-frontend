@@ -37,8 +37,13 @@ export async function loginAsAdmin(page, options = {}) {
     // Si no hay spinner, continuar
   }
 
-  // Luego esperar a que aparezca el dashboard
-  await page.waitForSelector('[data-testid="dashboard-page"]', { timeout });
+  // Luego esperar a que aparezca el dashboard o cualquier contenido principal
+  try {
+    await page.waitForSelector('[data-testid="dashboard-page"]', { timeout: 10000 });
+  } catch {
+    // Si no encuentra el dashboard-page, esperar por el header del dashboard
+    await page.waitForSelector('[data-testid="dashboard-header"]', { timeout: 5000 });
+  }
 }
 
 /**
