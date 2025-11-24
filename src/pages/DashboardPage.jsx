@@ -3,10 +3,24 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import dashboardService from '../services/dashboardService';
+import {
+  FolderOpen,
+  TrendingUp,
+  FileText,
+  Clock,
+  RefreshCw,
+  Plus,
+  Archive,
+  Users,
+  Shield,
+  Activity,
+  BarChart3,
+  CheckCircle2
+} from 'lucide-react';
 
 /**
- * DashboardPage - Página principal del Dashboard con diseño moderno y compacto
- * Principios SOLID aplicados:
+ * DashboardPage - Diseño exacto de la imagen
+ * Principios SOLID:
  * - Single Responsibility: Solo maneja la vista del dashboard
  * - Open/Closed: Extensible mediante componentes modulares
  * - Dependency Inversion: Depende de abstracciones (servicios, contextos)
@@ -14,7 +28,7 @@ import dashboardService from '../services/dashboardService';
 const DashboardPage = () => {
   const { user, isAuthenticated } = useAuth();
 
-  // Estados del componente (Single Responsibility)
+  // Estados del componente
   const [stats, setStats] = useState({
     projects: { total: 0, active: 0, completed: 0, myProjects: 0 },
     tasks: { total: 0, pending: 0, inProgress: 0, completed: 0, myTasks: 0 }
@@ -24,7 +38,6 @@ const DashboardPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
-  // Cargar datos al montar el componente
   useEffect(() => {
     if (isAuthenticated && user) {
       loadDashboardData();
@@ -32,8 +45,7 @@ const DashboardPage = () => {
   }, [isAuthenticated, user]);
 
   /**
-   * Carga los datos del dashboard desde el servicio
-   * Principio de Responsabilidad Única: Solo carga datos
+   * Carga los datos del dashboard
    */
   const loadDashboardData = async () => {
     try {
@@ -72,7 +84,6 @@ const DashboardPage = () => {
       });
 
       setRecentActivities(activities.slice(0, 5));
-
     } catch (error) {
       console.error('Error loading dashboard:', error);
       setError('Error al cargar los datos del dashboard');
@@ -83,7 +94,6 @@ const DashboardPage = () => {
 
   /**
    * Refresca los datos del dashboard
-   * Principio de Responsabilidad Única: Solo refresca datos
    */
   const refreshData = async () => {
     try {
@@ -91,7 +101,6 @@ const DashboardPage = () => {
       await loadDashboardData();
     } catch (error) {
       console.error('Error refreshing dashboard:', error);
-      setError('Error al actualizar los datos');
     } finally {
       setIsRefreshing(false);
     }
@@ -103,22 +112,12 @@ const DashboardPage = () => {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="container-fluid py-4">
-        <div className="row justify-content-center">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body text-center py-5">
-                <i className="bi bi-shield-lock display-1 text-warning mb-3"></i>
-                <h5 className="card-title">Acceso Requerido</h5>
-                <p className="card-text text-muted">
-                  Debes iniciar sesión para acceder al dashboard
-                </p>
-                <Link to="/login" className="btn btn-primary">
-                  Ir a Login
-                </Link>
-              </div>
-            </div>
-          </div>
+      <div style={styles.container}>
+        <div style={styles.emptyState}>
+          <Shield size={48} color="#F59E0B" />
+          <h5 style={styles.emptyTitle}>Acceso Requerido</h5>
+          <p style={styles.emptyText}>Debes iniciar sesión para acceder al dashboard</p>
+          <Link to="/login" style={styles.linkButton}>Ir a Login</Link>
         </div>
       </div>
     );
@@ -126,85 +125,90 @@ const DashboardPage = () => {
 
   return (
     <div style={styles.container} data-testid="dashboard-page">
-      {/* Header Compacto */}
-      <div style={styles.header} data-testid="dashboard-header">
-        <div style={styles.headerContent}>
-          <div>
-            <h1 style={styles.title}>Dashboard</h1>
-            <div style={styles.subtitle}>
-              <span>Bienvenido, {user?.nombre || 'Usuario'}</span>
-              {user?.es_administrador && (
-                <span style={styles.badge}>Admin</span>
-              )}
-            </div>
+      {/* Header del Dashboard */}
+      <div style={styles.dashboardHeader}>
+        <div>
+          <h1 style={styles.pageTitle}>Dashboard</h1>
+          <div style={styles.welcomeText}>
+            <span>Bienvenido, {user?.nombre || 'Administrador del Sistema'}</span>
+            {user?.es_administrador && (
+              <span style={styles.adminBadge}>Admin</span>
+            )}
           </div>
-          <button
-            onClick={refreshData}
-            disabled={isRefreshing}
-            style={{
-              ...styles.refreshButton,
-              opacity: isRefreshing ? 0.6 : 1,
-              cursor: isRefreshing ? 'not-allowed' : 'pointer'
-            }}
-          >
-            <i className={`bi bi-arrow-clockwise ${isRefreshing ? 'spin' : ''}`} style={{ marginRight: '6px' }}></i>
-            {isRefreshing ? 'Actualizando...' : 'Actualizar'}
-          </button>
         </div>
+        <button
+          onClick={refreshData}
+          disabled={isRefreshing}
+          style={{
+            ...styles.refreshButton,
+            opacity: isRefreshing ? 0.6 : 1
+          }}
+        >
+          <RefreshCw
+            size={16}
+            className={isRefreshing ? 'spin-animation' : ''}
+          />
+          {isRefreshing ? 'Actualizando...' : 'Actualizar'}
+        </button>
       </div>
 
-      {/* Error Alert */}
-      {error && (
-        <div style={styles.errorAlert}>
-          <i className="bi bi-exclamation-triangle-fill" style={{ marginRight: '8px' }}></i>
-          {error}
-        </div>
-      )}
-
-      {/* Grid de Estadísticas Compactas */}
-      <div style={styles.statsGrid} data-testid="dashboard-stats">
+      {/* Cards de estadísticas principales */}
+      <div style={styles.statsGrid}>
         <StatCard
-          icon="bi-folder"
-          label="Total Proyectos"
+          label="TOTAL PROYECTOS"
           value={stats.projects.total}
           subtitle={`${stats.projects.completed} completados`}
-          color="#3b82f6"
+          Icon={FolderOpen}
+          bgColor="#E3F2FD"
+          iconColor="#3B82F6"
         />
         <StatCard
-          icon="bi-play-circle"
-          label="Proyectos Activos"
+          label="PROYECTOS ACTIVOS"
           value={stats.projects.active}
           subtitle={`${stats.projects.myProjects} míos`}
-          color="#10b981"
+          Icon={TrendingUp}
+          bgColor="#E8F5E9"
+          iconColor="#22C55E"
         />
         <StatCard
-          icon="bi-clipboard-check"
-          label="Total Tareas"
+          label="TOTAL TAREAS"
           value={stats.tasks.total}
           subtitle={`${stats.tasks.pending} pendientes`}
-          color="#f59e0b"
+          Icon={FileText}
+          bgColor="#FFF9C4"
+          iconColor="#F59E0B"
         />
         <StatCard
-          icon="bi-hourglass-split"
-          label="En Progreso"
+          label="EN PROGRESO"
           value={stats.tasks.inProgress}
           subtitle={`${stats.tasks.myTasks} asignadas`}
-          color="#6b7280"
+          Icon={Clock}
+          bgColor="#F3E5F5"
+          iconColor="#9C27B0"
         />
       </div>
 
-      {/* Grid Principal Responsivo */}
-      <div style={styles.mainGrid} data-testid="dashboard-grid">
+      {/* Grid de contenido principal */}
+      <div style={styles.contentGrid}>
         {/* Resumen de Proyectos */}
         <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <i className="bi bi-folder" style={{ ...styles.cardIcon, color: '#3b82f6' }}></i>
-            <h6 style={styles.cardTitle}>Resumen de Proyectos</h6>
-          </div>
-          <div style={styles.summaryGrid}>
-            <SummaryItem label="Total" value={stats.projects.total} color="#3b82f6" />
-            <SummaryItem label="Activos" value={stats.projects.active} color="#10b981" />
-            <SummaryItem label="Completados" value={stats.projects.completed} color="#6b7280" />
+          <h3 style={styles.cardTitle}>Resumen de Proyectos</h3>
+          <div style={styles.summaryItems}>
+            <SummaryNumber
+              value={stats.projects.total}
+              label="Total"
+              color="#3B82F6"
+            />
+            <SummaryNumber
+              value={stats.projects.active}
+              label="Activos"
+              color="#22C55E"
+            />
+            <SummaryNumber
+              value={stats.projects.completed}
+              label="Completados"
+              color="#9CA3AF"
+            />
           </div>
           <Link to="/projects" style={styles.cardButton}>
             Ver todos los proyectos
@@ -213,15 +217,28 @@ const DashboardPage = () => {
 
         {/* Resumen de Tareas */}
         <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <i className="bi bi-clipboard-check" style={{ ...styles.cardIcon, color: '#f59e0b' }}></i>
-            <h6 style={styles.cardTitle}>Resumen de Tareas</h6>
-          </div>
-          <div style={styles.summaryGrid}>
-            <SummaryItem label="Total" value={stats.tasks.total} color="#f59e0b" />
-            <SummaryItem label="Pendientes" value={stats.tasks.pending} color="#ef4444" />
-            <SummaryItem label="En Progreso" value={stats.tasks.inProgress} color="#3b82f6" />
-            <SummaryItem label="Completadas" value={stats.tasks.completed} color="#10b981" />
+          <h3 style={styles.cardTitle}>Resumen de Tareas</h3>
+          <div style={styles.summaryItems}>
+            <SummaryNumber
+              value={stats.tasks.total}
+              label="Total"
+              color="#EF4444"
+            />
+            <SummaryNumber
+              value={stats.tasks.pending}
+              label="Pendientes"
+              color="#F59E0B"
+            />
+            <SummaryNumber
+              value={stats.tasks.inProgress}
+              label="En Progreso"
+              color="#3B82F6"
+            />
+            <SummaryNumber
+              value={stats.tasks.completed}
+              label="Completadas"
+              color="#22C55E"
+            />
           </div>
           <Link to="/tasks" style={styles.cardButton}>
             Ver todas las tareas
@@ -230,33 +247,50 @@ const DashboardPage = () => {
 
         {/* Acciones Rápidas */}
         <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <i className="bi bi-lightning" style={{ ...styles.cardIcon, color: '#6b7280' }}></i>
-            <h6 style={styles.cardTitle}>Acciones Rápidas</h6>
-          </div>
+          <h3 style={styles.cardTitle}>Acciones Rápidas</h3>
           <div style={styles.actionsGrid}>
-            <ActionButton to="/projects" icon="bi-plus-lg" label="Crear Proyecto" primary />
-            <ActionButton to="/tasks" icon="bi-plus-lg" label="Crear Tarea" />
-            <ActionButton to="/files" icon="bi-file-earmark" label="Archivos" />
+            <Link to="/projects" style={styles.actionButtonPrimary}>
+              <Plus size={16} strokeWidth={2.5} />
+              Crear Proyecto
+            </Link>
+            <Link to="/tasks" style={styles.actionButton}>
+              Crear Tarea
+            </Link>
+            <Link to="/files" style={styles.actionButton}>
+              Archivos
+            </Link>
             {user?.es_administrador && (
               <>
-                <ActionButton to="/users" icon="bi-people" label="Usuarios" />
-                <ActionButton to="/roles" icon="bi-shield" label="Roles" />
-                <ActionButton to="/activity-logs" icon="bi-activity" label="Logs" />
+                <Link to="/users" style={styles.actionButton}>
+                  Usuarios
+                </Link>
+                <Link to="/roles" style={styles.actionButton}>
+                  Roles
+                </Link>
+                <Link to="/activity-logs" style={styles.actionButton}>
+                  Logs
+                </Link>
               </>
             )}
           </div>
         </div>
 
-        {/* Actividades Recientes */}
-        <div style={{ ...styles.card, gridColumn: 'span 2' }}>
-          <div style={styles.cardHeader}>
-            <i className="bi bi-clock-history" style={{ ...styles.cardIcon, color: '#6b7280' }}></i>
-            <h6 style={styles.cardTitle}>Actividades Recientes</h6>
+        {/* Mis Tareas Pendientes */}
+        <div style={styles.card}>
+          <h3 style={styles.cardTitle}>Mis Tareas Pendientes</h3>
+          <div style={styles.myTasksContent}>
+            <div style={styles.myTasksIcon}>
+              <CheckCircle2 size={40} color="#3B82F6" strokeWidth={2} />
+            </div>
           </div>
+        </div>
+
+        {/* Actividades Recientes - Ocupa 2 columnas */}
+        <div style={{ ...styles.card, gridColumn: 'span 2' }}>
+          <h3 style={styles.cardTitle}>Actividades Recientes</h3>
           {recentActivities.length === 0 ? (
-            <div style={styles.emptyState}>
-              <i className="bi bi-inbox" style={styles.emptyIcon}></i>
+            <div style={styles.emptyActivities}>
+              <Activity size={32} color="#9CA3AF" />
               <p style={styles.emptyText}>No hay actividades recientes</p>
             </div>
           ) : (
@@ -267,40 +301,11 @@ const DashboardPage = () => {
             </div>
           )}
         </div>
-
-        {/* Mis Tareas Pendientes */}
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <i className="bi bi-person-check" style={{ ...styles.cardIcon, color: '#6b7280' }}></i>
-            <h6 style={styles.cardTitle}>Mis Tareas Pendientes</h6>
-          </div>
-          <div style={styles.myTasksContent}>
-            <div style={styles.myTasksIcon}>
-              <i className="bi bi-clipboard-check" style={{ fontSize: '1.5rem', color: '#3b82f6' }}></i>
-            </div>
-            <h3 style={styles.myTasksNumber}>{stats.tasks.myTasks}</h3>
-            <p style={styles.myTasksLabel}>Tareas asignadas a ti</p>
-            <div style={styles.myTasksStats}>
-              <div>
-                <h5 style={{ ...styles.myTasksStatNumber, color: '#ef4444' }}>{stats.tasks.pending}</h5>
-                <small style={styles.myTasksStatLabel}>Pendientes</small>
-              </div>
-              <div style={styles.myTasksDivider}></div>
-              <div>
-                <h5 style={{ ...styles.myTasksStatNumber, color: '#3b82f6' }}>{stats.tasks.inProgress}</h5>
-                <small style={styles.myTasksStatLabel}>En Progreso</small>
-              </div>
-            </div>
-            <Link to="/tasks" style={styles.cardButton}>
-              Ver mis tareas
-            </Link>
-          </div>
-        </div>
       </div>
 
-      {/* CSS para animaciones */}
+      {/* CSS Animations */}
       <style>{`
-        .spin {
+        .spin-animation {
           animation: spin 1s linear infinite;
         }
         
@@ -322,57 +327,40 @@ const DashboardPage = () => {
 };
 
 /**
- * StatCard - Componente reutilizable para tarjetas de estadísticas
- * Principio de Responsabilidad Única: Solo muestra una estadística
+ * Componente StatCard - Card de estadística
  */
-const StatCard = ({ icon, label, value, subtitle, color }) => (
+const StatCard = ({ label, value, subtitle, Icon, bgColor, iconColor }) => (
   <div style={styles.statCard}>
     <div style={styles.statCardContent}>
       <div>
         <p style={styles.statLabel}>{label}</p>
-        <h3 style={styles.statValue}>{value}</h3>
+        <h2 style={styles.statValue}>{value}</h2>
         <small style={styles.statSubtitle}>{subtitle}</small>
       </div>
-      <div style={{ ...styles.statIconContainer, backgroundColor: `${color}15` }}>
-        <i className={icon} style={{ fontSize: '1.25rem', color }}></i>
+      <div style={{ ...styles.statIconBox, backgroundColor: bgColor }}>
+        <Icon size={24} color={iconColor} strokeWidth={2} />
       </div>
     </div>
   </div>
 );
 
 /**
- * SummaryItem - Componente para items de resumen
- * Principio de Responsabilidad Única: Solo muestra un item de resumen
+ * Componente SummaryNumber - Número de resumen
  */
-const SummaryItem = ({ label, value, color }) => (
+const SummaryNumber = ({ value, label, color }) => (
   <div style={styles.summaryItem}>
-    <h5 style={{ ...styles.summaryValue, color }}>{value}</h5>
-    <small style={styles.summaryLabel}>{label}</small>
+    <h2 style={{ ...styles.summaryValue, color }}>{value}</h2>
+    <p style={styles.summaryLabel}>{label}</p>
   </div>
 );
 
 /**
- * ActionButton - Componente para botones de acción
- * Principio de Responsabilidad Única: Solo muestra un botón de acción
- */
-const ActionButton = ({ to, icon, label, primary }) => (
-  <Link
-    to={to}
-    style={primary ? styles.actionButtonPrimary : styles.actionButton}
-  >
-    <i className={icon} style={{ marginRight: '6px', fontSize: '0.875rem' }}></i>
-    {label}
-  </Link>
-);
-
-/**
- * ActivityItem - Componente para items de actividad
- * Principio de Responsabilidad Única: Solo muestra un item de actividad
+ * Componente ActivityItem - Item de actividad
  */
 const ActivityItem = ({ activity }) => (
   <div style={styles.activityItem}>
-    <div style={styles.activityIcon}>
-      <i className="bi bi-activity" style={{ fontSize: '0.875rem', color: '#3b82f6' }}></i>
+    <div style={styles.activityIconBox}>
+      <Activity size={14} color="#3B82F6" strokeWidth={2} />
     </div>
     <div style={styles.activityContent}>
       <p style={styles.activityText}>
@@ -385,80 +373,70 @@ const ActivityItem = ({ activity }) => (
   </div>
 );
 
-// Estilos modernos y compactos (DRY - Don't Repeat Yourself)
+// Estilos - Diseño exacto de la imagen
 const styles = {
   container: {
-    padding: '1rem',
-    backgroundColor: '#f9fafb',
+    padding: 0,
+    backgroundColor: '#F9FAFB',
     minHeight: '100vh'
   },
-  header: {
-    marginBottom: '1rem'
-  },
-  headerContent: {
+  dashboardHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: '24px',
     flexWrap: 'wrap',
-    gap: '1rem'
+    gap: '16px'
   },
-  title: {
-    fontSize: '1.5rem',
+  pageTitle: {
+    fontSize: '28px',
     fontWeight: '700',
     color: '#111827',
     margin: 0,
-    letterSpacing: '-0.025em'
+    marginBottom: '4px'
   },
-  subtitle: {
-    fontSize: '0.875rem',
-    color: '#6b7280',
-    marginTop: '0.25rem',
+  welcomeText: {
+    fontSize: '14px',
+    color: '#6B7280',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '8px'
   },
-  badge: {
-    fontSize: '0.6875rem',
-    padding: '0.125rem 0.5rem',
-    borderRadius: '4px',
-    backgroundColor: '#dbeafe',
-    color: '#1e40af',
-    fontWeight: '600'
+  adminBadge: {
+    fontSize: '12px',
+    fontWeight: '600',
+    backgroundColor: '#3B82F6',
+    color: '#FFFFFF',
+    padding: '2px 10px',
+    borderRadius: '4px'
   },
   refreshButton: {
-    padding: '0.5rem 1rem',
-    backgroundColor: '#111827',
-    color: 'white',
+    backgroundColor: '#1F2937',
+    color: '#FFFFFF',
+    padding: '10px 18px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '0.875rem',
-    fontWeight: '500',
+    cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    transition: 'all 0.2s'
-  },
-  errorAlert: {
-    padding: '0.75rem 1rem',
-    backgroundColor: '#fee2e2',
-    color: '#991b1b',
-    borderRadius: '8px',
-    marginBottom: '1rem',
-    display: 'flex',
-    alignItems: 'center',
-    fontSize: '0.875rem'
+    gap: '8px',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '0.75rem',
-    marginBottom: '1rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '20px',
+    marginBottom: '24px'
   },
   statCard: {
-    backgroundColor: 'white',
-    borderRadius: '10px',
-    padding: '1rem',
-    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-    transition: 'transform 0.2s'
+    backgroundColor: '#FFFFFF',
+    borderRadius: '12px',
+    padding: '20px',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    border: '1px solid #E5E7EB'
   },
   statCardContent: {
     display: 'flex',
@@ -466,64 +444,57 @@ const styles = {
     alignItems: 'center'
   },
   statLabel: {
-    fontSize: '0.6875rem',
-    fontWeight: '600',
-    color: '#6b7280',
+    fontSize: '11px',
+    fontWeight: '700',
+    color: '#6B7280',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
-    margin: '0 0 0.25rem 0'
+    margin: '0 0 8px 0'
   },
   statValue: {
-    fontSize: '1.5rem',
+    fontSize: '32px',
     fontWeight: '700',
     color: '#111827',
-    margin: '0 0 0.25rem 0'
+    margin: '0 0 4px 0'
   },
   statSubtitle: {
-    fontSize: '0.75rem',
-    color: '#9ca3af'
+    fontSize: '13px',
+    color: '#9CA3AF',
+    fontWeight: '500'
   },
-  statIconContainer: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
+  statIconBox: {
+    width: '56px',
+    height: '56px',
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
   },
-  mainGrid: {
+  contentGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '0.75rem'
+    gap: '20px'
   },
   card: {
-    backgroundColor: 'white',
-    borderRadius: '10px',
-    padding: '1rem',
-    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#FFFFFF',
+    borderRadius: '12px',
+    padding: '20px',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    border: '1px solid #E5E7EB',
     display: 'flex',
     flexDirection: 'column'
   },
-  cardHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: '0.75rem'
-  },
-  cardIcon: {
-    marginRight: '0.5rem',
-    fontSize: '1rem'
-  },
   cardTitle: {
-    fontSize: '0.875rem',
-    fontWeight: '600',
+    fontSize: '16px',
+    fontWeight: '700',
     color: '#111827',
-    margin: 0
+    margin: '0 0 16px 0'
   },
-  summaryGrid: {
+  summaryItems: {
     display: 'flex',
     justifyContent: 'space-around',
     textAlign: 'center',
-    padding: '0.75rem 0',
+    padding: '16px 0',
     flex: 1
   },
   summaryItem: {
@@ -532,100 +503,98 @@ const styles = {
     alignItems: 'center'
   },
   summaryValue: {
-    fontSize: '1.25rem',
+    fontSize: '28px',
     fontWeight: '700',
-    margin: '0 0 0.25rem 0'
+    margin: '0 0 4px 0'
   },
   summaryLabel: {
-    fontSize: '0.75rem',
-    color: '#6b7280'
+    fontSize: '13px',
+    color: '#6B7280',
+    margin: 0,
+    fontWeight: '500'
   },
   cardButton: {
-    padding: '0.5rem',
-    backgroundColor: '#f3f4f6',
+    padding: '10px',
+    backgroundColor: '#F3F4F6',
     color: '#374151',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '0.8125rem',
+    borderRadius: '8px',
+    fontSize: '14px',
     fontWeight: '500',
     textAlign: 'center',
-    transition: 'all 0.2s',
-    marginTop: '0.75rem',
-    display: 'block'
+    display: 'block',
+    marginTop: '16px',
+    transition: 'background-color 0.2s ease'
   },
   actionsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-    gap: '0.5rem',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '12px',
     flex: 1
   },
-  actionButton: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#f3f4f6',
-    color: '#374151',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '0.8125rem',
-    fontWeight: '500',
-    textAlign: 'center',
-    transition: 'all 0.2s',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
   actionButtonPrimary: {
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#111827',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '0.8125rem',
+    backgroundColor: '#1F2937',
+    color: '#FFFFFF',
+    padding: '12px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    textAlign: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    gridColumn: 'span 2'
+  },
+  actionButton: {
+    backgroundColor: '#F3F4F6',
+    color: '#374151',
+    padding: '10px',
+    borderRadius: '8px',
+    fontSize: '13px',
     fontWeight: '500',
     textAlign: 'center',
-    transition: 'all 0.2s',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
   },
-  emptyState: {
+  myTasksContent: {
     textAlign: 'center',
-    padding: '2rem 1rem',
+    padding: '30px 0',
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center'
   },
-  emptyIcon: {
-    fontSize: '2rem',
-    color: '#9ca3af',
-    marginBottom: '0.5rem'
-  },
-  emptyText: {
-    fontSize: '0.875rem',
-    color: '#6b7280',
-    margin: 0
+  myTasksIcon: {
+    width: '80px',
+    height: '80px',
+    borderRadius: '16px',
+    backgroundColor: '#E3F2FD',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   activitiesList: {
-    maxHeight: '200px',
+    maxHeight: '240px',
     overflowY: 'auto',
     flex: 1
   },
   activityItem: {
     display: 'flex',
     alignItems: 'center',
-    padding: '0.75rem 0',
-    borderBottom: '1px solid #f3f4f6'
+    padding: '12px 0',
+    borderBottom: '1px solid #F3F4F6'
   },
-  activityIcon: {
+  activityIconBox: {
     width: '32px',
     height: '32px',
     borderRadius: '8px',
-    backgroundColor: '#dbeafe',
+    backgroundColor: '#E3F2FD',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: '0.75rem',
+    marginRight: '12px',
     flexShrink: 0
   },
   activityContent: {
@@ -633,66 +602,55 @@ const styles = {
     minWidth: 0
   },
   activityText: {
-    fontSize: '0.8125rem',
+    fontSize: '14px',
     fontWeight: '500',
     color: '#111827',
-    margin: '0 0 0.25rem 0',
+    margin: '0 0 4px 0',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap'
   },
   activityMeta: {
-    fontSize: '0.75rem',
-    color: '#6b7280'
+    fontSize: '12px',
+    color: '#9CA3AF'
   },
-  myTasksContent: {
+  emptyActivities: {
     textAlign: 'center',
-    padding: '0.75rem 0',
+    padding: '40px 20px',
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center'
-  },
-  myTasksIcon: {
-    width: '50px',
-    height: '50px',
-    borderRadius: '12px',
-    backgroundColor: '#dbeafe',
-    display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: '0.75rem'
+    gap: '12px'
   },
-  myTasksNumber: {
-    fontSize: '2rem',
-    fontWeight: '700',
-    color: '#3b82f6',
-    margin: '0 0 0.25rem 0'
-  },
-  myTasksLabel: {
-    fontSize: '0.875rem',
-    color: '#6b7280',
-    margin: '0 0 0.75rem 0'
-  },
-  myTasksStats: {
+  emptyState: {
+    textAlign: 'center',
+    padding: '60px 20px',
     display: 'flex',
-    justifyContent: 'center',
-    gap: '1.5rem',
-    padding: '0.75rem 0',
-    marginBottom: '0.75rem'
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '16px'
   },
-  myTasksStatNumber: {
-    fontSize: '1.25rem',
-    fontWeight: '700',
-    margin: '0 0 0.25rem 0'
+  emptyTitle: {
+    fontSize: '20px',
+    fontWeight: '600',
+    color: '#111827',
+    margin: 0
   },
-  myTasksStatLabel: {
-    fontSize: '0.75rem',
-    color: '#6b7280'
+  emptyText: {
+    fontSize: '14px',
+    color: '#6B7280',
+    margin: 0
   },
-  myTasksDivider: {
-    width: '1px',
-    backgroundColor: '#e5e7eb'
+  linkButton: {
+    backgroundColor: '#3B82F6',
+    color: '#FFFFFF',
+    padding: '10px 24px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    marginTop: '8px'
   }
 };
 

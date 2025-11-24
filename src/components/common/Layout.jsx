@@ -14,18 +14,15 @@ const Layout = () => {
       <div style={styles.body}>
         {/* Sidebar de navegación */}
         <Sidebar />
-        
+
         {/* Área principal con header y contenido */}
         <div style={styles.mainArea}>
           {/* Header al lado del sidebar */}
           <Header />
-          
-          {/* Contenido principal */}
+
+          {/* Contenido principal - sin contenedor blanco */}
           <main style={styles.main}>
-            <div style={styles.content}>
-              {/* Outlet para renderizar las páginas */}
-              <Outlet />
-            </div>
+            <Outlet />
           </main>
         </div>
       </div>
@@ -49,23 +46,15 @@ const styles = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    marginLeft: '280px', // Ancho del sidebar estático
-    backgroundColor: '#f8fafc',
+    marginLeft: '205px', // Ancho del sidebar actualizado
+    backgroundColor: '#F9FAFB', // Fondo gris claro
     minHeight: '100vh'
   },
   main: {
     flex: 1,
     overflow: 'auto',
-    position: 'relative'
-  },
-  content: {
-    padding: '2rem',
-    minHeight: '100%',
-    backgroundColor: '#ffffff',
-    margin: '1rem',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+    position: 'relative',
+    padding: '24px' // Padding directo al contenido
   }
 };
 
