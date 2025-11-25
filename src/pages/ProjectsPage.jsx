@@ -1,23 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search, Plus, RotateCcw } from 'lucide-react';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import projectService from '../services/projectService';
-import '../styles/projects.css';
 
+/**
+ * ProjectsPage - Diseño exacto de la imagen
+ * Principios SOLID aplicados:
+ * - Single Responsibility: Maneja solo la vista de proyectos
+ * - Open/Closed: Extensible mediante configuración
+ * - Dependency Inversion: Usa servicios abstractos
+ */
 const ProjectsPage = () => {
-  // Escala tipográfica consistente (DRY - Don't Repeat Yourself)
-  const typography = {
-    pageTitle: '1.75rem',      // H1 - Título de página
-    subtitle: '0.875rem',      // Subtítulo y contador
-    cardTitle: '0.9375rem',    // Título de tarjeta (15px)
-    body: '0.8125rem',         // Texto normal (13px)
-    small: '0.75rem',          // Texto pequeño (12px)
-    tiny: '0.6875rem',         // Texto muy pequeño (11px)
-    button: '0.875rem',        // Botones
-    input: '0.875rem'          // Inputs y selects
-  };
   const navigate = useNavigate();
   
   // Estados principales
@@ -56,18 +52,13 @@ const ProjectsPage = () => {
     try {
       setLoading(true);
       const response = await projectService.getAllProjects();
-      console.log('Response from API:', response);
-
-      // Según el backend, la respuesta tiene esta estructura:
-      // { success: true, projects: [...], data: { pagination: {...} } }
       const projectsData = response.projects || response.data || [];
-
       setProjects(Array.isArray(projectsData) ? projectsData : []);
       setError(null);
     } catch (error) {
       console.error('Error al cargar proyectos:', error);
       setError('Error al cargar los proyectos');
-            setProjects([]); // Asegurar que projects sea siempre un array
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -79,16 +70,15 @@ const ProjectsPage = () => {
     try {
       if (formMode === 'create') {
         await projectService.createProject(projectForm);
-              } else {
+      } else {
         await projectService.updateProject(selectedProject.id, projectForm);
-              }
-
+      }
       setShowProjectForm(false);
       resetForm();
       loadProjects();
     } catch (error) {
       console.error('Error al guardar proyecto:', error);
-          }
+    }
   };
 
   // Resetear formulario
@@ -135,12 +125,12 @@ const ProjectsPage = () => {
   const handleDelete = async () => {
     try {
       await projectService.deleteProject(selectedProject.id);
-            setShowConfirmDialog(false);
+      setShowConfirmDialog(false);
       setSelectedProject(null);
       loadProjects();
     } catch (error) {
       console.error('Error al eliminar proyecto:', error);
-          }
+    }
   };
 
   // Navegar a detalles del proyecto
@@ -153,339 +143,188 @@ const ProjectsPage = () => {
     const matchesSearch = project.titulo?.toLowerCase().includes(filters.search.toLowerCase()) ||
       project.descripcion?.toLowerCase().includes(filters.search.toLowerCase());
     const matchesEstado = !filters.estado || project.estado === filters.estado;
-
     return matchesSearch && matchesEstado;
   });
 
-  // Obtener configuración de estado (SRP - Single Responsibility Principle)
+  // Obtener configuración de estado
   const getStatusConfig = (estado) => {
     const configs = {
       planificacion: { 
-        icon: '📋', 
         label: 'Planificación',
-        color: '#6c757d',
-        bgColor: '#6c757d15'
+        color: '#6366F1',
+        bgColor: '#EEF2FF'
       },
       en_progreso: { 
-        icon: '🔄', 
         label: 'En Progreso',
-        color: '#0d6efd',
-        bgColor: '#0d6efd15'
+        color: '#3B82F6',
+        bgColor: '#EFF6FF'
       },
       completado: { 
-        icon: '✅', 
         label: 'Completado',
-        color: '#198754',
-        bgColor: '#19875415'
+        color: '#10B981',
+        bgColor: '#ECFDF5'
       },
       cancelado: { 
-        icon: '❌', 
         label: 'Cancelado',
-        color: '#dc3545',
-        bgColor: '#dc354515'
+        color: '#EF4444',
+        bgColor: '#FEF2F2'
       }
     };
     return configs[estado] || configs.planificacion;
   };
 
+  // Formatear fecha
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const month = months[date.getMonth()];
+    return `${day} ${month}`;
+  };
+
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+      <div style={styles.loadingContainer}>
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="container-fluid py-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      {/* Header Moderno */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <h1 className="mb-1 fw-bold" style={{ color: '#1a1a1a', letterSpacing: '-0.5px', fontSize: typography.pageTitle }}>
-                Proyectos
-              </h1>
-              <p className="text-muted mb-0" style={{ fontSize: typography.subtitle }}>
-                {filteredProjects.length} {filteredProjects.length === 1 ? 'proyecto' : 'proyectos'} en total
-              </p>
-            </div>
-            <button
-              onClick={openCreateForm}
-              className="btn btn-dark d-flex align-items-center"
-              style={{ 
-                borderRadius: '8px',
-                fontSize: typography.button,
-                padding: '0.5rem 1.25rem',
-                fontWeight: '500'
-              }}
-            >
-              <i className="bi bi-plus-lg me-2"></i>
-              Nuevo Proyecto
-            </button>
-          </div>
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div>
+          <h1 style={styles.title}>Proyectos</h1>
+          <p style={styles.subtitle}>
+            {filteredProjects.length} {filteredProjects.length === 1 ? 'proyecto' : 'proyectos'} en total
+          </p>
         </div>
+        <button onClick={openCreateForm} style={styles.newButton}>
+          <Plus size={18} strokeWidth={2.5} />
+          Nuevo Proyecto
+        </button>
       </div>
 
-      {/* Filtros Minimalistas */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
-            <div className="card-body p-3">
-              <div className="row g-2 align-items-center">
-                <div className="col-lg-5 col-md-6">
-                  <div className="position-relative">
-                    <i className="bi bi-search position-absolute" style={{ 
-                      left: '12px', 
-                      top: '50%', 
-                      transform: 'translateY(-50%)',
-                      color: '#6c757d',
-                      fontSize: typography.small
-                    }}></i>
-                    <input
-                      type="text"
-                      placeholder="Buscar proyectos..."
-                      value={filters.search}
-                      onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                      className="form-control"
-                      style={{ 
-                        paddingLeft: '2.5rem',
-                        border: '1px solid #e9ecef',
-                        borderRadius: '8px',
-                        fontSize: typography.input
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="col-lg-4 col-md-6">
-                  <select
-                    value={filters.estado}
-                    onChange={(e) => setFilters({ ...filters, estado: e.target.value })}
-                    className="form-select"
-                    style={{ 
-                      border: '1px solid #e9ecef',
-                      borderRadius: '8px',
-                      fontSize: typography.input
-                    }}
-                  >
-                    <option value="">Todos los estados</option>
-                    <option value="planificacion">📋 Planificación</option>
-                    <option value="en_progreso">🔄 En Progreso</option>
-                    <option value="completado">✅ Completado</option>
-                    <option value="cancelado">❌ Cancelado</option>
-                  </select>
-                </div>
-                <div className="col-lg-3 col-md-12">
-                  <button
-                    onClick={() => setFilters({ search: '', estado: '' })}
-                    className="btn btn-outline-secondary w-100"
-                    style={{ 
-                      borderRadius: '8px',
-                      fontSize: typography.button,
-                      border: '1px solid #e9ecef'
-                    }}
-                  >
-                    <i className="bi bi-arrow-clockwise me-1"></i>
-                    Limpiar filtros
-                  </button>
-                </div>
-              </div>
-            </div>
+      {/* Filtros */}
+      <div style={styles.filtersCard}>
+        <div style={styles.filtersRow}>
+          <div style={styles.searchWrapper}>
+            <Search size={16} style={styles.searchIcon} />
+            <input
+              type="text"
+              placeholder="Buscar proyectos..."
+              value={filters.search}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              style={styles.searchInput}
+            />
           </div>
+          <select
+            value={filters.estado}
+            onChange={(e) => setFilters({ ...filters, estado: e.target.value })}
+            style={styles.select}
+          >
+            <option value="">Todos los estados</option>
+            <option value="planificacion">Planificación</option>
+            <option value="en_progreso">En Progreso</option>
+            <option value="completado">Completado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+          <button
+            onClick={() => setFilters({ search: '', estado: '' })}
+            style={styles.clearButton}
+          >
+            <RotateCcw size={14} strokeWidth={2.5} />
+            Limpiar filtros
+          </button>
         </div>
       </div>
 
       {/* Mensaje de error */}
       {error && (
-        <div className="row mb-4">
-          <div className="col-12">
-            <div className="alert alert-danger d-flex align-items-center" role="alert">
-              <i className="bi bi-exclamation-triangle-fill me-2"></i>
-              {error}
-            </div>
-          </div>
+        <div style={styles.errorAlert}>
+          <span>⚠️</span>
+          {error}
         </div>
       )}
 
-      {/* Contenido principal */}
+      {/* Grid de proyectos */}
       {filteredProjects.length === 0 && !error ? (
-        <div className="text-center py-5">
-          <div className="mb-4">
-            <div className="d-inline-flex align-items-center justify-content-center rounded-circle" 
-                 style={{ width: '80px', height: '80px', backgroundColor: '#f8f9fa' }}>
-              <i className="bi bi-folder" style={{ fontSize: '2rem', color: '#6c757d' }}></i>
-            </div>
-          </div>
-          <h3 className="h4 mb-3" style={{ color: '#1a1a1a', fontWeight: '600', fontSize: typography.pageTitle }}>Sin proyectos aún</h3>
-          <p className="text-muted mb-4" style={{ fontSize: typography.body }}>
+        <div style={styles.emptyState}>
+          <div style={styles.emptyIcon}>📁</div>
+          <h3 style={styles.emptyTitle}>Sin proyectos aún</h3>
+          <p style={styles.emptyText}>
             Crea tu primer proyecto para comenzar a organizar tu trabajo
           </p>
-          <button
-            onClick={openCreateForm}
-            className="btn btn-dark"
-            style={{ borderRadius: '8px', padding: '0.625rem 1.5rem', fontSize: typography.button }}
-          >
-            <i className="bi bi-plus-lg me-2"></i>
+          <button onClick={openCreateForm} style={styles.emptyButton}>
+            <Plus size={16} strokeWidth={2.5} />
             Crear primer proyecto
           </button>
         </div>
       ) : (
-        <div className="row g-3">
-          {filteredProjects.map((project) => (
-            <div key={project.id} className="col-xl-3 col-lg-4 col-md-6">
+        <div style={styles.grid}>
+          {filteredProjects.map((project) => {
+            const statusConfig = getStatusConfig(project.estado);
+            return (
               <div
-                className="card border-0 shadow-sm h-100"
-                style={{
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  borderRadius: '12px',
-                  borderLeft: `4px solid ${
-                    project.estado === 'completado' ? '#198754' :
-                    project.estado === 'en_progreso' ? '#0d6efd' :
-                    project.estado === 'cancelado' ? '#dc3545' : '#6c757d'
-                  }`
-                }}
+                key={project.id}
+                style={styles.card}
                 onClick={() => navigateToProject(project.id)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-                }}
               >
-                <div className="card-body p-3">
-                  {/* Header compacto */}
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <div className="flex-grow-1 pe-2">
-                      <h6 className="mb-1 fw-semibold" style={{ 
-                        fontSize: typography.cardTitle,
-                        color: '#1a1a1a',
-                        lineHeight: '1.3',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}>
-                        {project.titulo}
-                      </h6>
-                    </div>
-                    <div className="dropdown">
-                      <button
-                        className="btn btn-sm p-0 border-0"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{ 
-                          opacity: 0.5,
-                          width: '20px',
-                          height: '20px'
-                        }}
-                        onMouseEnter={(e) => e.target.style.opacity = 1}
-                        onMouseLeave={(e) => e.target.style.opacity = 0.5}
-                      >
-                        <i className="bi bi-three-dots" style={{ fontSize: typography.small, color: '#6c757d' }}></i>
-                      </button>
-                      <ul className="dropdown-menu dropdown-menu-end shadow-sm border-0" style={{ borderRadius: '8px' }}>
-                        <li>
-                          <button
-                            className="dropdown-item d-flex align-items-center gap-2"
-                            style={{ fontSize: typography.body }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openEditForm(project);
-                            }}
-                          >
-                            <i className="bi bi-pencil"></i>
-                            Editar
-                          </button>
-                        </li>
-                        <li><hr className="dropdown-divider my-1" /></li>
-                        <li>
-                          <button
-                            className="dropdown-item d-flex align-items-center gap-2 text-danger"
-                            style={{ fontSize: typography.body }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              confirmDelete(project);
-                            }}
-                          >
-                            <i className="bi bi-trash"></i>
-                            Eliminar
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
+                {/* Header de la card */}
+                <div style={styles.cardHeader}>
+                  <h3 style={styles.cardTitle}>{project.titulo}</h3>
+                  <div
+                    style={styles.cardMenu}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button style={styles.menuButton}>⋮</button>
                   </div>
-
-                  {/* Descripción compacta */}
-                  {project.descripcion && (
-                    <p className="text-muted mb-2" style={{
-                      fontSize: typography.small,
-                      lineHeight: '1.4',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
-                    }}>
-                      {project.descripcion}
-                    </p>
-                  )}
-
-                  {/* Estado minimalista */}
-                  <div className="mb-2">
-                    <span style={{
-                      fontSize: typography.tiny,
-                      padding: '0.2rem 0.5rem',
-                      borderRadius: '4px',
-                      backgroundColor: 
-                        project.estado === 'completado' ? '#19875415' :
-                        project.estado === 'en_progreso' ? '#0d6efd15' :
-                        project.estado === 'cancelado' ? '#dc354515' : '#6c757d15',
-                      color: 
-                        project.estado === 'completado' ? '#198754' :
-                        project.estado === 'en_progreso' ? '#0d6efd' :
-                        project.estado === 'cancelado' ? '#dc3545' : '#6c757d',
-                      fontWeight: '600'
-                    }}>
-                      {project.estado === 'completado' ? '✅ Completado' :
-                       project.estado === 'en_progreso' ? '🔄 En Progreso' :
-                       project.estado === 'cancelado' ? '❌ Cancelado' : '📋 Planificación'}
-                    </span>
-                  </div>
-
-                  {/* Fechas compactas */}
-                  {(project.fecha_inicio || project.fecha_fin) && (
-                    <div className="d-flex gap-3 mt-2 pt-2 border-top">
-                      {project.fecha_inicio && (
-                        <div className="flex-fill">
-                          <small className="text-muted d-block" style={{ fontSize: typography.tiny, fontWeight: '600', letterSpacing: '0.5px' }}>
-                            INICIO
-                          </small>
-                          <small className="d-flex align-items-center gap-1" style={{ fontSize: typography.small, color: '#1a1a1a' }}>
-                            <i className="bi bi-calendar3"></i>
-                            {new Date(project.fecha_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                          </small>
-                        </div>
-                      )}
-                      {project.fecha_fin && (
-                        <div className="flex-fill">
-                          <small className="text-muted d-block" style={{ fontSize: typography.tiny, fontWeight: '600', letterSpacing: '0.5px' }}>
-                            FIN
-                          </small>
-                          <small className="d-flex align-items-center gap-1" style={{ fontSize: typography.small, color: '#1a1a1a' }}>
-                            <i className="bi bi-calendar3"></i>
-                            {new Date(project.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                          </small>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
+
+                {/* Descripción */}
+                {project.descripcion && (
+                  <p style={styles.cardDescription}>
+                    {project.descripcion}
+                  </p>
+                )}
+
+                {/* Estado */}
+                <div style={styles.cardStatus}>
+                  <span style={{
+                    ...styles.statusBadge,
+                    color: statusConfig.color,
+                    backgroundColor: statusConfig.bgColor
+                  }}>
+                    {statusConfig.label}
+                  </span>
+                </div>
+
+                {/* Fechas */}
+                {(project.fecha_inicio || project.fecha_fin) && (
+                  <div style={styles.cardDates}>
+                    {project.fecha_inicio && (
+                      <div style={styles.dateItem}>
+                        <span style={styles.dateLabel}>INICIO</span>
+                        <span style={styles.dateValue}>
+                          {formatDate(project.fecha_inicio)}
+                        </span>
+                      </div>
+                    )}
+                    {project.fecha_fin && (
+                      <div style={styles.dateItem}>
+                        <span style={styles.dateLabel}>FIN</span>
+                        <span style={styles.dateValue}>
+                          {formatDate(project.fecha_fin)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -496,67 +335,57 @@ const ProjectsPage = () => {
         title={formMode === 'create' ? 'Crear Nuevo Proyecto' : 'Editar Proyecto'}
       >
         <form onSubmit={handleProjectSubmit}>
-          <div className="mb-3">
-            <label className="form-label fw-medium">
-              Título del Proyecto *
-            </label>
+          <div style={styles.formGroup}>
+            <label style={styles.formLabel}>Título del Proyecto *</label>
             <input
               type="text"
               required
               value={projectForm.titulo}
               onChange={(e) => setProjectForm({ ...projectForm, titulo: e.target.value })}
-              className="form-control"
+              style={styles.formInput}
               placeholder="Ingresa el título del proyecto"
             />
           </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-medium">
-              Descripción
-            </label>
+          <div style={styles.formGroup}>
+            <label style={styles.formLabel}>Descripción</label>
             <textarea
               value={projectForm.descripcion}
               onChange={(e) => setProjectForm({ ...projectForm, descripcion: e.target.value })}
               rows={3}
-              className="form-control"
+              style={styles.formTextarea}
               placeholder="Describe el proyecto"
             />
           </div>
 
-          <div className="row g-3 mb-3">
-            <div className="col-md-6">
-              <label className="form-label fw-medium">
-                Fecha de Inicio
-              </label>
+          <div style={styles.formRow}>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>Fecha de Inicio</label>
               <input
                 type="date"
                 value={projectForm.fecha_inicio}
                 onChange={(e) => setProjectForm({ ...projectForm, fecha_inicio: e.target.value })}
-                className="form-control"
+                style={styles.formInput}
               />
             </div>
 
-            <div className="col-md-6">
-              <label className="form-label fw-medium">
-                Fecha de Fin
-              </label>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>Fecha de Fin</label>
               <input
                 type="date"
                 value={projectForm.fecha_fin}
                 onChange={(e) => setProjectForm({ ...projectForm, fecha_fin: e.target.value })}
-                className="form-control"
+                style={styles.formInput}
               />
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="form-label fw-medium">
-              Estado
-            </label>
+          <div style={styles.formGroup}>
+            <label style={styles.formLabel}>Estado</label>
             <select
               value={projectForm.estado}
               onChange={(e) => setProjectForm({ ...projectForm, estado: e.target.value })}
-              className="form-select"
+              style={styles.formInput}
             >
               <option value="planificacion">Planificación</option>
               <option value="en_progreso">En Progreso</option>
@@ -565,18 +394,15 @@ const ProjectsPage = () => {
             </select>
           </div>
 
-          <div className="d-flex justify-content-end gap-2 pt-3 border-top">
+          <div style={styles.formActions}>
             <button
               type="button"
               onClick={() => setShowProjectForm(false)}
-              className="btn btn-outline-secondary"
+              style={styles.cancelButton}
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-            >
+            <button type="submit" style={styles.submitButton}>
               {formMode === 'create' ? 'Crear Proyecto' : 'Actualizar Proyecto'}
             </button>
           </div>
@@ -596,6 +422,313 @@ const ProjectsPage = () => {
       />
     </div>
   );
+};
+
+// Estilos - Diseño exacto de la imagen
+const styles = {
+  container: {
+    padding: 0,
+    backgroundColor: '#F9FAFB',
+    minHeight: '100vh'
+  },
+  loadingContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '60vh'
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '24px'
+  },
+  title: {
+    fontSize: '28px',
+    fontWeight: '700',
+    color: '#111827',
+    margin: 0,
+    letterSpacing: '-0.02em'
+  },
+  subtitle: {
+    fontSize: '13.5px',
+    color: '#6B7280',
+    margin: '4px 0 0 0',
+    fontWeight: '500'
+  },
+  newButton: {
+    backgroundColor: '#1F2937',
+    color: '#FFFFFF',
+    padding: '10px 18px',
+    borderRadius: '8px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    transition: 'background-color 0.15s ease',
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+  },
+  filtersCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: '10px',
+    padding: '16px',
+    marginBottom: '24px',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    border: '1px solid #E5E7EB'
+  },
+  filtersRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr auto auto',
+    gap: '12px',
+    alignItems: 'center'
+  },
+  searchWrapper: {
+    position: 'relative',
+    flex: 1
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: '12px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#9CA3AF',
+    pointerEvents: 'none'
+  },
+  searchInput: {
+    width: '100%',
+    padding: '9px 12px 9px 38px',
+    border: '1px solid #E5E7EB',
+    borderRadius: '6px',
+    fontSize: '13.5px',
+    color: '#111827',
+    outline: 'none',
+    transition: 'border-color 0.15s ease'
+  },
+  select: {
+    padding: '9px 32px 9px 12px',
+    border: '1px solid #E5E7EB',
+    borderRadius: '6px',
+    fontSize: '13.5px',
+    color: '#111827',
+    backgroundColor: '#FFFFFF',
+    cursor: 'pointer',
+    outline: 'none',
+    minWidth: '180px'
+  },
+  clearButton: {
+    padding: '9px 14px',
+    border: '1px solid #E5E7EB',
+    borderRadius: '6px',
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#6B7280',
+    backgroundColor: '#FFFFFF',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    transition: 'all 0.15s ease'
+  },
+  errorAlert: {
+    backgroundColor: '#FEF2F2',
+    color: '#DC2626',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    marginBottom: '24px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontSize: '13.5px',
+    fontWeight: '500',
+    border: '1px solid #FEE2E2'
+  },
+  emptyState: {
+    textAlign: 'center',
+    padding: '80px 20px',
+    backgroundColor: '#FFFFFF',
+    borderRadius: '12px',
+    border: '1px solid #E5E7EB'
+  },
+  emptyIcon: {
+    fontSize: '48px',
+    marginBottom: '16px'
+  },
+  emptyTitle: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#111827',
+    margin: '0 0 8px 0'
+  },
+  emptyText: {
+    fontSize: '13.5px',
+    color: '#6B7280',
+    margin: '0 0 24px 0'
+  },
+  emptyButton: {
+    backgroundColor: '#1F2937',
+    color: '#FFFFFF',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px'
+  },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '20px'
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: '10px',
+    padding: '18px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    border: '1px solid #E5E7EB',
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+  },
+  cardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: '12px'
+  },
+  cardTitle: {
+    fontSize: '15px',
+    fontWeight: '600',
+    color: '#111827',
+    margin: 0,
+    lineHeight: 1.4,
+    flex: 1,
+    paddingRight: '8px'
+  },
+  cardMenu: {
+    flexShrink: 0
+  },
+  menuButton: {
+    background: 'none',
+    border: 'none',
+    color: '#9CA3AF',
+    fontSize: '18px',
+    cursor: 'pointer',
+    padding: '0 4px',
+    lineHeight: 1
+  },
+  cardDescription: {
+    fontSize: '13px',
+    color: '#6B7280',
+    margin: '0 0 12px 0',
+    lineHeight: 1.5,
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden'
+  },
+  cardStatus: {
+    marginBottom: '12px'
+  },
+  statusBadge: {
+    display: 'inline-block',
+    padding: '4px 10px',
+    borderRadius: '4px',
+    fontSize: '11.5px',
+    fontWeight: '600',
+    letterSpacing: '0.01em'
+  },
+  cardDates: {
+    display: 'flex',
+    gap: '16px',
+    paddingTop: '12px',
+    borderTop: '1px solid #F3F4F6'
+  },
+  dateItem: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px'
+  },
+  dateLabel: {
+    fontSize: '10px',
+    fontWeight: '700',
+    color: '#9CA3AF',
+    letterSpacing: '0.05em'
+  },
+  dateValue: {
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#111827'
+  },
+  formGroup: {
+    marginBottom: '16px'
+  },
+  formRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '12px'
+  },
+  formLabel: {
+    display: 'block',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: '6px'
+  },
+  formInput: {
+    width: '100%',
+    padding: '10px 12px',
+    border: '1px solid #D1D5DB',
+    borderRadius: '6px',
+    fontSize: '13.5px',
+    color: '#111827',
+    outline: 'none',
+    transition: 'border-color 0.15s ease'
+  },
+  formTextarea: {
+    width: '100%',
+    padding: '10px 12px',
+    border: '1px solid #D1D5DB',
+    borderRadius: '6px',
+    fontSize: '13.5px',
+    color: '#111827',
+    outline: 'none',
+    resize: 'vertical',
+    fontFamily: 'inherit'
+  },
+  formActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '10px',
+    marginTop: '24px',
+    paddingTop: '16px',
+    borderTop: '1px solid #E5E7EB'
+  },
+  cancelButton: {
+    padding: '9px 16px',
+    border: '1px solid #D1D5DB',
+    borderRadius: '6px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    color: '#374151',
+    backgroundColor: '#FFFFFF',
+    cursor: 'pointer'
+  },
+  submitButton: {
+    padding: '9px 16px',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    color: '#FFFFFF',
+    backgroundColor: '#3B82F6',
+    cursor: 'pointer'
+  }
 };
 
 export default ProjectsPage;

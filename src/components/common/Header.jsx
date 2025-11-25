@@ -19,7 +19,7 @@ const Header = () => {
   return (
     <header style={styles.header} data-testid="header">
       <div style={styles.container}>
-        {/* Título sin logo */}
+        {/* Título sin icono */}
         <div style={styles.leftSection}>
           <div>
             <h1 style={styles.title}>Sistema de Gestión</h1>
@@ -53,7 +53,7 @@ const Header = () => {
                   e.currentTarget.style.backgroundColor = '#EF4444';
                 }}
               >
-                <LogOut size={16} strokeWidth={2} />
+                <LogOut size={15} strokeWidth={2.5} />
                 Cerrar Sesión
               </button>
             </>
@@ -69,17 +69,17 @@ const styles = {
   header: {
     backgroundColor: '#FFFFFF',
     borderBottom: '1px solid #E5E7EB',
-    height: '72px',
+    height: '64px',
     display: 'flex',
     alignItems: 'center',
     position: 'sticky',
     top: 0,
     zIndex: 50,
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
   },
   container: {
     width: '100%',
-    padding: '0 32px',
+    padding: '0 28px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between'
@@ -89,39 +89,42 @@ const styles = {
     alignItems: 'center'
   },
   title: {
-    fontSize: '18px',
+    fontSize: '16px',
     fontWeight: '700',
     color: '#111827',
     margin: 0,
-    lineHeight: 1.2
+    lineHeight: 1.2,
+    letterSpacing: '-0.01em'
   },
   subtitle: {
-    fontSize: '13px',
+    fontSize: '12.5px',
     color: '#6B7280',
     margin: 0,
-    fontWeight: '500'
+    fontWeight: '500',
+    marginTop: '1px'
   },
   rightSection: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px'
+    gap: '14px'
   },
   userInfo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px'
+    gap: '10px'
   },
   avatar: {
-    width: '44px',
-    height: '44px',
+    width: '40px',
+    height: '40px',
     borderRadius: '50%',
     backgroundColor: '#EF4444',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontWeight: '700',
-    fontSize: '16px',
-    color: '#FFFFFF'
+    fontSize: '15px',
+    color: '#FFFFFF',
+    flexShrink: 0
   },
   avatarText: {
     userSelect: 'none'
@@ -129,32 +132,33 @@ const styles = {
   userDetails: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '2px'
+    gap: '1px'
   },
   userName: {
-    fontSize: '14px',
+    fontSize: '13.5px',
     fontWeight: '600',
-    color: '#111827'
+    color: '#111827',
+    lineHeight: 1.3
   },
   userRole: {
-    fontSize: '12px',
+    fontSize: '11.5px',
     color: '#6B7280',
     fontWeight: '500'
   },
   logoutButton: {
     backgroundColor: '#EF4444',
     color: '#FFFFFF',
-    padding: '10px 18px',
-    borderRadius: '8px',
-    fontSize: '14px',
+    padding: '9px 16px',
+    borderRadius: '6px',
+    fontSize: '13px',
     fontWeight: '600',
     border: 'none',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    transition: 'background-color 0.2s ease',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+    gap: '6px',
+    transition: 'background-color 0.15s ease',
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
   }
 };
 

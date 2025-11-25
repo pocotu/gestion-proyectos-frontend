@@ -121,7 +121,7 @@ const Sidebar = () => {
       {/* Logo */}
       <div style={styles.logoContainer}>
         <div style={styles.logoIcon}>
-          <Layers size={24} />
+          <Layers size={20} strokeWidth={2.5} />
         </div>
         <span style={styles.logoText}>Sistema GP</span>
       </div>
@@ -165,52 +165,52 @@ const styles = {
     left: 0,
     width: '205px',
     height: '100vh',
-    background: '#2C3E50', // Color sólido en lugar de gradiente
+    background: '#2C3E50',
     display: 'flex',
     flexDirection: 'column',
     zIndex: 1000,
-    boxShadow: '2px 0 8px rgba(0, 0, 0, 0.15)'
+    boxShadow: '2px 0 8px rgba(0, 0, 0, 0.1)'
   },
   logoContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '24px 20px',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    marginBottom: '8px'
+    gap: '10px',
+    padding: '20px 20px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
   },
   logoIcon: {
-    width: '32px',
-    height: '32px',
+    width: '28px',
+    height: '28px',
     background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
-    borderRadius: '8px',
+    borderRadius: '6px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'white'
+    color: 'white',
+    flexShrink: 0
   },
   logoText: {
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '700',
     color: '#FFFFFF',
-    letterSpacing: '-0.02em'
+    letterSpacing: '-0.01em'
   },
   navigation: {
     flex: 1,
     overflowY: 'auto',
-    padding: '8px 0'
+    padding: '16px 0'
   },
   section: {
-    marginBottom: '24px'
+    marginBottom: '20px'
   },
   sectionTitle: {
-    fontSize: '11px',
-    fontWeight: '600',
+    fontSize: '10px',
+    fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: '0.1em',
-    color: '#8B9CAC',
+    letterSpacing: '0.08em',
+    color: '#7B8A9A',
     padding: '0 20px',
-    marginBottom: '8px'
+    marginBottom: '6px'
   },
   list: {
     listStyle: 'none',
@@ -223,21 +223,21 @@ const styles = {
   link: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '10px 12px',
-    borderRadius: '8px',
+    gap: '10px',
+    padding: '9px 12px',
+    borderRadius: '6px',
     textDecoration: 'none',
-    color: '#B8C5D0',
-    fontSize: '14px',
+    color: '#B0BEC5',
+    fontSize: '13.5px',
     fontWeight: '500',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.15s ease',
     cursor: 'pointer'
   },
   linkActive: {
     backgroundColor: '#3B82F6',
     color: '#FFFFFF',
     fontWeight: '600',
-    boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)'
+    boxShadow: '0 2px 6px rgba(59, 130, 246, 0.25)'
   }
 };
 
