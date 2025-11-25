@@ -106,21 +106,6 @@ const DashboardPage = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <h1 style={{ fontSize: '24px', fontWeight: '600', margin: 0 }}>Dashboard</h1>
-          <span style={{ fontSize: '16px', color: '#6B7280' }}>
-            Bienvenido, {user?.nombre || 'Usuario'}
-          </span>
-          {user?.es_administrador && (
-            <span style={{
-              padding: '4px 12px',
-              backgroundColor: '#3B82F6',
-              color: 'white',
-              borderRadius: '12px',
-              fontSize: '12px',
-              fontWeight: '600'
-            }}>
-              Admin
-            </span>
-          )}
         </div>
         
         {/* Botón de actualizar */}

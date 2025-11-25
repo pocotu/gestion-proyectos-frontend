@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import fileService from '../services/fileService.mock';
+import fileService from '../services/fileService';
 import projectService from '../services/projectService';
-import taskService from '../services/taskService.mock';
+import taskService from '../services/taskService';
 import '../styles/projects.css';
 
 const FilesPage = () => {
