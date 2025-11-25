@@ -3,7 +3,7 @@ import Modal from '../components/common/Modal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { activityService } from '../services/activityService.mock';
+import { activityService } from '../services/activityService';
 import { useAuth } from '../hooks/useAuth';
 
 /**
@@ -121,6 +121,24 @@ const ActivityLogsPage = () => {
     }
   };
 
+  /**
+   * Filtra los logs localmente por término de búsqueda
+   * Principio de Responsabilidad Única: Solo filtra logs
+   */
+  const filteredLogs = logs.filter(log => {
+    if (!searchTerm) return true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      log.usuario_nombre?.toLowerCase().includes(searchLower) ||
+      log.usuario_email?.toLowerCase().includes(searchLower) ||
+      log.descripcion?.toLowerCase().includes(searchLower) ||
+      log.ip_address?.toLowerCase().includes(searchLower) ||
+      log.accion?.toLowerCase().includes(searchLower) ||
+      log.entidad_tipo?.toLowerCase().includes(searchLower)
+    );
+  });
+
   const handleRowClick = (log) => {
     setSelectedLog(log);
     setIsModalOpen(true);
@@ -227,7 +245,7 @@ const ActivityLogsPage = () => {
             <StatCardInline
               icon="bi-people"
               label="Usuarios Activos"
-              value={new Set(logs.map(log => log.usuario_id)).size}
+              value={new Set(filteredLogs.map(log => log.usuario_id)).size}
             />
             <StatCardInline
               icon="bi-database"
@@ -237,7 +255,7 @@ const ActivityLogsPage = () => {
             <StatCardInline
               icon="bi-clock"
               label="Últimas 24h"
-              value={logs.filter(log => {
+              value={filteredLogs.filter(log => {
                 const logDate = new Date(log.created_at);
                 const yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
@@ -313,7 +331,7 @@ const ActivityLogsPage = () => {
       <div style={styles.card}>
         <div style={styles.cardHeader}>
           <i className="bi bi-activity" style={styles.cardIcon}></i>
-          <h6 style={styles.cardTitle}>Registro de Actividades ({logs.length})</h6>
+          <h6 style={styles.cardTitle}>Registro de Actividades ({filteredLogs.length})</h6>
         </div>
         {loading ? (
           <div style={styles.loadingState}>
@@ -322,7 +340,7 @@ const ActivityLogsPage = () => {
             </div>
             <span>Cargando logs...</span>
           </div>
-        ) : logs.length === 0 ? (
+        ) : filteredLogs.length === 0 ? (
           <div style={styles.emptyState} data-testid="no-data-message">
             <i className="bi bi-exclamation-circle" style={styles.emptyIcon}></i>
             <h5 style={styles.emptyTitle}>No hay logs disponibles</h5>
@@ -345,7 +363,7 @@ const ActivityLogsPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {logs.map((log) => (
+                  {filteredLogs.map((log) => (
                     <tr 
                       key={log.id} 
                       data-testid="activity-log-row"
@@ -425,8 +443,8 @@ const ActivityLogsPage = () => {
             <div style={styles.pagination}>
               <div style={styles.paginationInfo}>
                 Mostrando {((pagination.page - 1) * pagination.limit) + 1} a{' '}
-                {Math.min(pagination.page * pagination.limit, logs.length)} de{' '}
-                {logs.length} registros
+                {Math.min(pagination.page * pagination.limit, filteredLogs.length)} de{' '}
+                {filteredLogs.length} registros
               </div>
               <div style={styles.paginationButtons}>
                 <button
@@ -444,11 +462,11 @@ const ActivityLogsPage = () => {
                 <button
                   style={{
                     ...styles.paginationButton,
-                    opacity: logs.length < pagination.limit ? 0.5 : 1,
-                    cursor: logs.length < pagination.limit ? 'not-allowed' : 'pointer'
+                    opacity: filteredLogs.length < pagination.limit ? 0.5 : 1,
+                    cursor: filteredLogs.length < pagination.limit ? 'not-allowed' : 'pointer'
                   }}
                   onClick={() => handleFilterChange('page', pagination.page + 1)}
-                  disabled={logs.length < pagination.limit}
+                  disabled={filteredLogs.length < pagination.limit}
                 >
                   Siguiente
                   <i className="bi bi-chevron-right" style={{ marginLeft: '4px' }}></i>
