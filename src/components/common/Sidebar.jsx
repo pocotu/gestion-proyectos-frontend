@@ -165,7 +165,7 @@ const styles = {
     left: 0,
     width: '205px',
     height: '100vh',
-    background: '#2C3E50',
+    background: '#1E293B',
     display: 'flex',
     flexDirection: 'column',
     zIndex: 1000,

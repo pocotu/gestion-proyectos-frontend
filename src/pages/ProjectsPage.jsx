@@ -20,6 +20,7 @@ const ProjectsPage = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalProjects, setTotalProjects] = useState(0);
 
   // Estados de modales
   const [showProjectForm, setShowProjectForm] = useState(false);
@@ -37,6 +38,7 @@ const ProjectsPage = () => {
 
   // Estados de selección
   const [selectedProject, setSelectedProject] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
     estado: ''
@@ -51,14 +53,17 @@ const ProjectsPage = () => {
   const loadProjects = async () => {
     try {
       setLoading(true);
-      const response = await projectService.getAllProjects();
+      // Cargar todos los proyectos sin límite de paginación
+      const response = await projectService.getAllProjects({ limit: 1000 });
       const projectsData = response.projects || response.data || [];
       setProjects(Array.isArray(projectsData) ? projectsData : []);
+      setTotalProjects(response.data?.pagination?.total || projectsData.length);
       setError(null);
     } catch (error) {
       console.error('Error al cargar proyectos:', error);
       setError('Error al cargar los proyectos');
       setProjects([]);
+      setTotalProjects(0);
     } finally {
       setLoading(false);
     }
@@ -198,7 +203,7 @@ const ProjectsPage = () => {
         <div>
           <h1 style={styles.title}>Proyectos</h1>
           <p style={styles.subtitle}>
-            {filteredProjects.length} {filteredProjects.length === 1 ? 'proyecto' : 'proyectos'} en total
+            {totalProjects} {totalProjects === 1 ? 'proyecto' : 'proyectos'} en total
           </p>
         </div>
         <button onClick={openCreateForm} style={styles.newButton}>
@@ -279,7 +284,34 @@ const ProjectsPage = () => {
                     style={styles.cardMenu}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <button style={styles.menuButton}>⋮</button>
+                    <button 
+                      style={styles.menuButton}
+                      onClick={() => setOpenMenuId(openMenuId === project.id ? null : project.id)}
+                    >
+                      ⋮
+                    </button>
+                    {openMenuId === project.id && (
+                      <div style={styles.dropdownMenu}>
+                        <button
+                          style={styles.dropdownItem}
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            openEditForm(project);
+                          }}
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button
+                          style={{...styles.dropdownItem, ...styles.dropdownItemDanger}}
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            confirmDelete(project);
+                          }}
+                        >
+                          🗑️ Eliminar
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -366,6 +398,7 @@ const ProjectsPage = () => {
                 value={projectForm.fecha_inicio}
                 onChange={(e) => setProjectForm({ ...projectForm, fecha_inicio: e.target.value })}
                 style={styles.formInput}
+                placeholder="Opcional"
               />
             </div>
 
@@ -376,6 +409,7 @@ const ProjectsPage = () => {
                 value={projectForm.fecha_fin}
                 onChange={(e) => setProjectForm({ ...projectForm, fecha_fin: e.target.value })}
                 style={styles.formInput}
+                placeholder="Opcional"
               />
             </div>
           </div>
@@ -610,7 +644,8 @@ const styles = {
     paddingRight: '8px'
   },
   cardMenu: {
-    flexShrink: 0
+    flexShrink: 0,
+    position: 'relative'
   },
   menuButton: {
     background: 'none',
@@ -619,7 +654,39 @@ const styles = {
     fontSize: '18px',
     cursor: 'pointer',
     padding: '0 4px',
-    lineHeight: 1
+    lineHeight: 1,
+    transition: 'color 0.15s ease'
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    marginTop: '4px',
+    backgroundColor: '#FFFFFF',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    border: '1px solid #E5E7EB',
+    minWidth: '140px',
+    zIndex: 1000,
+    overflow: 'hidden'
+  },
+  dropdownItem: {
+    width: '100%',
+    padding: '10px 14px',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#374151',
+    fontSize: '13px',
+    fontWeight: '500',
+    textAlign: 'left',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    transition: 'background-color 0.15s ease'
+  },
+  dropdownItemDanger: {
+    color: '#DC2626'
   },
   cardDescription: {
     fontSize: '13px',

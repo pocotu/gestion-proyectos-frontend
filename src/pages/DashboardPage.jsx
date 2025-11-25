@@ -219,7 +219,7 @@ const TaskItem = ({ task }) => {
   };
 
   return (
-    <Link to={`/tasks/${task.id}`} style={styles.taskItem}>
+    <Link to="/tasks" style={styles.taskItem}>
       <div style={styles.taskContent}>
         <p style={styles.taskTitle}>{task.titulo}</p>
         <div style={styles.taskMeta}>

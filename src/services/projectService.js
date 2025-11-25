@@ -23,7 +23,7 @@ class ProjectService {
       
       // Agregar filtros como parámetros de consulta
       Object.keys(filters).forEach(key => {
-        if (filters[key] && filters[key] !== '') {
+        if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
           params.append(key, filters[key]);
         }
       });
