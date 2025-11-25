@@ -52,6 +52,12 @@ const FilesPage = () => {
 
   // Estados de vista - Por defecto lista para ser más compacto
   const [viewMode, setViewMode] = useState('list');
+  
+  // Estado para el menú desplegable abierto
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  
+  // Estado para el menú abierto en vista de cuadrícula
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   // Cargar datos al montar el componente
   useEffect(() => {
@@ -59,6 +65,30 @@ const FilesPage = () => {
     loadProjects();
     loadTasks();
   }, []);
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdownId !== null && !event.target.closest('.file-dropdown-container')) {
+        setOpenDropdownId(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openDropdownId]);
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openMenuId !== null && !event.target.closest('.file-menu-container')) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openMenuId]);
 
   // Cargar archivos
   const loadFiles = async () => {
@@ -586,50 +616,117 @@ const FilesPage = () => {
                           {typeConfig.label}
                         </span>
                       </div>
-                      <div className="dropdown">
+                      <div className="file-dropdown-container" style={{ position: 'relative', flexShrink: 0 }}>
                         <button
-                          className="btn btn-sm p-0 border-0"
+                          className="btn btn-sm border-0"
                           type="button"
-                          data-bs-toggle="dropdown"
-                          style={{ 
-                            opacity: 0.5,
-                            width: '20px',
-                            height: '20px'
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDropdownId(openDropdownId === file.id ? null : file.id);
                           }}
-                          onMouseEnter={(e) => e.target.style.opacity = 1}
-                          onMouseLeave={(e) => e.target.style.opacity = 0.5}
+                          style={{ 
+                            width: '28px',
+                            height: '28px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '6px',
+                            transition: 'all 0.15s ease',
+                            backgroundColor: openDropdownId === file.id ? '#e5e7eb' : '#f3f4f6',
+                            padding: 0,
+                            fontSize: '1.2rem',
+                            fontWeight: 'bold',
+                            color: '#374151',
+                            lineHeight: 1
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#e5e7eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (openDropdownId !== file.id) {
+                              e.currentTarget.style.backgroundColor = '#f3f4f6';
+                            }
+                          }}
                         >
-                          <i className="bi bi-three-dots" style={{ fontSize: typography.small, color: '#6c757d' }}></i>
+                          ⋮
                         </button>
-                        <ul className="dropdown-menu dropdown-menu-end shadow-sm border-0" style={{ borderRadius: '8px' }}>
-                          <li>
+                        {openDropdownId === file.id && (
+                          <div 
+                            className="file-dropdown-menu"
+                            style={{
+                              position: 'absolute',
+                              top: '100%',
+                              right: 0,
+                              marginTop: '4px',
+                              backgroundColor: '#ffffff',
+                              borderRadius: '8px',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                              border: '1px solid #e9ecef',
+                              minWidth: '140px',
+                              zIndex: 1000,
+                              overflow: 'hidden'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <button
-                              className="dropdown-item d-flex align-items-center gap-2"
-                              style={{ fontSize: typography.body }}
+                              className="file-dropdown-item"
+                              style={{
+                                width: '100%',
+                                padding: '10px 14px',
+                                border: 'none',
+                                backgroundColor: 'transparent',
+                                color: '#374151',
+                                fontSize: typography.body,
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                transition: 'background-color 0.15s ease',
+                                fontWeight: '500'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                setOpenDropdownId(null);
                                 handleDownload(file);
                               }}
                             >
-                              <i className="bi bi-download"></i>
+                              <i className="bi bi-download" style={{ fontSize: '0.9rem' }}></i>
                               Descargar
                             </button>
-                          </li>
-                          <li><hr className="dropdown-divider my-1" /></li>
-                          <li>
+                            <div style={{ height: '1px', backgroundColor: '#e9ecef', margin: '0' }}></div>
                             <button
-                              className="dropdown-item d-flex align-items-center gap-2 text-danger"
-                              style={{ fontSize: typography.body }}
+                              className="file-dropdown-item"
+                              style={{
+                                width: '100%',
+                                padding: '10px 14px',
+                                border: 'none',
+                                backgroundColor: 'transparent',
+                                color: '#dc3545',
+                                fontSize: typography.body,
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                transition: 'background-color 0.15s ease',
+                                fontWeight: '500'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                setOpenDropdownId(null);
                                 confirmDelete(file);
                               }}
                             >
-                              <i className="bi bi-trash"></i>
+                              <i className="bi bi-trash" style={{ fontSize: '0.9rem' }}></i>
                               Eliminar
                             </button>
-                          </li>
-                        </ul>
+                          </div>
+                        )}
                       </div>
                     </div>
 

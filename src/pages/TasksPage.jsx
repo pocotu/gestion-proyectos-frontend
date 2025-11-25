@@ -35,6 +35,7 @@ const TasksPage = () => {
 
   // Estados de selección
   const [selectedTask, setSelectedTask] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
     estado: '',
@@ -47,6 +48,18 @@ const TasksPage = () => {
     loadTasks();
     loadProjects();
   }, []);
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openMenuId !== null && !event.target.closest('.task-menu-container')) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openMenuId]);
 
   // Cargar tareas
   const loadTasks = async () => {
@@ -516,55 +529,123 @@ const TasksPage = () => {
                             <h6 className="mb-0 fw-semibold" style={{ 
                               fontSize: '0.875rem',
                               color: '#1a1a1a',
-                              lineHeight: '1.4'
+                              lineHeight: '1.4',
+                              flex: 1,
+                              paddingRight: '8px'
                             }}>
                               {task.titulo}
                             </h6>
-                            <div className="dropdown">
+                            <div className="task-menu-container" style={{ position: 'relative', flexShrink: 0 }}>
                               <button
-                                className="btn btn-sm p-0 border-0"
+                                className="btn btn-sm border-0 task-menu-button"
                                 type="button"
-                                data-bs-toggle="dropdown"
-                                onClick={(e) => e.stopPropagation()}
-                                style={{ 
-                                  opacity: 0.5,
-                                  width: '20px',
-                                  height: '20px'
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenMenuId(openMenuId === task.id ? null : task.id);
                                 }}
-                                onMouseEnter={(e) => e.target.style.opacity = 1}
-                                onMouseLeave={(e) => e.target.style.opacity = 0.5}
+                                style={{ 
+                                  width: '28px',
+                                  height: '28px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  borderRadius: '6px',
+                                  transition: 'all 0.15s ease',
+                                  backgroundColor: openMenuId === task.id ? '#e5e7eb' : '#f3f4f6',
+                                  padding: 0,
+                                  fontSize: '1.2rem',
+                                  fontWeight: 'bold',
+                                  color: '#374151',
+                                  lineHeight: 1
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#e5e7eb';
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (openMenuId !== task.id) {
+                                    e.currentTarget.style.backgroundColor = '#f3f4f6';
+                                  }
+                                }}
                               >
-                                <i className="bi bi-three-dots" style={{ fontSize: '1rem', color: '#6c757d' }}></i>
+                                ⋮
                               </button>
-                              <ul className="dropdown-menu dropdown-menu-end shadow-sm border-0" style={{ borderRadius: '8px' }}>
-                                <li>
+                              {openMenuId === task.id && (
+                                <div 
+                                  className="task-menu-dropdown"
+                                  style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    right: 0,
+                                    marginTop: '4px',
+                                    backgroundColor: '#ffffff',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                    border: '1px solid #e9ecef',
+                                    minWidth: '140px',
+                                    zIndex: 1000,
+                                    overflow: 'hidden'
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <button
-                                    className="dropdown-item d-flex align-items-center gap-2"
-                                    style={{ fontSize: '0.875rem' }}
+                                    className="task-menu-item"
+                                    style={{
+                                      width: '100%',
+                                      padding: '10px 14px',
+                                      border: 'none',
+                                      backgroundColor: 'transparent',
+                                      color: '#374151',
+                                      fontSize: '0.875rem',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '10px',
+                                      transition: 'background-color 0.15s ease',
+                                      fontWeight: '500'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      setOpenMenuId(null);
                                       openEditForm(task);
                                     }}
                                   >
-                                    <i className="bi bi-pencil"></i>
+                                    <i className="bi bi-pencil" style={{ fontSize: '0.9rem' }}></i>
                                     Editar
                                   </button>
-                                </li>
-                                <li><hr className="dropdown-divider my-1" /></li>
-                                <li>
+                                  <div style={{ height: '1px', backgroundColor: '#e9ecef', margin: '0' }}></div>
                                   <button
-                                    className="dropdown-item d-flex align-items-center gap-2 text-danger"
-                                    style={{ fontSize: '0.875rem' }}
+                                    className="task-menu-item"
+                                    style={{
+                                      width: '100%',
+                                      padding: '10px 14px',
+                                      border: 'none',
+                                      backgroundColor: 'transparent',
+                                      color: '#dc3545',
+                                      fontSize: '0.875rem',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '10px',
+                                      transition: 'background-color 0.15s ease',
+                                      fontWeight: '500'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      setOpenMenuId(null);
                                       confirmDelete(task);
                                     }}
                                   >
-                                    <i className="bi bi-trash"></i>
+                                    <i className="bi bi-trash" style={{ fontSize: '0.9rem' }}></i>
                                     Eliminar
                                   </button>
-                                </li>
-                              </ul>
+                                </div>
+                              )}
                             </div>
                           </div>
 

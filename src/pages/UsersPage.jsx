@@ -48,29 +48,52 @@ const UsersPage = () => {
     }
   }, [user, navigate]);
 
-  // Cargar usuarios al montar el componente
+  // Cargar usuarios al montar el componente (sin filtros)
   useEffect(() => {
     loadUsers();
-  }, [filters]);
+  }, []);
 
   /**
-   * Cargar lista de usuarios con filtros aplicados
+   * Cargar lista de usuarios desde el backend
    */
   const loadUsers = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await userService.getUsers(filters);
+      // Cargar todos los usuarios sin filtros (filtrado en frontend)
+      const response = await userService.getUsers();
       // Backend devuelve {success, message, data: {users}} o {success, data: [users]}
       setUsers(response.data?.users || response.data || []);
     } catch (err) {
       console.error('Error al cargar usuarios:', err);
       setError('Error al cargar la lista de usuarios');
-          } finally {
+    } finally {
       setLoading(false);
     }
   };
+
+  /**
+   * Filtrar usuarios en el frontend
+   */
+  const filteredUsers = users.filter(user => {
+    // Filtro de búsqueda por nombre o email
+    const matchesSearch = !filters.search || 
+      user.nombre?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      user.email?.toLowerCase().includes(filters.search.toLowerCase());
+
+    // Filtro por rol
+    const matchesRole = !filters.role || 
+      (filters.role === 'admin' && user.es_administrador) ||
+      user.roles?.some(role => role.nombre === filters.role);
+
+    // Filtro por estado
+    const matchesEstado = !filters.estado || 
+      (filters.estado === 'true' && user.estado === 'activo') ||
+      (filters.estado === 'false' && user.estado === 'inactivo');
+
+    return matchesSearch && matchesRole && matchesEstado;
+  });
 
   /**
    * Abrir modal para crear nuevo usuario
@@ -184,7 +207,7 @@ const UsersPage = () => {
           <div>
             <h1 className="h2 mb-2 text-primary fw-bold">Usuarios</h1>
             <p className="text-muted mb-0">
-              Administra usuarios y permisos del sistema ({users.length} usuarios)
+              Administra usuarios y permisos del sistema ({filteredUsers.length} usuarios)
             </p>
           </div>
           <button
@@ -289,7 +312,7 @@ const UsersPage = () => {
       {/* Lista de usuarios con diseño profesional */}
       <div className="card border-0 shadow-sm">
         <UserList
-          users={users}
+          users={filteredUsers}
           onEdit={handleEditUser}
           onDelete={handleDeleteUser}
           onToggleStatus={handleToggleUserStatus}

@@ -47,7 +47,8 @@ const UserList = ({
    * Obtener badge de estado con Bootstrap
    */
   const getStatusBadge = (estado) => {
-    return estado ? (
+    const isActive = estado === 'activo' || estado === true || estado === 1;
+    return isActive ? (
       <span className="badge bg-success text-white px-2 py-1">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-1">
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
@@ -182,11 +183,11 @@ const UserList = ({
                       </svg>
                     </button>
                     <button
-                      onClick={() => onToggleStatus(user.id, user.estado)}
-                      className={`btn btn-sm ${user.estado ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                      title={user.estado ? "Deshabilitar usuario" : "Habilitar usuario"}
+                      onClick={() => onToggleStatus(user.id, user.estado === 'activo' || user.estado === true || user.estado === 1)}
+                      className={`btn btn-sm ${(user.estado === 'activo' || user.estado === true || user.estado === 1) ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                      title={(user.estado === 'activo' || user.estado === true || user.estado === 1) ? "Deshabilitar usuario" : "Habilitar usuario"}
                     >
-                      {user.estado ? (
+                      {(user.estado === 'activo' || user.estado === true || user.estado === 1) ? (
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <circle cx="12" cy="12" r="10"/>
                           <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
