@@ -96,14 +96,65 @@ const DashboardPage = () => {
 
   return (
     <div style={styles.container} data-testid="dashboard-page">
+      {/* Header del dashboard con información del usuario */}
+      <div data-testid="dashboard-header" style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '16px',
+        padding: '12px 0'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: '600', margin: 0 }}>Dashboard</h1>
+          <span style={{ fontSize: '16px', color: '#6B7280' }}>
+            Bienvenido, {user?.nombre || 'Usuario'}
+          </span>
+          {user?.es_administrador && (
+            <span style={{
+              padding: '4px 12px',
+              backgroundColor: '#3B82F6',
+              color: 'white',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: '600'
+            }}>
+              Admin
+            </span>
+          )}
+        </div>
+        
+        {/* Botón de actualizar */}
+        <button 
+          onClick={refreshData}
+          disabled={isRefreshing}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#3B82F6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: isRefreshing ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            fontWeight: '500',
+            opacity: isRefreshing ? 0.6 : 1
+          }}
+        >
+          <RefreshCw size={16} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
+          Actualizar
+        </button>
+      </div>
+      
       {/* Grid superior - 3 columnas */}
-      <div style={styles.topGrid}>
+      <div style={styles.topGrid} data-testid="dashboard-stats">
         {/* Resumen de Proyectos */}
         <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Resumen de Proyectos</h3>
+          <h6 style={styles.cardTitle}>Resumen de Proyectos</h6>
           <div style={styles.summaryRow}>
-            <SummaryNumber value={stats.projects.total} label="Total" color="#3B82F6" />
-            <SummaryNumber value={stats.projects.active} label="Activos" color="#22C55E" />
+            <SummaryNumber value={stats.projects.total} label="TOTAL PROYECTOS" color="#3B82F6" />
+            <SummaryNumber value={stats.projects.active} label="PROYECTOS ACTIVOS" color="#22C55E" />
             <SummaryNumber value={stats.projects.completed} label="Completados" color="#9CA3AF" />
           </div>
           <Link to="/projects" style={styles.cardButton}>
@@ -113,11 +164,11 @@ const DashboardPage = () => {
 
         {/* Resumen de Tareas */}
         <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Resumen de Tareas</h3>
+          <h6 style={styles.cardTitle}>Resumen de Tareas</h6>
           <div style={styles.summaryRow}>
-            <SummaryNumber value={stats.tasks.total} label="Total" color="#EF4444" />
+            <SummaryNumber value={stats.tasks.total} label="TOTAL TAREAS" color="#EF4444" />
             <SummaryNumber value={stats.tasks.pending} label="Pendientes" color="#F59E0B" />
-            <SummaryNumber value={stats.tasks.inProgress} label="En Progreso" color="#3B82F6" />
+            <SummaryNumber value={stats.tasks.inProgress} label="EN PROGRESO" color="#3B82F6" />
             <SummaryNumber value={stats.tasks.completed} label="Completadas" color="#22C55E" />
           </div>
           <Link to="/tasks" style={styles.cardButton}>
@@ -127,8 +178,8 @@ const DashboardPage = () => {
 
         {/* Acciones Rápidas */}
         <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Acciones Rápidas</h3>
-          <div style={styles.actionsGrid}>
+          <h6 style={styles.cardTitle}>Acciones Rápidas</h6>
+          <div style={styles.actionsGrid} data-testid="dashboard-grid">
             <Link to="/projects" style={styles.actionButtonPrimary}>
               <Plus size={16} strokeWidth={2.5} />
               Crear Proyecto
@@ -149,7 +200,8 @@ const DashboardPage = () => {
       <div style={styles.bottomGrid}>
         {/* Mis Tareas Pendientes con scroll interno */}
         <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Mis Tareas Pendientes</h3>
+          <h6 style={styles.cardTitle}>Mis Tareas Pendientes</h6>
+          <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '12px' }}>Tareas asignadas a ti</p>
           {pendingTasks.length === 0 ? (
             <div style={styles.emptyContent}>
               <CheckCircle2 size={40} color="#3B82F6" strokeWidth={2} />
@@ -162,11 +214,14 @@ const DashboardPage = () => {
               ))}
             </div>
           )}
+          <Link to="/tasks" style={styles.cardButton}>
+            Ver mis tareas
+          </Link>
         </div>
 
         {/* Actividades Recientes con scroll interno */}
         <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Actividades Recientes</h3>
+          <h6 style={styles.cardTitle}>Actividades Recientes</h6>
           {recentActivities.length === 0 ? (
             <div style={styles.emptyContent}>
               <Activity size={32} color="#9CA3AF" />
