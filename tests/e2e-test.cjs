@@ -1,3 +1,4 @@
+/* eslint-env node */
 const axios = require('axios');
 
 /**
@@ -18,7 +19,7 @@ async function runE2ETests() {
     // Test 1: Verificar que el backend esté funcionando
     console.log('📡 Test 1: Verificando conectividad del backend...');
     try {
-      const backendTest = await axios.get(`${BACKEND_URL}/auth/profile`, {
+      await axios.get(`${BACKEND_URL}/auth/profile`, {
         validateStatus: () => true // Aceptar cualquier status code
       });
       console.log('✅ Backend respondiendo correctamente');
@@ -31,7 +32,7 @@ async function runE2ETests() {
     // Test 2: Verificar que el frontend esté funcionando
     console.log('\n🌐 Test 2: Verificando conectividad del frontend...');
     try {
-      const frontendTest = await axios.get(FRONTEND_URL, {
+      await axios.get(FRONTEND_URL, {
         validateStatus: () => true
       });
       console.log('✅ Frontend respondiendo correctamente');
