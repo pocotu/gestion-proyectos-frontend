@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import api from '../services/api';
 
 /**
  * ReportsPage - Página de reportes y estadísticas con diseño moderno y compacto
@@ -46,15 +47,42 @@ const ReportsPage = () => {
   const loadStatistics = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/reports/statistics', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
       
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data.data || stats);
+      // Usar el endpoint del dashboard que ya existe con el servicio API configurado
+      const response = await api.get('/dashboard/summary');
+      
+      // Mapear los datos del dashboard al formato esperado
+      if (response.data.success && response.data.data) {
+        const data = response.data.data;
+        setStats({
+          users: {
+            total: data.users?.total || 0,
+            active: data.users?.active || 0,
+            inactive: data.users?.inactive || 0
+          },
+          projects: {
+            total: data.projects?.total || 0,
+            active: data.projects?.active || 0,
+            completed: data.projects?.completed || 0,
+            cancelled: data.projects?.cancelled || 0,
+            planning: data.projects?.planning || 0
+          },
+          tasks: {
+            total: data.tasks?.total || 0,
+            pending: data.tasks?.pending || 0,
+            inProgress: data.tasks?.inProgress || 0,
+            completed: data.tasks?.completed || 0,
+            cancelled: data.tasks?.cancelled || 0
+          },
+          files: {
+            total: data.files?.total || 0,
+            totalSize: data.files?.totalSize || 0
+          },
+          activity: {
+            logins: data.activity?.logins || 0,
+            actions: data.activity?.actions || 0
+          }
+        });
       }
     } catch (err) {
       console.error('Error al cargar estadísticas:', err);

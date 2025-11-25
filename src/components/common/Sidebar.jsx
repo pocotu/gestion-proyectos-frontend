@@ -68,12 +68,6 @@ const Sidebar = () => {
           roles: ['admin']
         },
         {
-          name: 'Roles',
-          path: '/roles',
-          icon: Shield,
-          roles: ['admin']
-        },
-        {
           name: 'Logs',
           path: '/activity-logs',
           icon: FileText,

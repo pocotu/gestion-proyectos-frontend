@@ -18,11 +18,12 @@ class UserService {
       if (filters.role) {
         params.append('role', filters.role);
       }
-      if (filters.estado !== '') {
+      if (filters.estado !== undefined && filters.estado !== null && filters.estado !== '') {
         params.append('estado', filters.estado);
       }
 
-      const response = await api.get(`/users?${params.toString()}`);
+      const queryString = params.toString();
+      const response = await api.get(queryString ? `/users?${queryString}` : '/users');
       return response.data;
     } catch (error) {
       console.error('Error al obtener usuarios:', error);

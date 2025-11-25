@@ -10,13 +10,14 @@ import userService from '../services/userService';
 import '../styles/projects.css';
 
 /**
- * UsersPage - Página de gestión de usuarios (solo para administradores)
+ * UsersPage - Página de gestión de usuarios y roles (solo para administradores)
  * Funcionalidades:
  * - Listar todos los usuarios del sistema
  * - Crear nuevos usuarios
  * - Editar usuarios existentes
  * - Cambiar estados y roles de usuarios
  * - Eliminar usuarios
+ * - Ver estadísticas de roles
  */
 const UsersPage = () => {
   const navigate = useNavigate();
@@ -40,6 +41,9 @@ const UsersPage = () => {
     estado: ''
   });
 
+  // Estado para tabs
+  const [activeTab, setActiveTab] = useState('usuarios'); // 'usuarios' | 'roles'
+
   // Verificar permisos de administrador
   useEffect(() => {
     if (!user?.es_administrador && !user?.roles?.some(role => role.nombre === 'admin')) {
@@ -48,7 +52,7 @@ const UsersPage = () => {
     }
   }, [user, navigate]);
 
-  // Cargar usuarios al montar el componente (sin filtros)
+  // Cargar usuarios al montar el componente
   useEffect(() => {
     loadUsers();
   }, []);
@@ -72,6 +76,8 @@ const UsersPage = () => {
       setLoading(false);
     }
   };
+
+
 
   /**
    * Filtrar usuarios en el frontend
@@ -205,9 +211,9 @@ const UsersPage = () => {
       <div className="page-header mb-4">
         <div className="d-flex justify-content-between align-items-start">
           <div>
-            <h1 className="h2 mb-2 text-primary fw-bold">Usuarios</h1>
+            <h1 className="h2 mb-2 text-primary fw-bold">Usuarios y Roles</h1>
             <p className="text-muted mb-0">
-              Administra usuarios y permisos del sistema ({filteredUsers.length} usuarios)
+              Administra usuarios, permisos y roles del sistema
             </p>
           </div>
           <button
@@ -225,7 +231,51 @@ const UsersPage = () => {
         </div>
       </div>
 
-      {/* Barra de filtros moderna */}
+
+
+      {/* Tabs para Usuarios y Roles */}
+      <div className="card border-0 shadow-sm mb-4">
+        <div className="card-header bg-white border-bottom">
+          <ul className="nav nav-tabs card-header-tabs" role="tablist">
+            <li className="nav-item" role="presentation">
+              <button 
+                className={`nav-link ${activeTab === 'usuarios' ? 'active' : ''}`}
+                onClick={() => setActiveTab('usuarios')}
+                type="button" 
+                role="tab"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2" style={{verticalAlign: 'middle'}}>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Gestión de Usuarios
+              </button>
+            </li>
+            <li className="nav-item" role="presentation">
+              <button 
+                className={`nav-link ${activeTab === 'roles' ? 'active' : ''}`}
+                onClick={() => setActiveTab('roles')}
+                type="button" 
+                role="tab"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2" style={{verticalAlign: 'middle'}}>
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
+                </svg>
+                Roles del Sistema
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div className="tab-content">
+          {/* Panel de Usuarios */}
+          {activeTab === 'usuarios' && (
+            <div className="tab-pane fade show active" role="tabpanel">
+            {/* Barra de filtros moderna */}
       <div className="card mb-4 border-0 shadow-sm">
         <div className="card-body p-3">
           <div className="row g-3">
@@ -309,15 +359,142 @@ const UsersPage = () => {
         </div>
       )}
 
-      {/* Lista de usuarios con diseño profesional */}
-      <div className="card border-0 shadow-sm">
-        <UserList
-          users={filteredUsers}
-          onEdit={handleEditUser}
-          onDelete={handleDeleteUser}
-          onToggleStatus={handleToggleUserStatus}
-          loading={loading}
-        />
+            {/* Lista de usuarios con diseño profesional */}
+            <UserList
+              users={filteredUsers}
+              onEdit={handleEditUser}
+              onDelete={handleDeleteUser}
+              onToggleStatus={handleToggleUserStatus}
+              loading={loading}
+            />
+            </div>
+          )}
+
+          {/* Panel de Roles */}
+          {activeTab === 'roles' && (
+            <div className="tab-pane fade show active" role="tabpanel">
+              <div className="p-0">
+              <div className="table-responsive">
+                <table className="table table-hover mb-0">
+                  <thead className="bg-light">
+                    <tr>
+                      <th className="border-0 fw-semibold text-muted ps-4">Rol</th>
+                      <th className="border-0 fw-semibold text-muted">Descripción</th>
+                      <th className="border-0 fw-semibold text-muted">Usuarios Asignados</th>
+                      <th className="border-0 fw-semibold text-muted text-center">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Administrador */}
+                    <tr>
+                      <td className="align-middle ps-4">
+                        <div className="d-flex align-items-center">
+                          <div className="rounded-circle bg-danger bg-opacity-10 p-2 me-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-danger">
+                              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                              <path d="M2 17l10 5 10-5"/>
+                              <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <div className="fw-semibold">Administrador</div>
+                            <small className="text-muted">ID: 1</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="align-middle">
+                        <span className="text-muted">Acceso completo al sistema, gestión de usuarios y configuración</span>
+                      </td>
+                      <td className="align-middle">
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="badge bg-danger">{users.filter(u => u.es_administrador).length} usuario{users.filter(u => u.es_administrador).length !== 1 ? 's' : ''}</span>
+                          {users.filter(u => u.es_administrador).slice(0, 3).map(u => (
+                            <span key={u.id} className="badge bg-light text-dark border" title={u.nombre}>
+                              {u.nombre.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="align-middle text-center">
+                        <span className="badge bg-success">Activo</span>
+                      </td>
+                    </tr>
+
+                    {/* Responsable de Proyecto */}
+                    <tr>
+                      <td className="align-middle ps-4">
+                        <div className="d-flex align-items-center">
+                          <div className="rounded-circle bg-success bg-opacity-10 p-2 me-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-success">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                              <line x1="9" y1="9" x2="15" y2="9"/>
+                              <line x1="9" y1="15" x2="15" y2="15"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <div className="fw-semibold">Responsable de Proyecto</div>
+                            <small className="text-muted">ID: 2</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="align-middle">
+                        <span className="text-muted">Puede crear y gestionar proyectos, asignar tareas</span>
+                      </td>
+                      <td className="align-middle">
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="badge bg-success">{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_proyecto')).length} usuario{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_proyecto')).length !== 1 ? 's' : ''}</span>
+                          {users.filter(u => u.roles?.some(r => r.nombre === 'responsable_proyecto')).slice(0, 3).map(u => (
+                            <span key={u.id} className="badge bg-light text-dark border" title={u.nombre}>
+                              {u.nombre.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="align-middle text-center">
+                        <span className="badge bg-success">Activo</span>
+                      </td>
+                    </tr>
+
+                    {/* Responsable de Tarea */}
+                    <tr>
+                      <td className="align-middle ps-4">
+                        <div className="d-flex align-items-center">
+                          <div className="rounded-circle bg-info bg-opacity-10 p-2 me-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-info">
+                              <path d="M9 11l3 3L22 4"/>
+                              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <div className="fw-semibold">Responsable de Tarea</div>
+                            <small className="text-muted">ID: 3</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="align-middle">
+                        <span className="text-muted">Puede gestionar tareas asignadas y actualizar su estado</span>
+                      </td>
+                      <td className="align-middle">
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="badge bg-info">{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_tarea')).length} usuario{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_tarea')).length !== 1 ? 's' : ''}</span>
+                          {users.filter(u => u.roles?.some(r => r.nombre === 'responsable_tarea')).slice(0, 3).map(u => (
+                            <span key={u.id} className="badge bg-light text-dark border" title={u.nombre}>
+                              {u.nombre.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="align-middle text-center">
+                        <span className="badge bg-success">Activo</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal de formulario de usuario */}
