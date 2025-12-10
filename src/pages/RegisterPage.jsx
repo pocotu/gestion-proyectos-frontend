@@ -59,8 +59,8 @@ const RegisterPage = () => {
     // Validar contraseña
     if (!formData.contraseña.trim()) {
       newErrors.contraseña = 'La contraseña es requerida';
-    } else if (formData.contraseña.length < 6) {
-      newErrors.contraseña = 'La contraseña debe tener al menos 6 caracteres';
+    } else if (formData.contraseña.length < 12) {
+      newErrors.contraseña = 'La contraseña debe tener al menos 12 caracteres';
     } else if (formData.contraseña.length > 255) {
       newErrors.contraseña = 'La contraseña no puede exceder 255 caracteres';
     }
