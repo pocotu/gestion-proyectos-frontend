@@ -14,7 +14,7 @@ import api from '../services/api';
 const ReportsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [stats, setStats] = useState({
     users: { total: 0, active: 0, inactive: 0 },
     projects: { total: 0, active: 0, completed: 0, cancelled: 0, planning: 0 },
@@ -31,9 +31,9 @@ const ReportsPage = () => {
   });
 
   useEffect(() => {
-    const hasPermission = user?.es_administrador || 
-                         user?.roles?.some(role => ['admin', 'responsable_proyecto'].includes(role.nombre));
-    
+    const hasPermission = user?.es_administrador ||
+      user?.roles?.some(role => ['admin', 'responsable_proyecto'].includes(role.nombre));
+
     if (!hasPermission) {
       navigate('/unauthorized');
       return;
@@ -47,10 +47,10 @@ const ReportsPage = () => {
   const loadStatistics = async () => {
     try {
       setLoading(true);
-      
+
       // Usar el endpoint del dashboard que ya existe con el servicio API configurado
       const response = await api.get('/dashboard/summary');
-      
+
       // Mapear los datos del dashboard al formato esperado
       if (response.data.success && response.data.data) {
         const data = response.data.data;
@@ -69,10 +69,10 @@ const ReportsPage = () => {
           },
           tasks: {
             total: data.tasks?.total || 0,
-            pending: data.tasks?.pending || 0,
-            inProgress: data.tasks?.inProgress || 0,
-            completed: data.tasks?.completed || 0,
-            cancelled: data.tasks?.cancelled || 0
+            pending: data.tasks?.pendientes || 0,
+            inProgress: data.tasks?.en_progreso || 0,
+            completed: data.tasks?.completadas || 0,
+            cancelled: data.tasks?.canceladas || 0
           },
           files: {
             total: data.files?.total || 0,
@@ -110,10 +110,10 @@ const ReportsPage = () => {
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        
+
         const extension = reportFilters.format === 'pdf' ? 'pdf' : 'xlsx';
         a.download = `reporte_${reportFilters.reportType}_${new Date().toISOString().split('T')[0]}.${extension}`;
-        
+
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -302,7 +302,7 @@ const StatInline = ({ icon, label, value, subtitle }) => (
  */
 const ProgressItem = ({ label, value, total }) => {
   const percentage = total > 0 ? (value / total * 100) : 0;
-  
+
   return (
     <div style={styles.progressItem}>
       <div style={styles.progressHeader}>

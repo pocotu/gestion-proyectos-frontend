@@ -11,12 +11,12 @@ class FileService {
   async uploadProjectFiles(projectId, files) {
     try {
       const formData = new FormData();
-      
+
       // Agregar cada archivo al FormData
       files.forEach((file, index) => {
         formData.append('files', file);
       });
-      
+
       formData.append('proyecto_id', projectId);
       formData.append('tipo_entidad', 'proyecto');
 
@@ -39,12 +39,12 @@ class FileService {
   async uploadTaskFiles(taskId, files) {
     try {
       const formData = new FormData();
-      
+
       // Agregar cada archivo al FormData
       files.forEach((file, index) => {
         formData.append('files', file);
       });
-      
+
       formData.append('tarea_id', taskId);
       formData.append('tipo_entidad', 'tarea');
 
@@ -58,6 +58,53 @@ class FileService {
     } catch (error) {
       console.error('Error al subir archivos de la tarea:', error);
       throw new Error(error.response?.data?.message || 'Error al subir archivos');
+    }
+  }
+
+  /**
+   * Subir archivo genérico (proyecto o tarea)
+   * @param {FormData} formData - FormData con el archivo y metadatos
+   * @returns {Promise<Object>} Respuesta del servidor
+   */
+  async uploadFile(formData) {
+    try {
+      // Extraer tipo_entidad y entidad_id del FormData
+      const tipoEntidad = formData.get('tipo_entidad');
+      const entidadId = formData.get('entidad_id');
+
+      if (!tipoEntidad || !entidadId) {
+        throw new Error('tipo_entidad y entidad_id son requeridos');
+      }
+
+      // Determinar el endpoint según el tipo de entidad
+      let endpoint;
+      if (tipoEntidad === 'proyecto') {
+        endpoint = `/projects/${entidadId}/files`;
+      } else if (tipoEntidad === 'tarea') {
+        endpoint = `/files/upload/${entidadId}`;
+      } else {
+        throw new Error(`Tipo de entidad no válido: ${tipoEntidad}`);
+      }
+
+      // Crear un nuevo FormData para el backend
+      const uploadFormData = new FormData();
+
+      // Obtener el archivo del formData original
+      const file = formData.get('file');
+      if (file) {
+        uploadFormData.append('files', file);
+      }
+
+      const response = await api.post(endpoint, uploadFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error al subir archivo:', error);
+      throw new Error(error.response?.data?.message || 'Error al subir archivo');
     }
   }
 
@@ -98,11 +145,11 @@ class FileService {
 
       // Crear URL para descarga
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      
+
       // Obtener nombre del archivo desde headers
       const contentDisposition = response.headers['content-disposition'];
       let filename = 'archivo';
-      
+
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="(.+)"/);
         if (filenameMatch) {
@@ -116,7 +163,7 @@ class FileService {
       link.download = filename;
       document.body.appendChild(link);
       link.click();
-      
+
       // Limpiar
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
@@ -201,7 +248,7 @@ class FileService {
       if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
       if (mimeType.includes('image')) return '🖼️';
     }
-    
+
     const extension = fileName?.toLowerCase().split('.').pop();
     switch (extension) {
       case 'pdf':
@@ -229,6 +276,32 @@ class FileService {
     } catch (error) {
       console.error('Error al obtener estadísticas de archivos:', error);
       throw new Error(error.response?.data?.message || 'Error al obtener estadísticas');
+    }
+  }
+
+  /**
+   * Obtener todos los archivos accesibles para el usuario actual
+   * @param {Object} filters - Filtros opcionales (search, tipo, tipo_entidad, entidad_id)
+   * @returns {Promise<Object>} Lista de archivos
+   */
+  async getAllFiles(filters = {}) {
+    try {
+      const params = new URLSearchParams();
+
+      // Agregar filtros si existen
+      if (filters.search) params.append('search', filters.search);
+      if (filters.tipo) params.append('tipo', filters.tipo);
+      if (filters.tipo_entidad) params.append('tipo_entidad', filters.tipo_entidad);
+      if (filters.entidad_id) params.append('entidad_id', filters.entidad_id);
+
+      const queryString = params.toString();
+      const url = queryString ? `/files?${queryString}` : '/files';
+
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener archivos:', error);
+      throw new Error(error.response?.data?.message || 'Error al obtener archivos');
     }
   }
 }
