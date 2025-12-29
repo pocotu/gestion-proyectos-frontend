@@ -23,12 +23,6 @@ const ReportsPage = () => {
     activity: { logins: 0, actions: 0 }
   });
   const [loading, setLoading] = useState(true);
-  const [reportFilters, setReportFilters] = useState({
-    startDate: '',
-    endDate: '',
-    reportType: 'general',
-    format: 'pdf'
-  });
 
   useEffect(() => {
     const hasPermission = user?.es_administrador ||
@@ -91,37 +85,7 @@ const ReportsPage = () => {
     }
   };
 
-  const handleGenerateReport = async () => {
-    try {
-      const queryParams = new URLSearchParams();
-      Object.entries(reportFilters).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value);
-      });
 
-      const response = await fetch(`/api/reports/generate?${queryParams.toString()}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-
-        const extension = reportFilters.format === 'pdf' ? 'pdf' : 'xlsx';
-        a.download = `reporte_${reportFilters.reportType}_${new Date().toISOString().split('T')[0]}.${extension}`;
-
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-      }
-    } catch (err) {
-      console.error('Error al generar reporte:', err);
-    }
-  };
 
   const formatNumber = (num) => {
     return new Intl.NumberFormat('es-ES').format(num);
@@ -155,46 +119,7 @@ const ReportsPage = () => {
 
       {/* Contenedor Único: Configuración + Estadísticas */}
       <div style={styles.card}>
-        {/* Configuración de Reportes Compacta */}
-        <div style={styles.reportConfig}>
-          <input
-            type="date"
-            style={styles.filterInput}
-            value={reportFilters.startDate}
-            onChange={(e) => setReportFilters({ ...reportFilters, startDate: e.target.value })}
-            placeholder="Fecha inicio"
-          />
-          <input
-            type="date"
-            style={styles.filterInput}
-            value={reportFilters.endDate}
-            onChange={(e) => setReportFilters({ ...reportFilters, endDate: e.target.value })}
-            placeholder="Fecha fin"
-          />
-          <select
-            style={styles.filterInput}
-            value={reportFilters.reportType}
-            onChange={(e) => setReportFilters({ ...reportFilters, reportType: e.target.value })}
-          >
-            <option value="general">General</option>
-            <option value="projects">Proyectos</option>
-            <option value="tasks">Tareas</option>
-            <option value="users">Usuarios</option>
-            <option value="activity">Actividad</option>
-          </select>
-          <select
-            style={styles.filterInput}
-            value={reportFilters.format}
-            onChange={(e) => setReportFilters({ ...reportFilters, format: e.target.value })}
-          >
-            <option value="pdf">PDF</option>
-            <option value="excel">Excel</option>
-          </select>
-          <button onClick={handleGenerateReport} style={styles.generateButton}>
-            <i className="bi bi-download" style={{ marginRight: '6px' }}></i>
-            Generar Reporte
-          </button>
-        </div>
+
 
         {/* Estadísticas Generales en Línea */}
         <div style={styles.statsInline}>
@@ -249,6 +174,11 @@ const ReportsPage = () => {
               value={stats.projects?.completed || 0}
               total={stats.projects?.total || 1}
             />
+            <ProgressItem
+              label="Cancelados"
+              value={stats.projects?.cancelled || 0}
+              total={stats.projects?.total || 1}
+            />
           </div>
         </div>
 
@@ -272,6 +202,11 @@ const ReportsPage = () => {
             <ProgressItem
               label="Completadas"
               value={stats.tasks?.completed || 0}
+              total={stats.tasks?.total || 1}
+            />
+            <ProgressItem
+              label="Canceladas"
+              value={stats.tasks?.cancelled || 0}
               total={stats.tasks?.total || 1}
             />
           </div>

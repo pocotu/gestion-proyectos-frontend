@@ -13,7 +13,7 @@ export const activityService = {
   async getActivityLogs(filters = {}) {
     try {
       const params = new URLSearchParams();
-      
+
       // Agregar filtros como parámetros de consulta
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== '' && value !== null && value !== undefined) {
@@ -97,18 +97,26 @@ export const activityService = {
    */
   async exportLogs(options = {}) {
     try {
-      const { 
-        startDate, 
-        endDate, 
-        userId, 
-        format = 'json' 
+      const {
+        startDate,
+        endDate,
+        userId,
+        entityType,  // Agregar entityType para que export refleje filtros UI
+        action,      // Agregar action para que export refleje filtros UI
+        format = 'json'
       } = options;
 
       const params = new URLSearchParams();
-      
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+
+      // Si no hay fechas, usar el día actual para evitar error 400
+      const today = new Date().toISOString().split('T')[0];
+      params.append('startDate', startDate || today);
+      params.append('endDate', endDate || today);
+
+      // Agregar filtros adicionales si existen
       if (userId) params.append('userId', userId);
+      if (entityType) params.append('entityType', entityType);
+      if (action) params.append('action', action);
       params.append('format', format);
 
       if (format === 'csv') {
@@ -122,7 +130,8 @@ export const activityService = {
         });
 
         if (!response.ok) {
-          throw new Error('Error al exportar logs');
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Error al exportar logs');
         }
 
         return await response.text();

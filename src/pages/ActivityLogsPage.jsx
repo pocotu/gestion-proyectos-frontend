@@ -70,7 +70,7 @@ const ActivityLogsPage = () => {
 
   useEffect(() => {
     const isAdmin = (user?.es_administrador === 1 || user?.es_administrador === true) || user?.roles?.includes('admin');
-    
+
     if (isAdmin) {
       loadActivityLogs();
       loadStats();
@@ -95,6 +95,7 @@ const ActivityLogsPage = () => {
       page: 1,
       limit: 50
     });
+    setSearchTerm(''); // También limpiar búsqueda de texto
   };
 
   const exportLogs = async (format = 'json') => {
@@ -103,11 +104,11 @@ const ActivityLogsPage = () => {
         ...filters,
         format
       });
-      
-      const blob = format === 'csv' 
+
+      const blob = format === 'csv'
         ? new Blob([response], { type: 'text/csv' })
         : new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
-      
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -122,21 +123,36 @@ const ActivityLogsPage = () => {
   };
 
   /**
-   * Filtra los logs localmente por término de búsqueda
-   * Principio de Responsabilidad Única: Solo filtra logs
+   * Filtra los logs localmente aplicando TODOS los criterios
+   * Principio de Responsabilidad Única: Solo filtra logs con lógica completa
+   * Bug fix: Antes solo aplicaba searchTerm, ignorando entityType y action
    */
   const filteredLogs = logs.filter(log => {
-    if (!searchTerm) return true;
-    
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      log.usuario_nombre?.toLowerCase().includes(searchLower) ||
-      log.usuario_email?.toLowerCase().includes(searchLower) ||
-      log.descripcion?.toLowerCase().includes(searchLower) ||
-      log.ip_address?.toLowerCase().includes(searchLower) ||
-      log.accion?.toLowerCase().includes(searchLower) ||
-      log.entidad_tipo?.toLowerCase().includes(searchLower)
-    );
+    // Filtro de búsqueda por texto
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = (
+        log.usuario_nombre?.toLowerCase().includes(searchLower) ||
+        log.usuario_email?.toLowerCase().includes(searchLower) ||
+        log.descripcion?.toLowerCase().includes(searchLower) ||
+        log.ip_address?.toLowerCase().includes(searchLower) ||
+        log.accion?.toLowerCase().includes(searchLower) ||
+        log.entidad_tipo?.toLowerCase().includes(searchLower)
+      );
+      if (!matchesSearch) return false;
+    }
+
+    // Filtro por tipo de entidad
+    if (filters.entityType && log.entidad_tipo !== filters.entityType) {
+      return false;
+    }
+
+    // Filtro por acción
+    if (filters.action && log.accion !== filters.action) {
+      return false;
+    }
+
+    return true;
   });
 
   const handleRowClick = (log) => {
@@ -193,11 +209,11 @@ const ActivityLogsPage = () => {
   };
 
   const isAdmin = (user?.es_administrador === 1 || user?.es_administrador === true) || user?.roles?.includes('admin');
-  
+
   if (!user) {
     return <LoadingSpinner message="Cargando..." />;
   }
-  
+
   if (!isAdmin) {
     return (
       <div style={styles.container}>
@@ -364,8 +380,8 @@ const ActivityLogsPage = () => {
                 </thead>
                 <tbody>
                   {filteredLogs.map((log) => (
-                    <tr 
-                      key={log.id} 
+                    <tr
+                      key={log.id}
                       data-testid="activity-log-row"
                       style={styles.tableRow}
                       onClick={() => handleRowClick(log)}

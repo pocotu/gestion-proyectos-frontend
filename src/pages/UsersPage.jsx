@@ -22,7 +22,7 @@ import '../styles/projects.css';
 const UsersPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   // Estados principales
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +64,7 @@ const UsersPage = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Cargar todos los usuarios sin filtros (filtrado en frontend)
       const response = await userService.getUsers();
       // Backend devuelve {success, message, data: {users}} o {success, data: [users]}
@@ -84,17 +84,17 @@ const UsersPage = () => {
    */
   const filteredUsers = users.filter(user => {
     // Filtro de búsqueda por nombre o email
-    const matchesSearch = !filters.search || 
+    const matchesSearch = !filters.search ||
       user.nombre?.toLowerCase().includes(filters.search.toLowerCase()) ||
       user.email?.toLowerCase().includes(filters.search.toLowerCase());
 
     // Filtro por rol
-    const matchesRole = !filters.role || 
+    const matchesRole = !filters.role ||
       (filters.role === 'admin' && user.es_administrador) ||
       user.roles?.some(role => role.nombre === filters.role);
 
     // Filtro por estado
-    const matchesEstado = !filters.estado || 
+    const matchesEstado = !filters.estado ||
       (filters.estado === 'true' && user.estado === 'activo') ||
       (filters.estado === 'false' && user.estado === 'inactivo');
 
@@ -135,10 +135,10 @@ const UsersPage = () => {
 
     try {
       await userService.deleteUser(selectedUser.id);
-            loadUsers(); // Recargar lista
+      loadUsers(); // Recargar lista
     } catch (err) {
       console.error('Error al eliminar usuario:', err);
-          } finally {
+    } finally {
       setShowConfirmDialog(false);
       setSelectedUser(null);
     }
@@ -151,16 +151,20 @@ const UsersPage = () => {
     try {
       if (formMode === 'create') {
         await userService.createUser(userData);
-              } else {
+      } else {
         await userService.updateUser(selectedUser.id, userData);
-              }
-      
+      }
+
+      // IMPORTANTE: Recargar lista ANTES de cerrar modal para asegurar UI actualizada
+      await loadUsers();
+
+      // Cerrar modal después de recargar
       setShowUserForm(false);
       setSelectedUser(null);
-      loadUsers(); // Recargar lista
     } catch (err) {
       console.error('Error al guardar usuario:', err);
-          }
+      throw err; // Propagar error para manejarlo en UserForm
+    }
   };
 
   /**
@@ -170,10 +174,10 @@ const UsersPage = () => {
     try {
       const newStatus = !currentStatus;
       await userService.updateUserStatus(userId, newStatus);
-            loadUsers(); // Recargar lista
+      loadUsers(); // Recargar lista
     } catch (err) {
       console.error('Error al cambiar estado del usuario:', err);
-          }
+    }
   };
 
   /**
@@ -221,10 +225,10 @@ const UsersPage = () => {
             className="btn btn-primary d-flex align-items-center gap-2"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <line x1="19" y1="8" x2="19" y2="14"/>
-              <line x1="22" y1="11" x2="16" y2="11"/>
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <line x1="19" y1="8" x2="19" y2="14" />
+              <line x1="22" y1="11" x2="16" y2="11" />
             </svg>
             Nuevo Usuario
           </button>
@@ -238,32 +242,32 @@ const UsersPage = () => {
         <div className="card-header bg-white border-bottom">
           <ul className="nav nav-tabs card-header-tabs" role="tablist">
             <li className="nav-item" role="presentation">
-              <button 
+              <button
                 className={`nav-link ${activeTab === 'usuarios' ? 'active' : ''}`}
                 onClick={() => setActiveTab('usuarios')}
-                type="button" 
+                type="button"
                 role="tab"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2" style={{verticalAlign: 'middle'}}>
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2" style={{ verticalAlign: 'middle' }}>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
                 Gestión de Usuarios
               </button>
             </li>
             <li className="nav-item" role="presentation">
-              <button 
+              <button
                 className={`nav-link ${activeTab === 'roles' ? 'active' : ''}`}
                 onClick={() => setActiveTab('roles')}
-                type="button" 
+                type="button"
                 role="tab"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2" style={{verticalAlign: 'middle'}}>
-                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                  <path d="M2 17l10 5 10-5"/>
-                  <path d="M2 12l10 5 10-5"/>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2" style={{ verticalAlign: 'middle' }}>
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                  <path d="M2 17l10 5 10-5" />
+                  <path d="M2 12l10 5 10-5" />
                 </svg>
                 Roles del Sistema
               </button>
@@ -275,98 +279,98 @@ const UsersPage = () => {
           {/* Panel de Usuarios */}
           {activeTab === 'usuarios' && (
             <div className="tab-pane fade show active" role="tabpanel">
-            {/* Barra de filtros moderna */}
-      <div className="card mb-4 border-0 shadow-sm">
-        <div className="card-body p-3">
-          <div className="row g-3">
-            <div className="col-md-4">
-              <div className="position-relative">
-                <svg 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2"
-                  className="position-absolute text-muted"
-                  style={{ left: '12px', top: '50%', transform: 'translateY(-50%)', zIndex: 1 }}
-                >
-                  <circle cx="11" cy="11" r="8"/>
-                  <path d="M21 21l-4.35-4.35"/>
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre o email..."
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
-                  className="form-control ps-5"
-                  style={{ paddingLeft: '2.5rem' }}
-                />
+              {/* Barra de filtros moderna */}
+              <div className="card mb-4 border-0 shadow-sm">
+                <div className="card-body p-3">
+                  <div className="row g-3">
+                    <div className="col-md-4">
+                      <div className="position-relative">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          className="position-absolute text-muted"
+                          style={{ left: '12px', top: '50%', transform: 'translateY(-50%)', zIndex: 1 }}
+                        >
+                          <circle cx="11" cy="11" r="8" />
+                          <path d="M21 21l-4.35-4.35" />
+                        </svg>
+                        <input
+                          type="text"
+                          placeholder="Buscar por nombre o email..."
+                          value={filters.search}
+                          onChange={(e) => handleFilterChange('search', e.target.value)}
+                          className="form-control ps-5"
+                          style={{ paddingLeft: '2.5rem' }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <select
+                        value={filters.role}
+                        onChange={(e) => handleFilterChange('role', e.target.value)}
+                        className="form-select"
+                      >
+                        <option value="">Todos los roles</option>
+                        <option value="admin">Administrador</option>
+                        <option value="responsable_proyecto">Responsable de Proyecto</option>
+                        <option value="responsable_tarea">Responsable de Tarea</option>
+                      </select>
+                    </div>
+                    <div className="col-md-3">
+                      <select
+                        value={filters.estado}
+                        onChange={(e) => handleFilterChange('estado', e.target.value)}
+                        className="form-select"
+                      >
+                        <option value="">Todos los estados</option>
+                        <option value="true">Habilitado</option>
+                        <option value="false">Deshabilitado</option>
+                      </select>
+                    </div>
+                    <div className="col-md-2">
+                      <button
+                        onClick={clearFilters}
+                        className="btn btn-outline-secondary w-100"
+                      >
+                        Limpiar Filtros
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="col-md-3">
-              <select
-                value={filters.role}
-                onChange={(e) => handleFilterChange('role', e.target.value)}
-                className="form-select"
-              >
-                <option value="">Todos los roles</option>
-                <option value="admin">Administrador</option>
-                <option value="responsable_proyecto">Responsable de Proyecto</option>
-                <option value="responsable_tarea">Responsable de Tarea</option>
-              </select>
-            </div>
-            <div className="col-md-3">
-              <select
-                value={filters.estado}
-                onChange={(e) => handleFilterChange('estado', e.target.value)}
-                className="form-select"
-              >
-                <option value="">Todos los estados</option>
-                <option value="true">Habilitado</option>
-                <option value="false">Deshabilitado</option>
-              </select>
-            </div>
-            <div className="col-md-2">
-              <button
-                onClick={clearFilters}
-                className="btn btn-outline-secondary w-100"
-              >
-                Limpiar Filtros
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Mensaje de error */}
-      {error && (
-        <div className="alert alert-danger d-flex align-items-center mb-4" role="alert">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2 flex-shrink-0">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <div>
-            {error}
-            <button
-              onClick={loadUsers}
-              className="btn btn-link p-0 ms-2 text-decoration-underline"
-            >
-              Intentar nuevamente
-            </button>
-          </div>
-        </div>
-      )}
+              {/* Mensaje de error */}
+              {error && (
+                <div className="alert alert-danger d-flex align-items-center mb-4" role="alert">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-2 flex-shrink-0">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <div>
+                    {error}
+                    <button
+                      onClick={loadUsers}
+                      className="btn btn-link p-0 ms-2 text-decoration-underline"
+                    >
+                      Intentar nuevamente
+                    </button>
+                  </div>
+                </div>
+              )}
 
-            {/* Lista de usuarios con diseño profesional */}
-            <UserList
-              users={filteredUsers}
-              onEdit={handleEditUser}
-              onDelete={handleDeleteUser}
-              onToggleStatus={handleToggleUserStatus}
-              loading={loading}
-            />
+              {/* Lista de usuarios con diseño profesional */}
+              <UserList
+                users={filteredUsers}
+                onEdit={handleEditUser}
+                onDelete={handleDeleteUser}
+                onToggleStatus={handleToggleUserStatus}
+                loading={loading}
+              />
             </div>
           )}
 
@@ -374,123 +378,123 @@ const UsersPage = () => {
           {activeTab === 'roles' && (
             <div className="tab-pane fade show active" role="tabpanel">
               <div className="p-0">
-              <div className="table-responsive">
-                <table className="table table-hover mb-0">
-                  <thead className="bg-light">
-                    <tr>
-                      <th className="border-0 fw-semibold text-muted ps-4">Rol</th>
-                      <th className="border-0 fw-semibold text-muted">Descripción</th>
-                      <th className="border-0 fw-semibold text-muted">Usuarios Asignados</th>
-                      <th className="border-0 fw-semibold text-muted text-center">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Administrador */}
-                    <tr>
-                      <td className="align-middle ps-4">
-                        <div className="d-flex align-items-center">
-                          <div className="rounded-circle bg-danger bg-opacity-10 p-2 me-2">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-danger">
-                              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                              <path d="M2 17l10 5 10-5"/>
-                              <path d="M2 12l10 5 10-5"/>
-                            </svg>
+                <div className="table-responsive">
+                  <table className="table table-hover mb-0">
+                    <thead className="bg-light">
+                      <tr>
+                        <th className="border-0 fw-semibold text-muted ps-4">Rol</th>
+                        <th className="border-0 fw-semibold text-muted">Descripción</th>
+                        <th className="border-0 fw-semibold text-muted">Usuarios Asignados</th>
+                        <th className="border-0 fw-semibold text-muted text-center">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Administrador */}
+                      <tr>
+                        <td className="align-middle ps-4">
+                          <div className="d-flex align-items-center">
+                            <div className="rounded-circle bg-danger bg-opacity-10 p-2 me-2">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-danger">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                <path d="M2 17l10 5 10-5" />
+                                <path d="M2 12l10 5 10-5" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="fw-semibold">Administrador</div>
+                              <small className="text-muted">ID: 1</small>
+                            </div>
                           </div>
-                          <div>
-                            <div className="fw-semibold">Administrador</div>
-                            <small className="text-muted">ID: 1</small>
+                        </td>
+                        <td className="align-middle">
+                          <span className="text-muted">Acceso completo al sistema, gestión de usuarios y configuración</span>
+                        </td>
+                        <td className="align-middle">
+                          <div className="d-flex align-items-center gap-2">
+                            <span className="badge bg-danger">{users.filter(u => u.es_administrador).length} usuario{users.filter(u => u.es_administrador).length !== 1 ? 's' : ''}</span>
+                            {users.filter(u => u.es_administrador).slice(0, 3).map(u => (
+                              <span key={u.id} className="badge bg-light text-dark border" title={u.nombre}>
+                                {u.nombre.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              </span>
+                            ))}
                           </div>
-                        </div>
-                      </td>
-                      <td className="align-middle">
-                        <span className="text-muted">Acceso completo al sistema, gestión de usuarios y configuración</span>
-                      </td>
-                      <td className="align-middle">
-                        <div className="d-flex align-items-center gap-2">
-                          <span className="badge bg-danger">{users.filter(u => u.es_administrador).length} usuario{users.filter(u => u.es_administrador).length !== 1 ? 's' : ''}</span>
-                          {users.filter(u => u.es_administrador).slice(0, 3).map(u => (
-                            <span key={u.id} className="badge bg-light text-dark border" title={u.nombre}>
-                              {u.nombre.split(' ').map(n => n[0]).join('').toUpperCase()}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="align-middle text-center">
-                        <span className="badge bg-success">Activo</span>
-                      </td>
-                    </tr>
+                        </td>
+                        <td className="align-middle text-center">
+                          <span className="badge bg-success">Activo</span>
+                        </td>
+                      </tr>
 
-                    {/* Responsable de Proyecto */}
-                    <tr>
-                      <td className="align-middle ps-4">
-                        <div className="d-flex align-items-center">
-                          <div className="rounded-circle bg-success bg-opacity-10 p-2 me-2">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-success">
-                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                              <line x1="9" y1="9" x2="15" y2="9"/>
-                              <line x1="9" y1="15" x2="15" y2="15"/>
-                            </svg>
+                      {/* Responsable de Proyecto */}
+                      <tr>
+                        <td className="align-middle ps-4">
+                          <div className="d-flex align-items-center">
+                            <div className="rounded-circle bg-success bg-opacity-10 p-2 me-2">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-success">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <line x1="9" y1="9" x2="15" y2="9" />
+                                <line x1="9" y1="15" x2="15" y2="15" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="fw-semibold">Responsable de Proyecto</div>
+                              <small className="text-muted">ID: 2</small>
+                            </div>
                           </div>
-                          <div>
-                            <div className="fw-semibold">Responsable de Proyecto</div>
-                            <small className="text-muted">ID: 2</small>
+                        </td>
+                        <td className="align-middle">
+                          <span className="text-muted">Puede crear y gestionar proyectos, asignar tareas</span>
+                        </td>
+                        <td className="align-middle">
+                          <div className="d-flex align-items-center gap-2">
+                            <span className="badge bg-success">{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_proyecto')).length} usuario{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_proyecto')).length !== 1 ? 's' : ''}</span>
+                            {users.filter(u => u.roles?.some(r => r.nombre === 'responsable_proyecto')).slice(0, 3).map(u => (
+                              <span key={u.id} className="badge bg-light text-dark border" title={u.nombre}>
+                                {u.nombre.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              </span>
+                            ))}
                           </div>
-                        </div>
-                      </td>
-                      <td className="align-middle">
-                        <span className="text-muted">Puede crear y gestionar proyectos, asignar tareas</span>
-                      </td>
-                      <td className="align-middle">
-                        <div className="d-flex align-items-center gap-2">
-                          <span className="badge bg-success">{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_proyecto')).length} usuario{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_proyecto')).length !== 1 ? 's' : ''}</span>
-                          {users.filter(u => u.roles?.some(r => r.nombre === 'responsable_proyecto')).slice(0, 3).map(u => (
-                            <span key={u.id} className="badge bg-light text-dark border" title={u.nombre}>
-                              {u.nombre.split(' ').map(n => n[0]).join('').toUpperCase()}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="align-middle text-center">
-                        <span className="badge bg-success">Activo</span>
-                      </td>
-                    </tr>
+                        </td>
+                        <td className="align-middle text-center">
+                          <span className="badge bg-success">Activo</span>
+                        </td>
+                      </tr>
 
-                    {/* Responsable de Tarea */}
-                    <tr>
-                      <td className="align-middle ps-4">
-                        <div className="d-flex align-items-center">
-                          <div className="rounded-circle bg-info bg-opacity-10 p-2 me-2">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-info">
-                              <path d="M9 11l3 3L22 4"/>
-                              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                            </svg>
+                      {/* Responsable de Tarea */}
+                      <tr>
+                        <td className="align-middle ps-4">
+                          <div className="d-flex align-items-center">
+                            <div className="rounded-circle bg-info bg-opacity-10 p-2 me-2">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-info">
+                                <path d="M9 11l3 3L22 4" />
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="fw-semibold">Responsable de Tarea</div>
+                              <small className="text-muted">ID: 3</small>
+                            </div>
                           </div>
-                          <div>
-                            <div className="fw-semibold">Responsable de Tarea</div>
-                            <small className="text-muted">ID: 3</small>
+                        </td>
+                        <td className="align-middle">
+                          <span className="text-muted">Puede gestionar tareas asignadas y actualizar su estado</span>
+                        </td>
+                        <td className="align-middle">
+                          <div className="d-flex align-items-center gap-2">
+                            <span className="badge bg-info">{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_tarea')).length} usuario{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_tarea')).length !== 1 ? 's' : ''}</span>
+                            {users.filter(u => u.roles?.some(r => r.nombre === 'responsable_tarea')).slice(0, 3).map(u => (
+                              <span key={u.id} className="badge bg-light text-dark border" title={u.nombre}>
+                                {u.nombre.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              </span>
+                            ))}
                           </div>
-                        </div>
-                      </td>
-                      <td className="align-middle">
-                        <span className="text-muted">Puede gestionar tareas asignadas y actualizar su estado</span>
-                      </td>
-                      <td className="align-middle">
-                        <div className="d-flex align-items-center gap-2">
-                          <span className="badge bg-info">{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_tarea')).length} usuario{users.filter(u => u.roles?.some(r => r.nombre === 'responsable_tarea')).length !== 1 ? 's' : ''}</span>
-                          {users.filter(u => u.roles?.some(r => r.nombre === 'responsable_tarea')).slice(0, 3).map(u => (
-                            <span key={u.id} className="badge bg-light text-dark border" title={u.nombre}>
-                              {u.nombre.split(' ').map(n => n[0]).join('').toUpperCase()}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="align-middle text-center">
-                        <span className="badge bg-success">Activo</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                        </td>
+                        <td className="align-middle text-center">
+                          <span className="badge bg-success">Activo</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
