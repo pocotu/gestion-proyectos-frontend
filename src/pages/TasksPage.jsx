@@ -7,9 +7,26 @@ import taskService from '../services/taskService';
 import projectService from '../services/projectService';
 import '../styles/projects.css';
 
+// Drag and Drop imports
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
 const TasksPage = () => {
   const navigate = useNavigate();
-  
+
   // Estados principales
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -43,6 +60,18 @@ const TasksPage = () => {
     proyecto_id: ''
   });
 
+  // Estado para Drag & Drop (SRP - Single Responsibility)
+  const [activeTask, setActiveTask] = useState(null);
+
+  // Configurar sensores para drag (mejor UX - requiere 8px de movimiento)
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
   // Cargar datos al montar el componente
   useEffect(() => {
     loadTasks();
@@ -75,7 +104,7 @@ const TasksPage = () => {
     } catch (error) {
       console.error('Error al cargar tareas:', error);
       setError('Error al cargar las tareas');
-            setTasks([]);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -98,16 +127,16 @@ const TasksPage = () => {
     try {
       if (formMode === 'create') {
         await taskService.createTask(taskForm);
-              } else {
+      } else {
         await taskService.updateTask(selectedTask.id, taskForm);
-              }
+      }
 
       setShowTaskForm(false);
       resetForm();
       loadTasks();
     } catch (error) {
       console.error('Error al guardar tarea:', error);
-          }
+    }
   };
 
   // Resetear formulario
@@ -159,12 +188,90 @@ const TasksPage = () => {
   const handleDelete = async () => {
     try {
       await taskService.deleteTask(selectedTask.id);
-            setShowConfirmDialog(false);
+      setShowConfirmDialog(false);
       setSelectedTask(null);
       loadTasks();
     } catch (error) {
       console.error('Error al eliminar tarea:', error);
-          }
+    }
+  };
+
+  /**
+   * Handler para inicio de drag (SRP - Single Responsibility)
+   * @param {Object} event - Evento de drag start
+   */
+  const handleDragStart = (event) => {
+    const { active } = event;
+    const task = tasks.find(t => t.id === active.id);
+    setActiveTask(task);
+  };
+
+  /**
+   * Handler para fin de drag (SRP)
+   * Actualiza el estado de la tarea cuando se suelta en nueva columna
+   * @param {Object} event - Evento de drag end
+   */
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (!over) {
+      setActiveTask(null);
+      return;
+    }
+
+    const taskId = active.id;
+    let newStatus = over.id;
+
+    // Resolución de estado: si se suelta sobre una tarea, obtener su estado
+    // porque over.id será el ID de la tarea (número), no el estado (string)
+    const validStatuses = ['pendiente', 'en_progreso', 'completada', 'cancelada'];
+
+    if (!validStatuses.includes(newStatus)) {
+      // over.id es un ID de tarea, necesitamos encontrar su estado
+      const overTask = tasks.find(t => t.id === over.id);
+      if (overTask) {
+        newStatus = overTask.estado;
+      } else {
+        // No pudimos resolver el estado, cancelar
+        setActiveTask(null);
+        return;
+      }
+    }
+
+    // Si se suelta en la misma columna, no hacer nada
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || task.estado === newStatus) {
+      setActiveTask(null);
+      return;
+    }
+
+    // Actualizar estado de la tarea (DIP - usa abstracción del service)
+    await updateTaskStatus(taskId, newStatus);
+    setActiveTask(null);
+  };
+
+  /**
+   * Actualizar estado de tarea en backend (DIP - Dependency Inversion)
+   * @param {number} taskId - ID de la tarea
+   * @param {string} newStatus - Nuevo estado
+   */
+  const updateTaskStatus = async (taskId, newStatus) => {
+    try {
+      // Optimistic update para mejor UX
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === taskId ? { ...task, estado: newStatus } : task
+        )
+      );
+
+      // Update en backend
+      await taskService.updateTask(taskId, { estado: newStatus });
+
+    } catch (error) {
+      console.error('Error al actualizar estado de tarea:', error);
+      // Revertir cambio si falla
+      loadTasks();
+    }
   };
 
   // Navegar a detalles de la tarea
@@ -246,31 +353,294 @@ const TasksPage = () => {
 
   // Configuración de columnas Kanban (DRY - Don't Repeat Yourself)
   const kanbanColumns = [
-    { 
-      id: 'pendiente', 
-      title: 'Pendiente', 
+    {
+      id: 'pendiente',
+      title: 'Pendiente',
       color: '#6c757d',
       icon: 'bi-pause-circle'
     },
-    { 
-      id: 'en_progreso', 
-      title: 'En Progreso', 
+    {
+      id: 'en_progreso',
+      title: 'En Progreso',
       color: '#0d6efd',
       icon: 'bi-arrow-repeat'
     },
-    { 
-      id: 'completada', 
-      title: 'Completada', 
+    {
+      id: 'completada',
+      title: 'Completada',
       color: '#198754',
       icon: 'bi-check-circle'
     },
-    { 
-      id: 'cancelada', 
-      title: 'Cancelada', 
+    {
+      id: 'cancelada',
+      title: 'Cancelada',
       color: '#dc3545',
       icon: 'bi-x-circle'
     }
   ];
+
+  /**
+   * Componente de Tarjeta de Tarea Arrastrable (SRP - Single Responsibility)
+   * Renderiza una tarjeta de tarea que puede ser arrastrada
+   */
+  const DraggableTaskCard = ({ task, column, onEdit, onDelete, onNavigate, getProjectName, openMenuId, setOpenMenuId }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: task.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+      cursor: isDragging ? 'grabbing' : 'grab',
+    };
+
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="card border-0 shadow-sm"
+        onClick={() => onNavigate(task.id)}
+        onMouseEnter={(e) => {
+          if (!isDragging) {
+            e.currentTarget.style.transform = 'translateX(2px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isDragging) {
+            e.currentTarget.style.transform = 'translateX(0)';
+            e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+          }
+        }}
+        onTouchStart={() => { }} // Enable touch events
+      >
+        <div
+          className="card-body p-3"
+          style={{
+            borderRadius: '8px',
+            borderLeft: `3px solid ${column.color}`
+          }}
+        >
+          {/* Header de tarea */}
+          <div className="d-flex justify-content-between align-items-start mb-2">
+            <h6 className="mb-0 fw-semibold" style={{
+              fontSize: '0.875rem',
+              color: '#1a1a1a',
+              lineHeight: '1.4',
+              flex: 1,
+              paddingRight: '8px'
+            }}>
+              {task.titulo}
+            </h6>
+            <div className="task-menu-container" style={{ position: 'relative', flexShrink: 0 }}>
+              <button
+                className="btn btn-sm border-0 task-menu-button"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenMenuId(openMenuId === task.id ? null : task.id);
+                }}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '6px',
+                  transition: 'all 0.15s ease',
+                  backgroundColor: openMenuId === task.id ? '#e5e7eb' : '#f3f4f6',
+                  padding: 0,
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
+                  color: '#374151',
+                  lineHeight: 1
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#e5e7eb';
+                }}
+                onMouseLeave={(e) => {
+                  if (openMenuId !== task.id) {
+                    e.currentTarget.style.backgroundColor = '#f3f4f6';
+                  }
+                }}
+              >
+                ⋮
+              </button>
+              {openMenuId === task.id && (
+                <div
+                  className="task-menu-dropdown"
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '4px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    border: '1px solid #e9ecef',
+                    minWidth: '140px',
+                    zIndex: 1000,
+                    overflow: 'hidden'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    className="task-menu-item"
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: '#374151',
+                      fontSize: '0.875rem',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      transition: 'background-color 0.15s ease',
+                      fontWeight: '500'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(null);
+                      onEdit(task);
+                    }}
+                  >
+                    <i className="bi bi-pencil" style={{ fontSize: '0.9rem' }}></i>
+                    Editar
+                  </button>
+                  <div style={{ height: '1px', backgroundColor: '#e9ecef', margin: '0' }}></div>
+                  <button
+                    className="task-menu-item"
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: '#dc3545',
+                      fontSize: '0.875rem',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      transition: 'background-color 0.15s ease',
+                      fontWeight: '500'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(null);
+                      onDelete(task);
+                    }}
+                  >
+                    <i className="bi bi-trash" style={{ fontSize: '0.9rem' }}></i>
+                    Eliminar
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Descripción */}
+          {task.descripcion && (
+            <p className="text-muted mb-2" style={{
+              fontSize: '0.75rem',
+              lineHeight: '1.4',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}>
+              {task.descripcion}
+            </p>
+          )}
+
+          {/* Prioridad */}
+          {task.prioridad && (
+            <div className="mb-2">
+              <span style={{
+                fontSize: '0.7rem',
+                padding: '0.15rem 0.4rem',
+                borderRadius: '4px',
+                backgroundColor: task.prioridad === 'alta' ? '#dc354525' :
+                  task.prioridad === 'media' ? '#ffc10730' : '#19875425',
+                color: task.prioridad === 'alta' ? '#b02a37' :
+                  task.prioridad === 'media' ? '#d39e00' : '#146c43',
+                fontWeight: '600'
+              }}>
+                {task.prioridad === 'alta' ? 'Alta' :
+                  task.prioridad === 'media' ? 'Media' : 'Baja'}
+              </span>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
+            {task.proyecto_id && (
+              <small className="text-muted d-flex align-items-center gap-1" style={{ fontSize: '0.7rem' }}>
+                <i className="bi bi-folder2"></i>
+                <span style={{
+                  maxWidth: '120px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {getProjectName(task.proyecto_id)}
+                </span>
+              </small>
+            )}
+            {task.fecha_fin && (
+              <small className="text-muted d-flex align-items-center gap-1" style={{ fontSize: '0.7rem' }}>
+                <i className="bi bi-calendar3"></i>
+                {new Date(task.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+              </small>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  /**
+   * Componente de Columna Droppable (SRP - Single Responsibility)
+   * Hace que las columnas vacías también sean zonas válidas para soltar tareas
+   */
+  const DroppableColumn = ({ column, children }) => {
+    const { setNodeRef, isOver } = useDroppable({
+      id: column.id,
+    });
+
+    return (
+      <div
+        ref={setNodeRef}
+        id={column.id}
+        className="card-body p-2"
+        style={{
+          maxHeight: 'calc(100vh - 320px)',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          minHeight: '200px',
+          backgroundColor: isOver ? `${column.color}10` : 'transparent',
+          transition: 'background-color 0.2s ease',
+        }}
+      >
+        {children}
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -301,7 +671,7 @@ const TasksPage = () => {
                   type="button"
                   className={`btn ${viewMode === 'kanban' ? 'btn-dark' : 'btn-outline-secondary'}`}
                   onClick={() => setViewMode('kanban')}
-                  style={{ 
+                  style={{
                     borderRadius: '8px 0 0 8px',
                     fontSize: '0.875rem',
                     padding: '0.5rem 1rem'
@@ -314,7 +684,7 @@ const TasksPage = () => {
                   type="button"
                   className={`btn ${viewMode === 'list' ? 'btn-dark' : 'btn-outline-secondary'}`}
                   onClick={() => setViewMode('list')}
-                  style={{ 
+                  style={{
                     borderRadius: '0 8px 8px 0',
                     fontSize: '0.875rem',
                     padding: '0.5rem 1rem'
@@ -324,11 +694,11 @@ const TasksPage = () => {
                   Lista
                 </button>
               </div>
-              
+
               <button
                 onClick={openCreateForm}
                 className="btn btn-dark d-flex align-items-center"
-                style={{ 
+                style={{
                   borderRadius: '8px',
                   fontSize: '0.875rem',
                   padding: '0.5rem 1.25rem',
@@ -351,9 +721,9 @@ const TasksPage = () => {
               <div className="row g-2 align-items-center">
                 <div className="col-lg-4 col-md-6">
                   <div className="position-relative">
-                    <i className="bi bi-search position-absolute" style={{ 
-                      left: '12px', 
-                      top: '50%', 
+                    <i className="bi bi-search position-absolute" style={{
+                      left: '12px',
+                      top: '50%',
                       transform: 'translateY(-50%)',
                       color: '#6c757d',
                       fontSize: '0.9rem'
@@ -364,7 +734,7 @@ const TasksPage = () => {
                       value={filters.search}
                       onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                       className="form-control"
-                      style={{ 
+                      style={{
                         paddingLeft: '2.5rem',
                         border: '1px solid #e9ecef',
                         borderRadius: '8px',
@@ -378,7 +748,7 @@ const TasksPage = () => {
                     value={filters.prioridad}
                     onChange={(e) => setFilters({ ...filters, prioridad: e.target.value })}
                     className="form-select"
-                    style={{ 
+                    style={{
                       border: '1px solid #e9ecef',
                       borderRadius: '8px',
                       fontSize: '0.875rem'
@@ -395,7 +765,7 @@ const TasksPage = () => {
                     value={filters.proyecto_id}
                     onChange={(e) => setFilters({ ...filters, proyecto_id: e.target.value })}
                     className="form-select"
-                    style={{ 
+                    style={{
                       border: '1px solid #e9ecef',
                       borderRadius: '8px',
                       fontSize: '0.875rem'
@@ -413,7 +783,7 @@ const TasksPage = () => {
                   <button
                     onClick={() => setFilters({ search: '', estado: '', prioridad: '', proyecto_id: '' })}
                     className="btn btn-outline-secondary w-100"
-                    style={{ 
+                    style={{
                       borderRadius: '8px',
                       fontSize: '0.875rem',
                       border: '1px solid #e9ecef'
@@ -445,8 +815,8 @@ const TasksPage = () => {
       {filteredTasks.length === 0 && !error ? (
         <div className="text-center py-5">
           <div className="mb-4">
-            <div className="d-inline-flex align-items-center justify-content-center rounded-circle" 
-                 style={{ width: '80px', height: '80px', backgroundColor: '#f8f9fa' }}>
+            <div className="d-inline-flex align-items-center justify-content-center rounded-circle"
+              style={{ width: '80px', height: '80px', backgroundColor: '#f8f9fa' }}>
               <i className="bi bi-clipboard-check" style={{ fontSize: '2rem', color: '#6c757d' }}></i>
             </div>
           </div>
@@ -464,255 +834,101 @@ const TasksPage = () => {
           </button>
         </div>
       ) : viewMode === 'kanban' ? (
-        /* Vista Kanban */
-        <div className="row g-3">
-          {kanbanColumns.map((column) => (
-            <div key={column.id} className="col-lg-3 col-md-6">
-              <div className="card border-0 shadow-sm h-100" style={{ 
-                borderRadius: '12px',
-                backgroundColor: '#ffffff'
-              }}>
-                {/* Header de columna */}
-                <div className="card-header border-0 bg-transparent pt-3 pb-2 px-3">
-                  <div className="d-flex align-items-center justify-content-between">
-                    <div className="d-flex align-items-center gap-2">
-                      <i className={column.icon} style={{ fontSize: '1rem', color: column.color }}></i>
-                      <h6 className="mb-0 fw-semibold" style={{ 
-                        fontSize: '0.875rem',
-                        color: '#1a1a1a'
-                      }}>
-                        {column.title}
-                      </h6>
-                    </div>
-                    <span className="badge rounded-pill" style={{ 
-                      backgroundColor: `${column.color}15`,
-                      color: column.color,
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      padding: '0.25rem 0.5rem'
-                    }}>
-                      {tasksByStatus[column.id].length}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Tareas de la columna */}
-                <div className="card-body p-2" style={{ 
-                  maxHeight: 'calc(100vh - 320px)',
-                  overflowY: 'auto',
-                  overflowX: 'hidden'
-                }}>
-                  <div className="d-flex flex-column gap-2">
-                    {tasksByStatus[column.id].map((task) => (
-                      <div
-                        key={task.id}
-                        className="card border-0 shadow-sm"
-                        style={{
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          borderRadius: '8px',
-                          borderLeft: `3px solid ${column.color}`
-                        }}
-                        onClick={() => navigateToTask(task.id)}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateX(2px)';
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translateX(0)';
-                          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-                        }}
-                      >
-                        <div className="card-body p-3">
-                          {/* Header de tarea */}
-                          <div className="d-flex justify-content-between align-items-start mb-2">
-                            <h6 className="mb-0 fw-semibold" style={{ 
-                              fontSize: '0.875rem',
-                              color: '#1a1a1a',
-                              lineHeight: '1.4',
-                              flex: 1,
-                              paddingRight: '8px'
-                            }}>
-                              {task.titulo}
-                            </h6>
-                            <div className="task-menu-container" style={{ position: 'relative', flexShrink: 0 }}>
-                              <button
-                                className="btn btn-sm border-0 task-menu-button"
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenMenuId(openMenuId === task.id ? null : task.id);
-                                }}
-                                style={{ 
-                                  width: '28px',
-                                  height: '28px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  borderRadius: '6px',
-                                  transition: 'all 0.15s ease',
-                                  backgroundColor: openMenuId === task.id ? '#e5e7eb' : '#f3f4f6',
-                                  padding: 0,
-                                  fontSize: '1.2rem',
-                                  fontWeight: 'bold',
-                                  color: '#374151',
-                                  lineHeight: 1
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = '#e5e7eb';
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (openMenuId !== task.id) {
-                                    e.currentTarget.style.backgroundColor = '#f3f4f6';
-                                  }
-                                }}
-                              >
-                                ⋮
-                              </button>
-                              {openMenuId === task.id && (
-                                <div 
-                                  className="task-menu-dropdown"
-                                  style={{
-                                    position: 'absolute',
-                                    top: '100%',
-                                    right: 0,
-                                    marginTop: '4px',
-                                    backgroundColor: '#ffffff',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                    border: '1px solid #e9ecef',
-                                    minWidth: '140px',
-                                    zIndex: 1000,
-                                    overflow: 'hidden'
-                                  }}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <button
-                                    className="task-menu-item"
-                                    style={{
-                                      width: '100%',
-                                      padding: '10px 14px',
-                                      border: 'none',
-                                      backgroundColor: 'transparent',
-                                      color: '#374151',
-                                      fontSize: '0.875rem',
-                                      textAlign: 'left',
-                                      cursor: 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '10px',
-                                      transition: 'background-color 0.15s ease',
-                                      fontWeight: '500'
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setOpenMenuId(null);
-                                      openEditForm(task);
-                                    }}
-                                  >
-                                    <i className="bi bi-pencil" style={{ fontSize: '0.9rem' }}></i>
-                                    Editar
-                                  </button>
-                                  <div style={{ height: '1px', backgroundColor: '#e9ecef', margin: '0' }}></div>
-                                  <button
-                                    className="task-menu-item"
-                                    style={{
-                                      width: '100%',
-                                      padding: '10px 14px',
-                                      border: 'none',
-                                      backgroundColor: 'transparent',
-                                      color: '#dc3545',
-                                      fontSize: '0.875rem',
-                                      textAlign: 'left',
-                                      cursor: 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '10px',
-                                      transition: 'background-color 0.15s ease',
-                                      fontWeight: '500'
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
-                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setOpenMenuId(null);
-                                      confirmDelete(task);
-                                    }}
-                                  >
-                                    <i className="bi bi-trash" style={{ fontSize: '0.9rem' }}></i>
-                                    Eliminar
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Descripción */}
-                          {task.descripcion && (
-                            <p className="text-muted mb-2" style={{
-                              fontSize: '0.75rem',
-                              lineHeight: '1.4',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden'
-                            }}>
-                              {task.descripcion}
-                            </p>
-                          )}
-
-                          {/* Prioridad */}
-                          {task.prioridad && (
-                            <div className="mb-2">
-                              <span style={{
-                                fontSize: '0.7rem',
-                                padding: '0.15rem 0.4rem',
-                                borderRadius: '4px',
-                                backgroundColor: task.prioridad === 'alta' ? '#dc354515' : 
-                                                task.prioridad === 'media' ? '#ffc10715' : '#19875415',
-                                color: task.prioridad === 'alta' ? '#dc3545' : 
-                                       task.prioridad === 'media' ? '#ffc107' : '#198754',
-                                fontWeight: '600'
-                              }}>
-                                {task.prioridad === 'alta' ? 'Alta' : 
-                                 task.prioridad === 'media' ? 'Media' : 'Baja'}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Footer */}
-                          <div className="d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
-                            {task.proyecto_id && (
-                              <small className="text-muted d-flex align-items-center gap-1" style={{ fontSize: '0.7rem' }}>
-                                <i className="bi bi-folder2"></i>
-                                <span style={{
-                                  maxWidth: '120px',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap'
-                                }}>
-                                  {getProjectName(task.proyecto_id)}
-                                </span>
-                              </small>
-                            )}
-                            {task.fecha_fin && (
-                              <small className="text-muted d-flex align-items-center gap-1" style={{ fontSize: '0.7rem' }}>
-                                <i className="bi bi-calendar3"></i>
-                                {new Date(task.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                              </small>
-                            )}
-                          </div>
+        /* Vista Kanban con Drag & Drop */
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="row g-3">
+            {kanbanColumns.map((column) => (
+              <div key={column.id} className="col-lg-3 col-md-6">
+                <SortableContext
+                  id={column.id}
+                  items={tasksByStatus[column.id].map(t => t.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div
+                    className="card border-0 shadow-sm h-100"
+                    style={{
+                      borderRadius: '12px',
+                      backgroundColor: '#ffffff'
+                    }}
+                    data-column-id={column.id}
+                  >
+                    {/* Header de columna */}
+                    <div className="card-header border-0 bg-transparent pt-3 pb-2 px-3">
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className={column.icon} style={{ fontSize: '1rem', color: column.color }}></i>
+                          <h6 className="mb-0 fw-semibold" style={{
+                            fontSize: '0.875rem',
+                            color: '#1a1a1a'
+                          }}>
+                            {column.title}
+                          </h6>
                         </div>
+                        <span className="badge rounded-pill" style={{
+                          backgroundColor: `${column.color}15`,
+                          color: column.color,
+                          fontSize: '0.75rem',
+                          fontWeight: '600',
+                          padding: '0.25rem 0.5rem'
+                        }}>
+                          {tasksByStatus[column.id].length}
+                        </span>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Tareas de la columna - Droppable zone */}
+                    <DroppableColumn column={column}>
+                      <div className="d-flex flex-column gap-2">
+                        {tasksByStatus[column.id].map((task) => (
+                          <DraggableTaskCard
+                            key={task.id}
+                            task={task}
+                            column={column}
+                            onEdit={openEditForm}
+                            onDelete={confirmDelete}
+                            onNavigate={navigateToTask}
+                            getProjectName={getProjectName}
+                            openMenuId={openMenuId}
+                            setOpenMenuId={setOpenMenuId}
+                          />
+                        ))}
+                      </div>
+                    </DroppableColumn>
                   </div>
+                </SortableContext>
+              </div>
+            ))}
+          </div>
+
+          {/* Overlay para mostrar tarea siendo arrastrada */}
+          <DragOverlay>
+            {activeTask ? (
+              <div
+                className="card border-0 shadow-sm"
+                style={{
+                  cursor: 'grabbing',
+                  borderRadius: '8px',
+                  opacity: 0.9,
+                  borderLeft: `3px solid #3b82f6`
+                }}
+              >
+                <div className="card-body p-3">
+                  <h6 className="mb-0 fw-semibold" style={{
+                    fontSize: '0.875rem',
+                    color: '#1a1a1a'
+                  }}>
+                    {activeTask.titulo}
+                  </h6>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       ) : (
         /* Vista Lista */
         <div className="row">
@@ -733,8 +949,8 @@ const TasksPage = () => {
                     </thead>
                     <tbody>
                       {filteredTasks.map((task) => (
-                        <tr 
-                          key={task.id} 
+                        <tr
+                          key={task.id}
                           style={{ cursor: 'pointer' }}
                           onClick={() => navigateToTask(task.id)}
                         >
@@ -744,7 +960,7 @@ const TasksPage = () => {
                                 {task.titulo}
                               </div>
                               {task.descripcion && (
-                                <div className="text-muted" style={{ 
+                                <div className="text-muted" style={{
                                   fontSize: '0.75rem',
                                   maxWidth: '300px',
                                   overflow: 'hidden',
@@ -771,15 +987,15 @@ const TasksPage = () => {
                               fontSize: '0.75rem',
                               padding: '0.25rem 0.5rem',
                               borderRadius: '4px',
-                              backgroundColor: task.prioridad === 'alta' ? '#dc354515' : 
-                                              task.prioridad === 'media' ? '#ffc10715' : '#19875415',
-                              color: task.prioridad === 'alta' ? '#dc3545' : 
-                                     task.prioridad === 'media' ? '#ffc107' : '#198754',
+                              backgroundColor: task.prioridad === 'alta' ? '#dc354525' :
+                                task.prioridad === 'media' ? '#ffc10730' : '#19875425',
+                              color: task.prioridad === 'alta' ? '#b02a37' :
+                                task.prioridad === 'media' ? '#d39e00' : '#146c43',
                               fontWeight: '600'
                             }}>
-                              <i className={`bi ${task.prioridad === 'alta' ? 'bi-exclamation-circle' : 
-                                                  task.prioridad === 'media' ? 'bi-dash-circle' : 'bi-arrow-down-circle'}`}
-                                 style={{ fontSize: '0.7rem' }}></i>
+                              <i className={`bi ${task.prioridad === 'alta' ? 'bi-exclamation-circle' :
+                                task.prioridad === 'media' ? 'bi-dash-circle' : 'bi-arrow-down-circle'}`}
+                                style={{ fontSize: '0.7rem' }}></i>
                               {task.prioridad || 'Media'}
                             </span>
                           </td>
@@ -792,7 +1008,21 @@ const TasksPage = () => {
                             <div className="d-flex gap-1">
                               <button
                                 className="btn btn-sm btn-outline-secondary"
-                                style={{ borderRadius: '6px', fontSize: '0.75rem' }}
+                                style={{
+                                  borderRadius: '6px',
+                                  fontSize: '0.75rem',
+                                  color: '#495057',
+                                  borderColor: '#6c757d',
+                                  backgroundColor: 'transparent'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#6c757d';
+                                  e.currentTarget.style.color = '#fff';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                  e.currentTarget.style.color = '#495057';
+                                }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   openEditForm(task);
@@ -802,7 +1032,21 @@ const TasksPage = () => {
                               </button>
                               <button
                                 className="btn btn-sm btn-outline-danger"
-                                style={{ borderRadius: '6px', fontSize: '0.75rem' }}
+                                style={{
+                                  borderRadius: '6px',
+                                  fontSize: '0.75rem',
+                                  color: '#dc3545',
+                                  borderColor: '#dc3545',
+                                  backgroundColor: 'transparent'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#dc3545';
+                                  e.currentTarget.style.color = '#fff';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                  e.currentTarget.style.color = '#dc3545';
+                                }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   confirmDelete(task);
