@@ -8,7 +8,7 @@ import taskService from '../services/taskService';
 import '../styles/projects.css';
 
 const FilesPage = () => {
-  
+
   // Escala tipográfica consistente (DRY - Don't Repeat Yourself)
   const typography = {
     pageTitle: '1.75rem',
@@ -52,10 +52,10 @@ const FilesPage = () => {
 
   // Estados de vista - Por defecto lista para ser más compacto
   const [viewMode, setViewMode] = useState('list');
-  
+
   // Estado para el menú desplegable abierto
   const [openDropdownId, setOpenDropdownId] = useState(null);
-  
+
   // Estado para el menú abierto en vista de cuadrícula
   const [openMenuId, setOpenMenuId] = useState(null);
 
@@ -96,7 +96,7 @@ const FilesPage = () => {
       setLoading(true);
       const response = await fileService.getAllFiles(filters);
       console.log('Response from files API:', response);
-      
+
       // Manejar diferentes estructuras de respuesta
       const filesData = response.files || response.data || [];
       setFiles(Array.isArray(filesData) ? filesData : []);
@@ -104,7 +104,7 @@ const FilesPage = () => {
     } catch (error) {
       console.error('Error al cargar archivos:', error);
       setError('Error al cargar los archivos');
-            setFiles([]);
+      setFiles([]);
     } finally {
       setLoading(false);
     }
@@ -135,13 +135,13 @@ const FilesPage = () => {
   // Manejar subida de archivos
   const handleFileUpload = async (e) => {
     e.preventDefault();
-    
+
     if (uploadForm.files.length === 0) {
-            return;
+      return;
     }
 
     if (!uploadForm.entidad_id) {
-            return;
+      return;
     }
 
     setUploading(true);
@@ -159,12 +159,12 @@ const FilesPage = () => {
         await fileService.uploadFile(formData);
       }
 
-            setShowUploadModal(false);
+      setShowUploadModal(false);
       resetUploadForm();
       loadFiles();
     } catch (error) {
       console.error('Error al subir archivos:', error);
-          } finally {
+    } finally {
       setUploading(false);
     }
   };
@@ -189,9 +189,9 @@ const FilesPage = () => {
   const handleDownload = async (file) => {
     try {
       await fileService.downloadFile(file.id, file.nombre_original);
-          } catch (error) {
+    } catch (error) {
       console.error('Error al descargar archivo:', error);
-          }
+    }
   };
 
   // Confirmar eliminación
@@ -204,26 +204,26 @@ const FilesPage = () => {
   const handleDelete = async () => {
     try {
       await fileService.deleteFile(selectedFile.id);
-            setShowDeleteDialog(false);
+      setShowDeleteDialog(false);
       setSelectedFile(null);
       loadFiles();
     } catch (error) {
       console.error('Error al eliminar archivo:', error);
-          }
+    }
   };
 
   // Filtrar archivos
   const filteredFiles = (Array.isArray(files) ? files : []).filter(file => {
     const matchesSearch = file.nombre_original?.toLowerCase().includes(filters.search.toLowerCase()) ||
-                         file.nombre_archivo?.toLowerCase().includes(filters.search.toLowerCase());
+      file.nombre_archivo?.toLowerCase().includes(filters.search.toLowerCase());
     const matchesTipo = !filters.tipo || file.tipo === filters.tipo;
-    const matchesTipoEntidad = !filters.tipo_entidad || 
-                              (filters.tipo_entidad === 'proyecto' && file.proyecto_id) ||
-                              (filters.tipo_entidad === 'tarea' && file.tarea_id);
-    const matchesEntidad = !filters.entidad_id || 
-                          file.proyecto_id === parseInt(filters.entidad_id) ||
-                          file.tarea_id === parseInt(filters.entidad_id);
-    
+    const matchesTipoEntidad = !filters.tipo_entidad ||
+      (filters.tipo_entidad === 'proyecto' && file.proyecto_id) ||
+      (filters.tipo_entidad === 'tarea' && file.tarea_id);
+    const matchesEntidad = !filters.entidad_id ||
+      file.proyecto_id === parseInt(filters.entidad_id) ||
+      file.tarea_id === parseInt(filters.entidad_id);
+
     return matchesSearch && matchesTipo && matchesTipoEntidad && matchesEntidad;
   });
 
@@ -236,32 +236,223 @@ const FilesPage = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  // Extraer tipo de archivo desde nombre (SRP - fallback para registros antiguos)
+  const getFileTypeFromFilename = (filename) => {
+    if (!filename) return 'FILE';
+    const extension = filename.split('.').pop();
+    return extension ? extension.toUpperCase() : 'FILE';
+  };
+
   // Obtener configuración de tipo de archivo (SRP - Single Responsibility Principle)
+  // OCP - Open/Closed: Extensible para nuevos tipos sin modificar código existente
   const getFileTypeConfig = (tipo) => {
+    // Normalizar tipo a mayúsculas para comparación
+    const tipoUpper = tipo?.toUpperCase() || '';
+
     const configs = {
+      // Documentos
       PDF: {
         icon: 'bi-file-earmark-pdf',
         color: '#dc3545',
         bgColor: '#dc354515',
-        label: 'PDF'
+        label: 'PDF',
+        category: 'document'
+      },
+      DOC: {
+        icon: 'bi-file-earmark-word',
+        color: '#0d6efd',
+        bgColor: '#0d6efd15',
+        label: 'DOC',
+        category: 'document'
       },
       DOCX: {
         icon: 'bi-file-earmark-word',
         color: '#0d6efd',
         bgColor: '#0d6efd15',
-        label: 'DOCX'
+        label: 'DOCX',
+        category: 'document'
       },
-      JPG: {
-        icon: 'bi-file-earmark-image',
+      TXT: {
+        icon: 'bi-file-earmark-text',
+        color: '#6c757d',
+        bgColor: '#6c757d15',
+        label: 'TXT',
+        category: 'document'
+      },
+      RTF: {
+        icon: 'bi-file-earmark-richtext',
+        color: '#6c757d',
+        bgColor: '#6c757d15',
+        label: 'RTF',
+        category: 'document'
+      },
+
+      // Hojas de cálculo
+      XLS: {
+        icon: 'bi-file-earmark-excel',
         color: '#198754',
         bgColor: '#19875415',
-        label: 'JPG'
+        label: 'XLS',
+        category: 'spreadsheet'
+      },
+      XLSX: {
+        icon: 'bi-file-earmark-excel',
+        color: '#198754',
+        bgColor: '#19875415',
+        label: 'XLSX',
+        category: 'spreadsheet'
+      },
+      CSV: {
+        icon: 'bi-file-earmark-spreadsheet',
+        color: '#198754',
+        bgColor: '#19875415',
+        label: 'CSV',
+        category: 'spreadsheet'
+      },
+
+      // Presentaciones
+      PPT: {
+        icon: 'bi-file-earmark-slides',
+        color: '#fd7e14',
+        bgColor: '#fd7e1415',
+        label: 'PPT',
+        category: 'presentation'
+      },
+      PPTX: {
+        icon: 'bi-file-earmark-slides',
+        color: '#fd7e14',
+        bgColor: '#fd7e1415',
+        label: 'PPTX',
+        category: 'presentation'
+      },
+
+      // Imágenes
+      JPG: {
+        icon: 'bi-file-earmark-image',
+        color: '#0dcaf0',
+        bgColor: '#0dcaf015',
+        label: 'JPG',
+        category: 'image'
+      },
+      JPEG: {
+        icon: 'bi-file-earmark-image',
+        color: '#0dcaf0',
+        bgColor: '#0dcaf015',
+        label: 'JPEG',
+        category: 'image'
+      },
+      PNG: {
+        icon: 'bi-file-earmark-image',
+        color: '#0dcaf0',
+        bgColor: '#0dcaf015',
+        label: 'PNG',
+        category: 'image'
+      },
+      GIF: {
+        icon: 'bi-file-earmark-image',
+        color: '#0dcaf0',
+        bgColor: '#0dcaf015',
+        label: 'GIF',
+        category: 'image'
+      },
+      SVG: {
+        icon: 'bi-file-earmark-image',
+        color: '#0dcaf0',
+        bgColor: '#0dcaf015',
+        label: 'SVG',
+        category: 'image'
+      },
+
+      // Archivos comprimidos
+      ZIP: {
+        icon: 'bi-file-earmark-zip',
+        color: '#6f42c1',
+        bgColor: '#6f42c115',
+        label: 'ZIP',
+        category: 'archive'
+      },
+      RAR: {
+        icon: 'bi-file-earmark-zip',
+        color: '#6f42c1',
+        bgColor: '#6f42c115',
+        label: 'RAR',
+        category: 'archive'
+      },
+      '7Z': {
+        icon: 'bi-file-earmark-zip',
+        color: '#6f42c1',
+        bgColor: '#6f42c115',
+        label: '7Z',
+        category: 'archive'
+      },
+
+      // Código
+      JS: {
+        icon: 'bi-file-earmark-code',
+        color: '#ffc107',
+        bgColor: '#ffc10715',
+        label: 'JS',
+        category: 'code'
+      },
+      JSON: {
+        icon: 'bi-file-earmark-code',
+        color: '#ffc107',
+        bgColor: '#ffc10715',
+        label: 'JSON',
+        category: 'code'
+      },
+      HTML: {
+        icon: 'bi-file-earmark-code',
+        color: '#e34c26',
+        bgColor: '#e34c2615',
+        label: 'HTML',
+        category: 'code'
+      },
+      CSS: {
+        icon: 'bi-file-earmark-code',
+        color: '#264de4',
+        bgColor: '#264de415',
+        label: 'CSS',
+        category: 'code'
+      },
+
+      // Audio/Video
+      MP3: {
+        icon: 'bi-file-earmark-music',
+        color: '#d63384',
+        bgColor: '#d6338415',
+        label: 'MP3',
+        category: 'media'
+      },
+      MP4: {
+        icon: 'bi-file-earmark-play',
+        color: '#d63384',
+        bgColor: '#d6338415',
+        label: 'MP4',
+        category: 'media'
+      },
+      AVI: {
+        icon: 'bi-file-earmark-play',
+        color: '#d63384',
+        bgColor: '#d6338415',
+        label: 'AVI',
+        category: 'media'
       }
     };
-    return configs[tipo] || configs.PDF;
+
+    // Default para tipos no reconocidos
+    const defaultConfig = {
+      icon: 'bi-file-earmark',
+      color: '#6c757d',
+      bgColor: '#6c757d15',
+      label: tipoUpper || 'FILE',
+      category: 'other'
+    };
+
+    return configs[tipoUpper] || defaultConfig;
   };
 
-  // Obtener nombre de la entidad asociada
+  // Obtener nombre de la entidad asociada  
   const getEntityName = (file) => {
     if (file.proyecto_id) {
       const project = projects.find(p => p.id === file.proyecto_id);
@@ -299,7 +490,7 @@ const FilesPage = () => {
             <button
               onClick={openUploadModal}
               className="btn btn-dark d-flex align-items-center"
-              style={{ 
+              style={{
                 borderRadius: '8px',
                 fontSize: typography.button,
                 padding: '0.5rem 1.25rem',
@@ -321,9 +512,9 @@ const FilesPage = () => {
               <div className="row g-2 align-items-center">
                 <div className="col-lg-3 col-md-6">
                   <div className="position-relative">
-                    <i className="bi bi-search position-absolute" style={{ 
-                      left: '12px', 
-                      top: '50%', 
+                    <i className="bi bi-search position-absolute" style={{
+                      left: '12px',
+                      top: '50%',
                       transform: 'translateY(-50%)',
                       color: '#6c757d',
                       fontSize: typography.small
@@ -334,7 +525,7 @@ const FilesPage = () => {
                       value={filters.search}
                       onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                       className="form-control"
-                      style={{ 
+                      style={{
                         paddingLeft: '2.5rem',
                         border: '1px solid #e9ecef',
                         borderRadius: '8px',
@@ -348,16 +539,43 @@ const FilesPage = () => {
                     value={filters.tipo}
                     onChange={(e) => setFilters({ ...filters, tipo: e.target.value })}
                     className="form-select"
-                    style={{ 
+                    style={{
                       border: '1px solid #e9ecef',
                       borderRadius: '8px',
                       fontSize: typography.input
                     }}
                   >
                     <option value="">Todos los tipos</option>
-                    <option value="PDF">📄 PDF</option>
-                    <option value="DOCX">📝 DOCX</option>
-                    <option value="JPG">🖼️ JPG</option>
+                    <optgroup label="📄 Documentos">
+                      <option value="PDF">PDF</option>
+                      <option value="DOC">DOC</option>
+                      <option value="DOCX">DOCX</option>
+                      <option value="TXT">TXT</option>
+                      <option value="RTF">RTF</option>
+                    </optgroup>
+                    <optgroup label="📊 Hojas de cálculo">
+                      <option value="XLS">XLS</option>
+                      <option value="XLSX">XLSX</option>
+                      <option value="CSV">CSV</option>
+                    </optgroup>
+                    <optgroup label="🖼️ Imágenes">
+                      <option value="JPG">JPG</option>
+                      <option value="JPEG">JPEG</option>
+                      <option value="PNG">PNG</option>
+                      <option value="GIF">GIF</option>
+                      <option value="SVG">SVG</option>
+                    </optgroup>
+                    <optgroup label="📦 Archivos comprimidos">
+                      <option value="ZIP">ZIP</option>
+                      <option value="RAR">RAR</option>
+                      <option value="7Z">7Z</option>
+                    </optgroup>
+                    <optgroup label="💻 Código">
+                      <option value="JS">JS</option>
+                      <option value="JSON">JSON</option>
+                      <option value="HTML">HTML</option>
+                      <option value="CSS">CSS</option>
+                    </optgroup>
                   </select>
                 </div>
                 <div className="col-lg-2 col-md-6">
@@ -365,7 +583,7 @@ const FilesPage = () => {
                     value={filters.tipo_entidad}
                     onChange={(e) => setFilters({ ...filters, tipo_entidad: e.target.value, entidad_id: '' })}
                     className="form-select"
-                    style={{ 
+                    style={{
                       border: '1px solid #e9ecef',
                       borderRadius: '8px',
                       fontSize: typography.input
@@ -382,15 +600,15 @@ const FilesPage = () => {
                     onChange={(e) => setFilters({ ...filters, entidad_id: e.target.value })}
                     className="form-select"
                     disabled={!filters.tipo_entidad}
-                    style={{ 
+                    style={{
                       border: '1px solid #e9ecef',
                       borderRadius: '8px',
                       fontSize: typography.input
                     }}
                   >
                     <option value="">
-                      {filters.tipo_entidad === 'proyecto' ? 'Todos los proyectos' : 
-                       filters.tipo_entidad === 'tarea' ? 'Todas las tareas' : 'Selecciona tipo'}
+                      {filters.tipo_entidad === 'proyecto' ? 'Todos los proyectos' :
+                        filters.tipo_entidad === 'tarea' ? 'Todas las tareas' : 'Selecciona tipo'}
                     </option>
                     {filters.tipo_entidad === 'proyecto' && projects.map((project) => (
                       <option key={project.id} value={project.id}>
@@ -409,7 +627,7 @@ const FilesPage = () => {
                     <button
                       onClick={() => setFilters({ search: '', tipo: '', tipo_entidad: '', entidad_id: '' })}
                       className="btn btn-outline-secondary flex-grow-1"
-                      style={{ 
+                      style={{
                         borderRadius: '8px',
                         fontSize: typography.button,
                         border: '1px solid #e9ecef'
@@ -422,7 +640,7 @@ const FilesPage = () => {
                       onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                       className="btn btn-outline-secondary"
                       title={viewMode === 'grid' ? 'Vista de lista' : 'Vista de cuadrícula'}
-                      style={{ 
+                      style={{
                         borderRadius: '8px',
                         fontSize: typography.button,
                         border: '1px solid #e9ecef'
@@ -454,8 +672,8 @@ const FilesPage = () => {
       {filteredFiles.length === 0 && !error ? (
         <div className="text-center py-5">
           <div className="mb-4">
-            <div className="d-inline-flex align-items-center justify-content-center rounded-circle" 
-                 style={{ width: '80px', height: '80px', backgroundColor: '#f8f9fa' }}>
+            <div className="d-inline-flex align-items-center justify-content-center rounded-circle"
+              style={{ width: '80px', height: '80px', backgroundColor: '#f8f9fa' }}>
               <i className="bi bi-file-earmark" style={{ fontSize: '2rem', color: '#6c757d' }}></i>
             </div>
           </div>
@@ -479,13 +697,13 @@ const FilesPage = () => {
             <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
               <div className="card-body p-0">
                 {/* Contenedor con scroll limitado */}
-                <div style={{ 
-                  maxHeight: 'calc(100vh - 320px)', 
+                <div style={{
+                  maxHeight: 'calc(100vh - 320px)',
                   overflowY: 'auto',
                   overflowX: 'auto'
                 }}>
                   <table className="table table-hover mb-0">
-                    <thead style={{ 
+                    <thead style={{
                       backgroundColor: '#f8f9fa',
                       position: 'sticky',
                       top: 0,
@@ -502,7 +720,9 @@ const FilesPage = () => {
                     </thead>
                     <tbody>
                       {filteredFiles.map((file) => {
-                        const typeConfig = getFileTypeConfig(file.tipo);
+                        // Usar filename como fallback si tipo está vacío o es incorrecto
+                        const fileType = file.tipo || getFileTypeFromFilename(file.nombre_original);
+                        const typeConfig = getFileTypeConfig(fileType);
                         return (
                           <tr key={file.id} style={{ cursor: 'pointer' }}>
                             <td className="px-4 py-3">
@@ -572,199 +792,201 @@ const FilesPage = () => {
         </div>
       ) : (
         /* Vista de Cuadrícula con Scroll */
-        <div style={{ 
-          maxHeight: 'calc(100vh - 320px)', 
+        <div style={{
+          maxHeight: 'calc(100vh - 320px)',
           overflowY: 'auto',
           overflowX: 'hidden',
           paddingRight: '8px'
         }}>
           <div className="row g-3">
             {filteredFiles.map((file) => {
-              const typeConfig = getFileTypeConfig(file.tipo);
+              // Usar filename como fallback si tipo está vacío o es incorrecto
+              const fileType = file.tipo || getFileTypeFromFilename(file.nombre_original);
+              const typeConfig = getFileTypeConfig(fileType);
               return (
-              <div key={file.id} className="col-xl-3 col-lg-4 col-md-6">
-                <div
-                  className="card border-0 shadow-sm h-100"
-                  style={{
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    borderRadius: '12px',
-                    borderLeft: `4px solid ${typeConfig.color}`
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-                  }}
-                >
-                  <div className="card-body p-3">
-                    {/* Header compacto */}
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <div className="d-flex align-items-center gap-2">
-                        <i className={`bi ${typeConfig.icon}`} style={{ fontSize: '1.5rem', color: typeConfig.color }}></i>
-                        <span style={{
-                          fontSize: typography.tiny,
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: '4px',
-                          backgroundColor: typeConfig.bgColor,
-                          color: typeConfig.color,
-                          fontWeight: '600'
-                        }}>
-                          {typeConfig.label}
-                        </span>
-                      </div>
-                      <div className="file-dropdown-container" style={{ position: 'relative', flexShrink: 0 }}>
-                        <button
-                          className="btn btn-sm border-0"
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenDropdownId(openDropdownId === file.id ? null : file.id);
-                          }}
-                          style={{ 
-                            width: '28px',
-                            height: '28px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRadius: '6px',
-                            transition: 'all 0.15s ease',
-                            backgroundColor: openDropdownId === file.id ? '#e5e7eb' : '#f3f4f6',
-                            padding: 0,
-                            fontSize: '1.2rem',
-                            fontWeight: 'bold',
-                            color: '#374151',
-                            lineHeight: 1
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#e5e7eb';
-                          }}
-                          onMouseLeave={(e) => {
-                            if (openDropdownId !== file.id) {
-                              e.currentTarget.style.backgroundColor = '#f3f4f6';
-                            }
-                          }}
-                        >
-                          ⋮
-                        </button>
-                        {openDropdownId === file.id && (
-                          <div 
-                            className="file-dropdown-menu"
-                            style={{
-                              position: 'absolute',
-                              top: '100%',
-                              right: 0,
-                              marginTop: '4px',
-                              backgroundColor: '#ffffff',
-                              borderRadius: '8px',
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                              border: '1px solid #e9ecef',
-                              minWidth: '140px',
-                              zIndex: 1000,
-                              overflow: 'hidden'
+                <div key={file.id} className="col-xl-3 col-lg-4 col-md-6">
+                  <div
+                    className="card border-0 shadow-sm h-100"
+                    style={{
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      borderRadius: '12px',
+                      borderLeft: `4px solid ${typeConfig.color}`
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.12)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                    }}
+                  >
+                    <div className="card-body p-3">
+                      {/* Header compacto */}
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className={`bi ${typeConfig.icon}`} style={{ fontSize: '1.5rem', color: typeConfig.color }}></i>
+                          <span style={{
+                            fontSize: typography.tiny,
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: '4px',
+                            backgroundColor: typeConfig.bgColor,
+                            color: typeConfig.color,
+                            fontWeight: '600'
+                          }}>
+                            {typeConfig.label}
+                          </span>
+                        </div>
+                        <div className="file-dropdown-container" style={{ position: 'relative', flexShrink: 0 }}>
+                          <button
+                            className="btn btn-sm border-0"
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenDropdownId(openDropdownId === file.id ? null : file.id);
                             }}
-                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: '6px',
+                              transition: 'all 0.15s ease',
+                              backgroundColor: openDropdownId === file.id ? '#e5e7eb' : '#f3f4f6',
+                              padding: 0,
+                              fontSize: '1.2rem',
+                              fontWeight: 'bold',
+                              color: '#374151',
+                              lineHeight: 1
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#e5e7eb';
+                            }}
+                            onMouseLeave={(e) => {
+                              if (openDropdownId !== file.id) {
+                                e.currentTarget.style.backgroundColor = '#f3f4f6';
+                              }
+                            }}
                           >
-                            <button
-                              className="file-dropdown-item"
+                            ⋮
+                          </button>
+                          {openDropdownId === file.id && (
+                            <div
+                              className="file-dropdown-menu"
                               style={{
-                                width: '100%',
-                                padding: '10px 14px',
-                                border: 'none',
-                                backgroundColor: 'transparent',
-                                color: '#374151',
-                                fontSize: typography.body,
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                transition: 'background-color 0.15s ease',
-                                fontWeight: '500'
+                                position: 'absolute',
+                                top: '100%',
+                                right: 0,
+                                marginTop: '4px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                border: '1px solid #e9ecef',
+                                minWidth: '140px',
+                                zIndex: 1000,
+                                overflow: 'hidden'
                               }}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenDropdownId(null);
-                                handleDownload(file);
-                              }}
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              <i className="bi bi-download" style={{ fontSize: '0.9rem' }}></i>
-                              Descargar
-                            </button>
-                            <div style={{ height: '1px', backgroundColor: '#e9ecef', margin: '0' }}></div>
-                            <button
-                              className="file-dropdown-item"
-                              style={{
-                                width: '100%',
-                                padding: '10px 14px',
-                                border: 'none',
-                                backgroundColor: 'transparent',
-                                color: '#dc3545',
-                                fontSize: typography.body,
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                transition: 'background-color 0.15s ease',
-                                fontWeight: '500'
-                              }}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
-                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenDropdownId(null);
-                                confirmDelete(file);
-                              }}
-                            >
-                              <i className="bi bi-trash" style={{ fontSize: '0.9rem' }}></i>
-                              Eliminar
-                            </button>
-                          </div>
-                        )}
+                              <button
+                                className="file-dropdown-item"
+                                style={{
+                                  width: '100%',
+                                  padding: '10px 14px',
+                                  border: 'none',
+                                  backgroundColor: 'transparent',
+                                  color: '#374151',
+                                  fontSize: typography.body,
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '10px',
+                                  transition: 'background-color 0.15s ease',
+                                  fontWeight: '500'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenDropdownId(null);
+                                  handleDownload(file);
+                                }}
+                              >
+                                <i className="bi bi-download" style={{ fontSize: '0.9rem' }}></i>
+                                Descargar
+                              </button>
+                              <div style={{ height: '1px', backgroundColor: '#e9ecef', margin: '0' }}></div>
+                              <button
+                                className="file-dropdown-item"
+                                style={{
+                                  width: '100%',
+                                  padding: '10px 14px',
+                                  border: 'none',
+                                  backgroundColor: 'transparent',
+                                  color: '#dc3545',
+                                  fontSize: typography.body,
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '10px',
+                                  transition: 'background-color 0.15s ease',
+                                  fontWeight: '500'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenDropdownId(null);
+                                  confirmDelete(file);
+                                }}
+                              >
+                                <i className="bi bi-trash" style={{ fontSize: '0.9rem' }}></i>
+                                Eliminar
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Nombre del archivo */}
-                    <h6 className="mb-2 fw-semibold" style={{ 
-                      fontSize: typography.fileName,
-                      color: '#1a1a1a',
-                      lineHeight: '1.3',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
-                    }}>
-                      {file.nombre_original}
-                    </h6>
+                      {/* Nombre del archivo */}
+                      <h6 className="mb-2 fw-semibold" style={{
+                        fontSize: typography.fileName,
+                        color: '#1a1a1a',
+                        lineHeight: '1.3',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>
+                        {file.nombre_original}
+                      </h6>
 
-                    {/* Información compacta */}
-                    <div className="mb-2">
-                      <small className="text-muted d-block" style={{ fontSize: typography.small }}>
-                        {formatFileSize(file.tamaño_bytes)}
-                      </small>
-                      <small className="text-muted d-block" style={{ fontSize: typography.small }}>
-                        {getEntityName(file)}
-                      </small>
-                    </div>
+                      {/* Información compacta */}
+                      <div className="mb-2">
+                        <small className="text-muted d-block" style={{ fontSize: typography.small }}>
+                          {formatFileSize(file.tamaño_bytes)}
+                        </small>
+                        <small className="text-muted d-block" style={{ fontSize: typography.small }}>
+                          {getEntityName(file)}
+                        </small>
+                      </div>
 
-                    {/* Fecha */}
-                    <div className="border-top pt-2 mt-2">
-                      <small className="d-flex align-items-center gap-1" style={{ fontSize: typography.small, color: '#6c757d' }}>
-                        <i className="bi bi-calendar3"></i>
-                        {new Date(file.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                      </small>
+                      {/* Fecha */}
+                      <div className="border-top pt-2 mt-2">
+                        <small className="d-flex align-items-center gap-1" style={{ fontSize: typography.small, color: '#6c757d' }}>
+                          <i className="bi bi-calendar3"></i>
+                          {new Date(file.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                        </small>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
         </div>
       )}

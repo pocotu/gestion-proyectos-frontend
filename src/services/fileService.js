@@ -137,23 +137,31 @@ class FileService {
   /**
    * Descargar un archivo
    */
-  async downloadFile(fileId) {
+  async downloadFile(fileId, originalFilename = null) {
     try {
-      const response = await api.get(`/files/${fileId}/download`, {
+      const response = await api.get(`/files/download/${fileId}`, {
         responseType: 'blob',
       });
 
       // Crear URL para descarga
       const url = window.URL.createObjectURL(new Blob([response.data]));
 
-      // Obtener nombre del archivo desde headers
+      // Obtener nombre del archivo desde headers o usar el proporcionado
       const contentDisposition = response.headers['content-disposition'];
-      let filename = 'archivo';
+      let filename = originalFilename || `archivo-${fileId}`;
 
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (filenameMatch) {
-          filename = filenameMatch[1];
+        // Intentar extraer filename de varias formas
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(contentDisposition);
+        if (matches != null && matches[1]) {
+          filename = matches[1].replace(/^["']|["']$/g, '');
+          // Decodificar si está URL encoded
+          try {
+            filename = decodeURIComponent(filename);
+          } catch (e) {
+            // Si falla la decodificación, usar el nombre tal cual
+          }
         }
       }
 
