@@ -711,7 +711,6 @@ const FilesPage = () => {
                     }}>
                       <tr>
                         <th className="border-0 py-3 px-4" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>ARCHIVO</th>
-                        <th className="border-0 py-3" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>TIPO</th>
                         <th className="border-0 py-3" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>TAMAÑO</th>
                         <th className="border-0 py-3" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>ASOCIADO A</th>
                         <th className="border-0 py-3" style={{ fontSize: typography.tiny, fontWeight: '600', color: '#6c757d', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>FECHA</th>
@@ -733,18 +732,7 @@ const FilesPage = () => {
                                 </span>
                               </div>
                             </td>
-                            <td className="py-3">
-                              <span style={{
-                                fontSize: typography.tiny,
-                                padding: '0.2rem 0.5rem',
-                                borderRadius: '4px',
-                                backgroundColor: typeConfig.bgColor,
-                                color: typeConfig.color,
-                                fontWeight: '600'
-                              }}>
-                                {typeConfig.label}
-                              </span>
-                            </td>
+
                             <td className="py-3">
                               <span style={{ fontSize: typography.small, color: '#6c757d' }}>
                                 {formatFileSize(file.tamaño_bytes)}
