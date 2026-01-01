@@ -120,7 +120,7 @@ class ProjectService {
     try {
       const response = await apiClient.post(
         `/projects/${id}/responsibles`,
-        { usuario_id: userId }
+        { userId: userId }
       );
       return response.data;
     } catch (error) {

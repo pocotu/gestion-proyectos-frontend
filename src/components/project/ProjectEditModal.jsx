@@ -68,8 +68,8 @@ const ProjectEditModal = ({
   const loadAvailableUsers = async () => {
     try {
       setLoadingUsers(true);
-      const response = await userService.getAllUsers();
-      const users = response.users || response.data || [];
+      const response = await userService.getUsers();
+      const users = response.data?.users || response.users || [];
       
       // Filter out users that are already responsibles
       const currentResponsibleIds = currentResponsibles.map(r => r.id);
