@@ -1,0 +1,203 @@
+/* Project Detail Tabs - Modern & Minimalist Design */
+
+.project-detail-tabs {
+  width: 100%;
+  margin-top: 2rem;
+}
+
+/* Tab Navigation */
+.project-tabs-nav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 0 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.project-tab-button {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 1rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #6b7280;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  margin-bottom: -2px;
+}
+
+.project-tab-button:hover {
+  color: #374151;
+  background-color: #f9fafb;
+  border-radius: 8px 8px 0 0;
+}
+
+.project-tab-button.active {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
+  font-weight: 600;
+}
+
+.project-tab-button.active .project-tab-icon {
+  color: #4f46e5;
+}
+
+.project-tab-icon {
+  display: flex;
+  align-items: center;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.project-tab-label {
+  font-size: 0.9375rem;
+  line-height: 1;
+}
+
+.project-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.5rem;
+  background-color: #e5e7eb;
+  color: #374151;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.project-tab-button.active .project-tab-badge {
+  background-color: #4f46e5;
+  color: #ffffff;
+}
+
+/* Tab Content */
+.project-tabs-content {
+  width: 100%;
+}
+
+.project-tab-panel {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Remove card styling from children when inside tabs */
+.project-tab-panel .card {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.project-tab-panel .card.no-card-style {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.project-tab-panel .card-header {
+  display: none !important;
+}
+
+.project-tab-panel .card-body {
+  padding: 0 !important;
+}
+
+.project-tab-panel .card-body.p-0 {
+  padding: 0 !important;
+}
+
+/* Ensure list items have proper spacing in tabs */
+.project-tab-panel .list-group-item {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .project-tabs-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0;
+  }
+
+  .project-tabs-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .project-tab-button {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .project-tab-label {
+    font-size: 0.875rem;
+  }
+
+  .project-tab-badge {
+    min-width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.6875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-detail-tabs {
+    margin-top: 1.5rem;
+  }
+
+  .project-tabs-nav {
+    gap: 0.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .project-tab-button {
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .project-tab-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Focus styles for accessibility */
+.project-tab-button:focus {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+  border-radius: 8px 8px 0 0;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .project-tab-button,
+  .project-tab-badge {
+    transition: none;
+  }
+
+  .project-tab-panel {
+    animation: none;
+  }
+}

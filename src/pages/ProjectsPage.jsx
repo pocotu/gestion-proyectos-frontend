@@ -39,6 +39,7 @@ const ProjectsPage = () => {
   // Estados de selección
   const [selectedProject, setSelectedProject] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [hoveredCardId, setHoveredCardId] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
     estado: ''
@@ -271,11 +272,17 @@ const ProjectsPage = () => {
         <div style={styles.grid}>
           {filteredProjects.map((project) => {
             const statusConfig = getStatusConfig(project.estado);
+            const isHovered = hoveredCardId === project.id;
             return (
               <div
                 key={project.id}
-                style={styles.card}
+                style={{
+                  ...styles.card,
+                  ...(isHovered ? styles.cardHover : {})
+                }}
                 onClick={() => navigateToProject(project.id)}
+                onMouseEnter={() => setHoveredCardId(project.id)}
+                onMouseLeave={() => setHoveredCardId(null)}
               >
                 {/* Header de la card */}
                 <div style={styles.cardHeader}>
@@ -627,6 +634,11 @@ const styles = {
     transition: 'all 0.2s ease',
     border: '1px solid #E5E7EB',
     boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+  },
+  cardHover: {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    borderColor: '#D1D5DB'
   },
   cardHeader: {
     display: 'flex',

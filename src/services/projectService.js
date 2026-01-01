@@ -183,6 +183,22 @@ class ProjectService {
     }
   }
 
+  /**
+   * Get complete project details including all related data
+   * @param {number} projectId - Project ID
+   * @returns {Promise<Object>} Complete project details with responsibles, tasks, files, and activity logs
+   * @throws {Error} If project not found, access denied, or network error
+   */
+  async getProjectDetails(projectId) {
+    try {
+      const response = await apiClient.get(`/projects/${projectId}/details`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error al obtener detalles del proyecto ${projectId}:`, error);
+      throw this.handleError(error);
+    }
+  }
+
   handleError(error) {
     if (error.response) {
       const { status, data } = error.response;

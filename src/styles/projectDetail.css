@@ -1,0 +1,556 @@
+/* Project Detail Page Styles - Modern & Minimalist */
+/* Requirements: 11.1, 11.2, 11.3, 11.4, 11.5 */
+
+/* ============================================
+   DESKTOP LAYOUT (>1024px)
+   Requirements: 11.1
+   ============================================ */
+
+.project-detail-page {
+  padding: 1.5rem 2rem !important;
+  background-color: #f8f9fa !important;
+  min-height: 100vh;
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-detail-header {
+  margin-bottom: 1.5rem;
+}
+
+.project-detail-back-link {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.project-detail-back-link:hover {
+  color: #4338ca;
+  text-decoration: none;
+  transform: translateX(-2px);
+}
+
+/* Modern Grid Layout - No longer needed with tabs */
+/* Grid styles removed - using tab-based layout */
+
+/* Modern Card styling */
+.project-detail-card,
+.project-detail-page .card {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-detail-card:hover,
+.project-detail-page .card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.project-detail-card-header,
+.project-detail-page .card-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 1.25rem 1.5rem !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+  font-size: 1rem !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.project-detail-card-body,
+.project-detail-page .card-body {
+  padding: 1.5rem !important;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Custom scrollbar for card body */
+.project-detail-card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.project-detail-card-body::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.project-detail-card-body::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.project-detail-card-body::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Specific styling for tasks card with scroll */
+.project-detail-page .project-tasks-card,
+.project-detail-page .card.project-tasks-card {
+  max-height: 600px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.project-detail-page .project-tasks-card .project-detail-card-body,
+.project-detail-page .project-tasks-card .card-body {
+  max-height: 520px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0 !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+}
+
+/* Modern Project Info Card */
+.project-info-modern {
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%) !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.3s ease !important;
+  margin-bottom: 2rem !important;
+}
+
+.project-info-modern:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(-1px);
+}
+
+.project-info-modern .card-body {
+  padding: 3rem 3.5rem !important;
+}
+
+/* Loading state */
+.project-detail-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+/* Error state - Modern design */
+.project-detail-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 2rem;
+}
+
+.project-detail-error-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.project-detail-error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.project-detail-error-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.project-detail-error-message {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+}
+
+.project-detail-error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.project-detail-back-button {
+  padding: 0.625rem 1.25rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.project-detail-back-button:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.project-detail-retry-button {
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #4f46e5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.project-detail-retry-button:hover {
+  background-color: #4338ca;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Tables within cards - Modern styling */
+.project-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.project-detail-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.project-detail-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.project-detail-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.project-detail-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.project-detail-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Empty state - Modern design */
+.project-detail-empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: #9ca3af;
+}
+
+.project-detail-empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.project-detail-empty-state-text {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* ============================================
+   TABLET LAYOUT (768px-1024px)
+   Requirements: 11.2
+   ============================================ */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .project-detail-page {
+    padding: 1.25rem 1.5rem;
+  }
+
+  /* Keep 2 columns for tablet */
+  .project-detail-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  /* Full width section still spans all columns */
+  .project-detail-full-width {
+    grid-column: 1 / -1;
+  }
+
+  .project-detail-card-header {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .project-detail-card-body {
+    padding: 1rem;
+  }
+
+  .project-tasks-card {
+    max-height: 500px;
+  }
+
+  .project-tasks-card .project-detail-card-body {
+    max-height: 420px;
+  }
+
+  .project-detail-error-card {
+    padding: 2rem;
+  }
+}
+
+/* ============================================
+   MOBILE LAYOUT (<768px)
+   Requirements: 11.3, 11.4, 11.5
+   ============================================ */
+
+@media (max-width: 767px) {
+  .project-detail-page {
+    padding: 1rem;
+  }
+
+  .project-detail-header {
+    margin-bottom: 1rem;
+  }
+
+  /* Stack sections vertically (1 column) */
+  .project-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Full width section */
+  .project-detail-full-width {
+    grid-column: 1;
+  }
+
+  /* Reduce card padding on mobile */
+  .project-detail-card-header {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .project-detail-card-body {
+    padding: 1rem;
+  }
+
+  /* Adjust tasks card height for mobile */
+  .project-tasks-card {
+    max-height: 450px;
+  }
+
+  .project-tasks-card .project-detail-card-body {
+    max-height: 370px;
+  }
+
+  /* Make tables horizontally scrollable on mobile */
+  .project-detail-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: -1rem;
+    padding: 1rem;
+  }
+
+  .project-detail-table {
+    min-width: 600px;
+  }
+
+  .project-detail-table th,
+  .project-detail-table td {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+
+  /* Touch-friendly interactive elements */
+  .project-detail-back-link {
+    padding: 0.75rem 0;
+    font-size: 0.9375rem;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .project-detail-back-button,
+  .project-detail-retry-button {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9375rem;
+    min-height: 44px;
+    width: 100%;
+  }
+
+  .project-detail-error-actions {
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .project-detail-error-card {
+    padding: 1.5rem;
+  }
+
+  .project-detail-error-icon {
+    font-size: 2.5rem;
+  }
+
+  .project-detail-error-title {
+    font-size: 1.125rem;
+  }
+
+  /* Reduce empty state size on mobile */
+  .project-detail-empty-state {
+    padding: 2rem 1rem;
+  }
+
+  .project-detail-empty-state-icon {
+    font-size: 2.25rem;
+  }
+
+  /* Card layout alternative for mobile (if needed) */
+  .project-detail-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .project-detail-card-list-item {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.875rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .project-detail-card-list-item:active {
+    background-color: #f9fafb;
+  }
+}
+
+/* ============================================
+   SMALL MOBILE (<480px)
+   Additional adjustments for very small screens
+   ============================================ */
+
+@media (max-width: 479px) {
+  .project-detail-page {
+    padding: 0.75rem;
+  }
+
+  .project-detail-grid {
+    gap: 0.875rem;
+  }
+
+  .project-detail-card-header {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .project-detail-card-body {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .project-detail-error-card {
+    padding: 1.25rem;
+  }
+
+  .project-tasks-card {
+    max-height: 400px;
+  }
+
+  .project-tasks-card .project-detail-card-body {
+    max-height: 320px;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .project-detail-page {
+    padding: 0;
+    background-color: white;
+  }
+
+  .project-detail-back-link,
+  .project-detail-back-button,
+  .project-detail-retry-button {
+    display: none;
+  }
+
+  .project-detail-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    page-break-inside: avoid;
+  }
+
+  .project-detail-grid {
+    display: block;
+  }
+
+  .project-detail-grid-item {
+    margin-bottom: 20px;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================ */
+
+/* Focus styles for keyboard navigation */
+.project-detail-back-link:focus,
+.project-detail-back-button:focus,
+.project-detail-retry-button:focus {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+/* Reduced motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .project-detail-card,
+  .project-detail-back-link,
+  .project-detail-back-button,
+  .project-detail-retry-button {
+    transition: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .project-detail-card {
+    border: 2px solid #111827;
+  }
+
+  .project-detail-back-link,
+  .project-detail-retry-button {
+    border: 2px solid currentColor;
+  }
+}

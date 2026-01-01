@@ -9,7 +9,7 @@ import UnauthorizedPage from '../pages/UnauthorizedPage';
 // Páginas privadas
 import DashboardPage from '../pages/DashboardPage';
 import ProjectsPage from '../pages/ProjectsPage';
-import TasksPage from '../pages/TasksPage';
+import ProjectDetailPage from '../pages/ProjectDetailPage';
 import UsersPage from '../pages/UsersPage';
 import ActivityLogsPage from '../pages/ActivityLogsPage';
 import FilesPage from '../pages/FilesPage';
@@ -67,8 +67,8 @@ const AppRouter = () => {
           {/* Gestión de proyectos */}
           <Route path="projects" element={<ProjectsPage />} />
           
-          {/* Gestión de tareas */}
-          <Route path="tasks" element={<TasksPage />} />
+          {/* Detalle de proyecto */}
+          <Route path="projects/:id" element={<ProjectDetailPage />} />
           
           {/* Gestión de archivos */}
           <Route path="files" element={<FilesPage />} />

@@ -3,7 +3,6 @@ import { useAuth } from '../../hooks/useAuth';
 import {
   LayoutDashboard,
   FolderKanban,
-  CheckSquare,
   FileArchive,
   Users,
   Shield,
@@ -42,12 +41,6 @@ const Sidebar = () => {
           name: 'Proyectos',
           path: '/projects',
           icon: FolderKanban,
-          roles: ['admin', 'responsable_proyecto', 'responsable_tarea']
-        },
-        {
-          name: 'Tareas',
-          path: '/tasks',
-          icon: CheckSquare,
           roles: ['admin', 'responsable_proyecto', 'responsable_tarea']
         },
         {
