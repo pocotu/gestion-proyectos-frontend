@@ -1006,22 +1006,7 @@ const FilesPage = () => {
 
           <div className="mb-3">
             <label className="form-label fw-medium">
-              Asociar a *
-            </label>
-            <select
-              value={uploadForm.tipo_entidad}
-              onChange={(e) => setUploadForm({ ...uploadForm, tipo_entidad: e.target.value, entidad_id: '' })}
-              className="form-select"
-              required
-            >
-              <option value="proyecto">Proyecto</option>
-              <option value="tarea">Tarea</option>
-            </select>
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label fw-medium">
-              {uploadForm.tipo_entidad === 'proyecto' ? 'Proyecto' : 'Tarea'} *
+              Proyecto *
             </label>
             <select
               value={uploadForm.entidad_id}
@@ -1030,16 +1015,11 @@ const FilesPage = () => {
               required
             >
               <option value="">
-                Seleccionar {uploadForm.tipo_entidad === 'proyecto' ? 'proyecto' : 'tarea'}
+                Seleccionar proyecto
               </option>
-              {uploadForm.tipo_entidad === 'proyecto' && projects.map((project) => (
+              {projects.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.titulo}
-                </option>
-              ))}
-              {uploadForm.tipo_entidad === 'tarea' && tasks.map((task) => (
-                <option key={task.id} value={task.id}>
-                  {task.titulo}
                 </option>
               ))}
             </select>
