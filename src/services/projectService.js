@@ -186,12 +186,16 @@ class ProjectService {
   /**
    * Get complete project details including all related data
    * @param {number} projectId - Project ID
+   * @param {boolean} bustCache - Force fresh data by adding timestamp parameter
    * @returns {Promise<Object>} Complete project details with responsibles, tasks, files, and activity logs
    * @throws {Error} If project not found, access denied, or network error
    */
-  async getProjectDetails(projectId) {
+  async getProjectDetails(projectId, bustCache = false) {
     try {
-      const response = await apiClient.get(`/projects/${projectId}/details`);
+      const url = bustCache 
+        ? `/projects/${projectId}/details?_t=${Date.now()}`
+        : `/projects/${projectId}/details`;
+      const response = await apiClient.get(url);
       return response.data;
     } catch (error) {
       console.error(`Error al obtener detalles del proyecto ${projectId}:`, error);

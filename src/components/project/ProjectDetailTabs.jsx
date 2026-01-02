@@ -17,6 +17,8 @@ import '../../styles/projectDetailTabs.css';
  * @param {Function} props.onFileUpload - Callback for file upload
  * @param {Function} props.onFileDownload - Callback for file download
  * @param {Function} props.onFileDelete - Callback for file delete
+ * @param {Function} props.onCreateTask - Callback for creating task
+ * @param {Function} props.onEditTask - Callback for editing task
  * @returns {JSX.Element}
  */
 const ProjectDetailTabs = ({ 
@@ -27,7 +29,9 @@ const ProjectDetailTabs = ({
   canManage = false,
   onFileUpload,
   onFileDownload,
-  onFileDelete
+  onFileDelete,
+  onCreateTask,
+  onEditTask
 }) => {
   const [activeTab, setActiveTab] = useState('tasks');
 
@@ -90,7 +94,9 @@ const ProjectDetailTabs = ({
             <ProjectTasksCard 
               tasks={tasks}
               projectId={projectId}
-              canManage={false}
+              canManage={canManage}
+              onCreate={onCreateTask}
+              onEdit={onEditTask}
               hideHeader={true}
             />
           </div>

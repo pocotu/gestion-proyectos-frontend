@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import projectService from '../services/projectService';
+import userService from '../services/userService';
 
 /**
  * ProjectsPage - Diseño exacto de la imagen
@@ -21,6 +22,8 @@ const ProjectsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalProjects, setTotalProjects] = useState(0);
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   // Estados de modales
   const [showProjectForm, setShowProjectForm] = useState(false);
@@ -33,7 +36,8 @@ const ProjectsPage = () => {
     descripcion: '',
     fecha_inicio: '',
     fecha_fin: '',
-    estado: 'planificacion'
+    estado: 'planificacion',
+    responsables: [] // Array de IDs de usuarios responsables
   });
 
   // Estados de selección
@@ -44,11 +48,42 @@ const ProjectsPage = () => {
     search: '',
     estado: ''
   });
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   // Cargar proyectos al montar el componente
   useEffect(() => {
     loadProjects();
   }, []);
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showUserDropdown && !event.target.closest('.dropdown-container')) {
+        setShowUserDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserDropdown]);
+
+  // Cargar usuarios disponibles
+  const loadUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const response = await userService.getUsers();
+      const usersData = response.data?.users || response.users || response.data || [];
+      setUsers(Array.isArray(usersData) ? usersData : []);
+    } catch (error) {
+      console.error('Error al cargar usuarios:', error);
+      setUsers([]);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
 
   // Cargar proyectos
   const loadProjects = async () => {
@@ -75,15 +110,41 @@ const ProjectsPage = () => {
     e.preventDefault();
     try {
       if (formMode === 'create') {
-        await projectService.createProject(projectForm);
+        // Crear proyecto
+        const response = await projectService.createProject({
+          titulo: projectForm.titulo,
+          descripcion: projectForm.descripcion,
+          fecha_inicio: projectForm.fecha_inicio,
+          fecha_fin: projectForm.fecha_fin,
+          estado: projectForm.estado
+        });
+        
+        // Asignar responsables si hay alguno seleccionado
+        const projectId = response.data?.project?.id || response.project?.id;
+        if (projectId && projectForm.responsables && projectForm.responsables.length > 0) {
+          for (const userId of projectForm.responsables) {
+            try {
+              await projectService.assignResponsible(projectId, userId);
+            } catch (error) {
+              console.error(`Error al asignar responsable ${userId}:`, error);
+            }
+          }
+        }
       } else {
-        await projectService.updateProject(selectedProject.id, projectForm);
+        await projectService.updateProject(selectedProject.id, {
+          titulo: projectForm.titulo,
+          descripcion: projectForm.descripcion,
+          fecha_inicio: projectForm.fecha_inicio,
+          fecha_fin: projectForm.fecha_fin,
+          estado: projectForm.estado
+        });
       }
       setShowProjectForm(false);
       resetForm();
       loadProjects();
     } catch (error) {
       console.error('Error al guardar proyecto:', error);
+      alert('Error al guardar el proyecto. Por favor intenta nuevamente.');
     }
   };
 
@@ -94,10 +155,13 @@ const ProjectsPage = () => {
       descripcion: '',
       fecha_inicio: '',
       fecha_fin: '',
-      estado: 'planificacion'
+      estado: 'planificacion',
+      responsables: []
     });
     setSelectedProject(null);
     setFormMode('create');
+    setUserSearchQuery('');
+    setShowUserDropdown(false);
   };
 
   // Abrir formulario de creación
@@ -105,6 +169,7 @@ const ProjectsPage = () => {
     resetForm();
     setFormMode('create');
     setShowProjectForm(true);
+    loadUsers(); // Cargar usuarios al abrir el formulario
   };
 
   // Abrir formulario de edición
@@ -115,10 +180,12 @@ const ProjectsPage = () => {
       descripcion: project.descripcion || '',
       fecha_inicio: project.fecha_inicio ? project.fecha_inicio.split('T')[0] : '',
       fecha_fin: project.fecha_fin ? project.fecha_fin.split('T')[0] : '',
-      estado: project.estado || 'planificacion'
+      estado: project.estado || 'planificacion',
+      responsables: [] // TODO: cargar responsables del proyecto si existen
     });
     setFormMode('edit');
     setShowProjectForm(true);
+    loadUsers(); // Cargar usuarios al abrir el formulario
   };
 
   // Confirmar eliminación
@@ -142,6 +209,39 @@ const ProjectsPage = () => {
   // Navegar a detalles del proyecto
   const navigateToProject = (projectId) => {
     navigate(`/projects/${projectId}`);
+  };
+
+  // Manejar selección de responsables
+  const handleResponsableToggle = (userId) => {
+    setProjectForm(prev => {
+      const responsables = prev.responsables || [];
+      if (responsables.includes(userId)) {
+        return { ...prev, responsables: responsables.filter(id => id !== userId) };
+      } else {
+        return { ...prev, responsables: [...responsables, userId] };
+      }
+    });
+  };
+
+  // Filtrar usuarios según búsqueda
+  const filteredUsers = users.filter(user => {
+    const searchLower = userSearchQuery.toLowerCase();
+    return (
+      user.nombre?.toLowerCase().includes(searchLower) ||
+      user.email?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Obtener nombres de usuarios seleccionados
+  const getSelectedUserNames = () => {
+    if (!projectForm.responsables || projectForm.responsables.length === 0) {
+      return 'Seleccionar responsables...';
+    }
+    const selectedUsers = users.filter(u => projectForm.responsables.includes(u.id));
+    if (selectedUsers.length === 1) {
+      return selectedUsers[0].nombre;
+    }
+    return `${selectedUsers.length} responsables seleccionados`;
   };
 
   // Filtrar proyectos
@@ -433,6 +533,76 @@ const ProjectsPage = () => {
               <option value="completado">Completado</option>
               <option value="cancelado">Cancelado</option>
             </select>
+          </div>
+
+          <div style={styles.formGroup}>
+            <label style={styles.formLabel}>Responsables del Proyecto</label>
+            <div style={styles.dropdownContainer} className="dropdown-container">
+              <div
+                style={styles.dropdownTrigger}
+                onClick={() => setShowUserDropdown(!showUserDropdown)}
+              >
+                <span style={styles.dropdownText}>{getSelectedUserNames()}</span>
+                <span style={styles.dropdownArrow}>{showUserDropdown ? '▲' : '▼'}</span>
+              </div>
+              
+              {showUserDropdown && (
+                <div style={styles.dropdownMenu}>
+                  {/* Buscador */}
+                  <div style={styles.searchContainer}>
+                    <span style={styles.searchIcon}>🔍</span>
+                    <input
+                      type="text"
+                      placeholder="Buscar usuarios..."
+                      value={userSearchQuery}
+                      onChange={(e) => setUserSearchQuery(e.target.value)}
+                      style={styles.searchInput}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+
+                  {/* Lista de usuarios */}
+                  <div style={styles.usersList}>
+                    {loadingUsers ? (
+                      <div style={styles.loadingUsers}>Cargando usuarios...</div>
+                    ) : filteredUsers.length === 0 ? (
+                      <div style={styles.noUsers}>
+                        {userSearchQuery ? 'No se encontraron usuarios' : 'No hay usuarios disponibles'}
+                      </div>
+                    ) : (
+                      filteredUsers.map(user => (
+                        <label
+                          key={user.id}
+                          style={styles.userCheckbox}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={(projectForm.responsables || []).includes(user.id)}
+                            onChange={() => handleResponsableToggle(user.id)}
+                            style={styles.checkbox}
+                          />
+                          <div style={styles.userInfo}>
+                            <div style={styles.userAvatar}>
+                              {user.nombre?.charAt(0).toUpperCase() || 'U'}
+                            </div>
+                            <div style={styles.userDetails}>
+                              <div style={styles.userName}>{user.nombre}</div>
+                              <div style={styles.userEmail}>{user.email}</div>
+                            </div>
+                          </div>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            {(projectForm.responsables || []).length > 0 && (
+              <div style={styles.selectedCount}>
+                {(projectForm.responsables || []).length} responsable(s) seleccionado(s)
+              </div>
+            )}
           </div>
 
           <div style={styles.formActions}>
@@ -807,6 +977,150 @@ const styles = {
     color: '#FFFFFF',
     backgroundColor: '#3B82F6',
     cursor: 'pointer'
+  },
+  loadingUsers: {
+    padding: '12px',
+    textAlign: 'center',
+    color: '#6B7280',
+    fontSize: '13px',
+    backgroundColor: '#F9FAFB',
+    borderRadius: '6px',
+    border: '1px solid #E5E7EB'
+  },
+  noUsers: {
+    padding: '12px',
+    textAlign: 'center',
+    color: '#6B7280',
+    fontSize: '13px',
+    backgroundColor: '#F9FAFB'
+  },
+  dropdownContainer: {
+    position: 'relative',
+    width: '100%'
+  },
+  dropdownTrigger: {
+    width: '100%',
+    padding: '10px 12px',
+    border: '1px solid #D1D5DB',
+    borderRadius: '6px',
+    fontSize: '13.5px',
+    color: '#111827',
+    backgroundColor: '#FFFFFF',
+    cursor: 'pointer',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    transition: 'border-color 0.15s ease'
+  },
+  dropdownText: {
+    flex: 1,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+  },
+  dropdownArrow: {
+    fontSize: '10px',
+    color: '#6B7280',
+    marginLeft: '8px'
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    marginTop: '4px',
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #D1D5DB',
+    borderRadius: '6px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    zIndex: 1000,
+    maxHeight: '320px',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  searchContainer: {
+    position: 'relative',
+    padding: '8px',
+    borderBottom: '1px solid #E5E7EB'
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: '16px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    fontSize: '14px',
+    pointerEvents: 'none'
+  },
+  searchInput: {
+    width: '100%',
+    padding: '8px 12px 8px 32px',
+    border: '1px solid #E5E7EB',
+    borderRadius: '4px',
+    fontSize: '13px',
+    color: '#111827',
+    outline: 'none',
+    transition: 'border-color 0.15s ease'
+  },
+  usersList: {
+    maxHeight: '240px',
+    overflowY: 'auto'
+  },
+  userCheckbox: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 12px',
+    cursor: 'pointer',
+    borderBottom: '1px solid #F3F4F6',
+    transition: 'background-color 0.15s ease'
+  },
+  checkbox: {
+    width: '16px',
+    height: '16px',
+    marginRight: '12px',
+    cursor: 'pointer',
+    accentColor: '#3B82F6'
+  },
+  userInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    flex: 1
+  },
+  userAvatar: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '50%',
+    backgroundColor: '#3B82F6',
+    color: '#FFFFFF',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '13px',
+    fontWeight: '600',
+    flexShrink: 0
+  },
+  userDetails: {
+    flex: 1,
+    minWidth: 0
+  },
+  userName: {
+    fontSize: '13.5px',
+    fontWeight: '500',
+    color: '#111827',
+    marginBottom: '2px'
+  },
+  userEmail: {
+    fontSize: '12px',
+    color: '#6B7280',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+  },
+  selectedCount: {
+    marginTop: '8px',
+    fontSize: '12px',
+    color: '#6B7280',
+    fontWeight: '500'
   }
 };
 

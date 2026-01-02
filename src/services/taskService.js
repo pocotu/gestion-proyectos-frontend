@@ -245,6 +245,99 @@ class TaskService {
   }
 
   /**
+   * Obtener asignaciones de una tarea
+   * GET /api/tasks/:id/assignments
+   * @param {number} taskId - ID de la tarea
+   * @returns {Promise<Object>} Lista de asignaciones
+   */
+  async getTaskAssignments(taskId) {
+    try {
+      const response = await apiClient.get(`/tasks/${taskId}/assignments`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error al obtener asignaciones de tarea ${taskId}:`, error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Asignar usuario a tarea (con rol)
+   * POST /api/tasks/:id/assignments
+   * @param {number} taskId - ID de la tarea
+   * @param {number} userId - ID del usuario a asignar
+   * @param {string} role - Rol de la asignación (default: 'colaborador')
+   * @returns {Promise<Object>} Confirmación de asignación
+   */
+  async assignUserToTask(taskId, userId, role = 'colaborador') {
+    try {
+      const response = await apiClient.post(`/tasks/${taskId}/assignments`, { 
+        usuario_id: userId,
+        rol_asignacion: role
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error al asignar usuario a tarea ${taskId}:`, error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Desasignar usuario de tarea
+   * DELETE /api/tasks/:id/assignments/:userId
+   * @param {number} taskId - ID de la tarea
+   * @param {number} userId - ID del usuario a desasignar
+   * @returns {Promise<Object>} Confirmación de desasignación
+   */
+  async unassignUserFromTask(taskId, userId) {
+    try {
+      const response = await apiClient.delete(`/tasks/${taskId}/assignments/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error al desasignar usuario de tarea ${taskId}:`, error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Sincronizar asignaciones de una tarea
+   * PUT /api/tasks/:id/assignments
+   * @param {number} taskId - ID de la tarea
+   * @param {Array} userIds - Array de IDs de usuarios [1, 2, 3]
+   * @returns {Promise<Object>} Confirmación de sincronización
+   */
+  async syncTaskAssignments(taskId, userIds) {
+    try {
+      const response = await apiClient.put(`/tasks/${taskId}/assignments`, { 
+        usuario_ids: userIds 
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error al sincronizar asignaciones de tarea ${taskId}:`, error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Actualizar rol de asignación
+   * PATCH /api/tasks/:id/assignments/:userId
+   * @param {number} taskId - ID de la tarea
+   * @param {number} userId - ID del usuario
+   * @param {string} role - Nuevo rol
+   * @returns {Promise<Object>} Confirmación de actualización
+   */
+  async updateAssignmentRole(taskId, userId, role) {
+    try {
+      const response = await apiClient.patch(`/tasks/${taskId}/assignments/${userId}`, { 
+        rol_asignacion: role 
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error al actualizar rol de asignación en tarea ${taskId}:`, error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * Manejo de errores centralizado
    * @param {Error} error - Error capturado
    * @returns {Error} Error procesado

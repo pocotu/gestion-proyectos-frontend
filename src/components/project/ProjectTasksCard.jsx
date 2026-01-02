@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import StatusBadge from '../common/StatusBadge';
-import ActionButton from '../common/ActionButton';
 import ProjectKanbanBoard from './ProjectKanbanBoard';
 
 /**
@@ -140,6 +139,25 @@ const ProjectTasksCard = ({
         <div className="card-header project-detail-card-header d-flex justify-content-between align-items-center">
           <h3 className="mb-0">Tareas del Proyecto</h3>
           <div className="d-flex gap-2 align-items-center">
+            {/* Botón Nueva Tarea primero */}
+            {canManage && onCreate && (
+              <button
+                type="button"
+                className="btn btn-sm btn-dark"
+                onClick={onCreate}
+                title="Crear tarea"
+                style={{
+                  borderRadius: '6px',
+                  fontSize: '0.8125rem',
+                  padding: '0.375rem 0.75rem'
+                }}
+              >
+                <svg style={{ width: '14px', height: '14px', marginRight: '4px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Nueva Tarea
+              </button>
+            )}
             {/* Toggle Vista Lista/Kanban */}
             <div className="btn-group" role="group">
               <button
@@ -173,26 +191,32 @@ const ProjectTasksCard = ({
                 Kanban
               </button>
             </div>
-            {canManage && onCreate && (
-              <ActionButton
-                variant="primary"
-                size="sm"
-                onClick={onCreate}
-                title="Crear tarea"
-              >
-                <svg className="w-4 h-4" style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className="ms-1">Nueva Tarea</span>
-              </ActionButton>
-            )}
           </div>
         </div>
       )}
       
       {/* Toggle cuando hideHeader es true (dentro de tabs) */}
       {hideHeader && (
-        <div className="d-flex justify-content-end mb-3">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          {/* Botón Nueva Tarea primero */}
+          {canManage && onCreate && (
+            <button
+              type="button"
+              className="btn btn-sm btn-dark"
+              onClick={onCreate}
+              title="Crear tarea"
+              style={{
+                borderRadius: '6px',
+                fontSize: '0.8125rem',
+                padding: '0.375rem 0.75rem'
+              }}
+            >
+              <svg style={{ width: '14px', height: '14px', marginRight: '4px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Nueva Tarea
+            </button>
+          )}
           <div className="btn-group" role="group">
             <button
               type="button"
@@ -304,7 +328,19 @@ const ProjectTasksCard = ({
 
                       {/* Task Details */}
                       <div className="d-flex flex-wrap gap-3 text-muted" style={{ fontSize: 'var(--font-size-xs)' }}>
-                        {task.assignee_name && (
+                        {/* Display multiple assigned users */}
+                        {task.asignaciones && task.asignaciones.length > 0 && (
+                          <div className="d-flex align-items-center">
+                            <svg className="me-1" style={{ width: '14px', height: '14px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <span>
+                              {task.asignaciones.map(a => a.usuario_nombre).join(', ')}
+                            </span>
+                          </div>
+                        )}
+                        {/* Fallback to single assignee if no asignaciones */}
+                        {(!task.asignaciones || task.asignaciones.length === 0) && task.assignee_name && (
                           <div className="d-flex align-items-center">
                             <svg className="me-1" style={{ width: '14px', height: '14px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -327,28 +363,38 @@ const ProjectTasksCard = ({
                     {canManage && (onEdit || onDelete) && (
                       <div className="d-flex gap-1 ms-2">
                         {onEdit && (
-                          <ActionButton
-                            variant="warning"
-                            size="sm"
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-dark"
                             onClick={() => onEdit(task)}
                             title="Editar tarea"
+                            style={{
+                              borderRadius: '6px',
+                              fontSize: '0.8125rem',
+                              padding: '0.375rem 0.5rem'
+                            }}
                           >
-                            <svg className="w-4 h-4" style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                          </ActionButton>
+                          </button>
                         )}
                         {onDelete && (
-                          <ActionButton
-                            variant="danger"
-                            size="sm"
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-danger"
                             onClick={() => onDelete(task)}
                             title="Eliminar tarea"
+                            style={{
+                              borderRadius: '6px',
+                              fontSize: '0.8125rem',
+                              padding: '0.375rem 0.5rem'
+                            }}
                           >
-                            <svg className="w-4 h-4" style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                          </ActionButton>
+                          </button>
                         )}
                       </div>
                     )}

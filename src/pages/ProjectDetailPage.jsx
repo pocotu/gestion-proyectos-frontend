@@ -5,9 +5,13 @@ import ProjectInfoCard from '../components/project/ProjectInfoCard';
 import ProjectDetailTabs from '../components/project/ProjectDetailTabs';
 import ProjectEditModal from '../components/project/ProjectEditModal';
 import ProjectFileUploadModal from '../components/project/ProjectFileUploadModal';
+import ProjectTaskCreateModal from '../components/project/ProjectTaskCreateModal';
+import ProjectTaskEditModal from '../components/project/ProjectTaskEditModal';
 import { useAuth } from '../hooks/useAuth';
 import projectService from '../services/projectService';
 import fileService from '../services/fileService';
+import taskService from '../services/taskService';
+import userService from '../services/userService';
 import '../styles/projectDetail.css';
 
 /**
@@ -28,13 +32,18 @@ const ProjectDetailPage = () => {
   const [files, setFiles] = useState([]);
   const [activityLogs, setActivityLogs] = useState([]);
   const [statistics, setStatistics] = useState({});
+  const [availableUsers, setAvailableUsers] = useState([]);
 
   // State for UI control
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showFileUploadModal, setShowFileUploadModal] = useState(false);
+  const [showTaskCreateModal, setShowTaskCreateModal] = useState(false);
+  const [showTaskEditModal, setShowTaskEditModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [savingTask, setSavingTask] = useState(false);
 
   // Check if user can edit project
   const canEditProject = () => {
@@ -60,7 +69,7 @@ const ProjectDetailPage = () => {
    * Fetch complete project details from API
    * Requirements: 8.1, 8.3
    */
-  const fetchProjectDetails = async () => {
+  const fetchProjectDetails = async (bustCache = false) => {
     // Validate project ID is numeric
     const projectId = parseInt(id);
     if (isNaN(projectId) || projectId <= 0) {
@@ -72,10 +81,14 @@ const ProjectDetailPage = () => {
       setLoading(true);
       setError(null);
 
-      const response = await projectService.getProjectDetails(projectId);
+      // Fetch project details and admin users in parallel
+      const [projectResponse, usersResponse] = await Promise.all([
+        projectService.getProjectDetails(projectId, bustCache),
+        userService.getUsers()
+      ]);
       
       // Extract data from response
-      const data = response.data || response;
+      const data = projectResponse.data || projectResponse;
       
       setProject(data.project || null);
       setResponsibles(data.responsibles || []);
@@ -83,6 +96,34 @@ const ProjectDetailPage = () => {
       setFiles(data.files || []);
       setActivityLogs(data.activityLogs || []);
       setStatistics(data.statistics || {});
+
+      // Get admin users from the users response
+      const usersData = usersResponse.data?.data || usersResponse.data || usersResponse;
+      const allUsers = usersData.users || usersData;
+      const adminUsers = allUsers.filter(u => u.es_administrador);
+      
+      // Normalize responsibles structure (they have usuario_id, we need id)
+      const normalizedResponsibles = (data.responsibles || []).map(r => ({
+        id: r.usuario_id || r.id,  // Use usuario_id as the main id
+        nombre: r.nombre,
+        email: r.email,
+        es_administrador: r.es_administrador || false
+      }));
+      
+      // Normalize admin users structure
+      const normalizedAdmins = adminUsers.map(u => ({
+        id: u.id,
+        nombre: u.nombre,
+        email: u.email,
+        es_administrador: u.es_administrador
+      }));
+      
+      // Combine project responsibles with admin users (avoid duplicates)
+      const responsibleIds = new Set(normalizedResponsibles.map(r => r.id));
+      const uniqueAdmins = normalizedAdmins.filter(admin => !responsibleIds.has(admin.id));
+      const combinedUsers = [...normalizedResponsibles, ...uniqueAdmins];
+      
+      setAvailableUsers(combinedUsers);
     } catch (err) {
       console.error('Error fetching project details:', err);
       setError(err);
@@ -214,6 +255,103 @@ const ProjectDetailPage = () => {
     }
   };
 
+  /**
+   * Handle create task
+   */
+  const handleCreateTask = () => {
+    setShowTaskCreateModal(true);
+  };
+
+  /**
+   * Handle save new task
+   */
+  const handleSaveTask = async (taskData) => {
+    try {
+      setSavingTask(true);
+      
+      // Create the task first
+      const response = await taskService.createTask(taskData);
+      
+      // Extract task ID from response structure: { success: true, data: { task: {...} } }
+      const newTask = response.data?.task || response.task;
+      const newTaskId = newTask?.id;
+      
+      if (!newTaskId) {
+        throw new Error('No se pudo obtener el ID de la tarea creada');
+      }
+      
+      // If there are assigned users, sync assignments
+      if (taskData.asignados && taskData.asignados.length > 0) {
+        await taskService.syncTaskAssignments(newTaskId, taskData.asignados);
+      }
+      
+      setShowTaskCreateModal(false);
+      // Reload project details with cache busting to get fresh data
+      await fetchProjectDetails(true);
+    } catch (error) {
+      console.error('Error creating task:', error);
+      alert('Error al crear tarea: ' + (error.message || 'Error desconocido'));
+    } finally {
+      setSavingTask(false);
+    }
+  };
+
+  /**
+   * Handle edit task
+   */
+  const handleEditTask = (task) => {
+    setSelectedTask(task);
+    setShowTaskEditModal(true);
+  };
+
+  /**
+   * Handle update task
+   */
+  const handleUpdateTask = async (taskId, taskData) => {
+    try {
+      setSavingTask(true);
+      
+      // Update the task first
+      await taskService.updateTask(taskId, taskData);
+      
+      // If there are assigned users, sync assignments
+      if (taskData.asignados && taskData.asignados.length > 0) {
+        await taskService.syncTaskAssignments(taskId, taskData.asignados);
+      }
+      
+      setShowTaskEditModal(false);
+      setSelectedTask(null);
+      // Reload project details with cache busting to get fresh data
+      await fetchProjectDetails(true);
+    } catch (error) {
+      console.error('Error updating task:', error);
+      alert('Error al actualizar tarea: ' + (error.message || 'Error desconocido'));
+    } finally {
+      setSavingTask(false);
+    }
+  };
+
+  /**
+   * Handle delete task
+   */
+  const handleDeleteTask = async (taskId) => {
+    try {
+      setSavingTask(true);
+      
+      await taskService.deleteTask(taskId);
+      
+      setShowTaskEditModal(false);
+      setSelectedTask(null);
+      // Reload project details with cache busting to get fresh data
+      await fetchProjectDetails(true);
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      alert('Error al eliminar tarea: ' + (error.message || 'Error desconocido'));
+    } finally {
+      setSavingTask(false);
+    }
+  };
+
   // Loading state UI
   if (loading) {
     return (
@@ -290,6 +428,8 @@ const ProjectDetailPage = () => {
         onFileUpload={() => setShowFileUploadModal(true)}
         onFileDownload={handleFileDownload}
         onFileDelete={handleFileDelete}
+        onCreateTask={handleCreateTask}
+        onEditTask={handleEditTask}
       />
 
       {/* Edit Project Modal */}
@@ -310,6 +450,31 @@ const ProjectDetailPage = () => {
         onUpload={handleFileUpload}
         projectId={project?.id}
         uploading={uploading}
+      />
+
+      {/* Task Create Modal */}
+      <ProjectTaskCreateModal
+        isOpen={showTaskCreateModal}
+        onClose={() => setShowTaskCreateModal(false)}
+        onSave={handleSaveTask}
+        projectId={project?.id}
+        projectResponsibles={availableUsers}
+        saving={savingTask}
+      />
+
+      {/* Task Edit Modal */}
+      <ProjectTaskEditModal
+        isOpen={showTaskEditModal}
+        onClose={() => {
+          setShowTaskEditModal(false);
+          setSelectedTask(null);
+        }}
+        onSave={handleUpdateTask}
+        onDelete={handleDeleteTask}
+        task={selectedTask}
+        projectResponsibles={availableUsers}
+        saving={savingTask}
+        deleting={savingTask}
       />
     </div>
   );
