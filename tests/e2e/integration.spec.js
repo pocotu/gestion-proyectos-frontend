@@ -16,7 +16,7 @@ test.describe('Tests de Integración E2E', () => {
       
       // Llenar formulario de login
       await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
-      await page.fill('[data-testid="password-input"]', 'Admin123!');
+      await page.fill('[data-testid="password-input"]', 'Proyecto123!');
       
       // Hacer click en login
       await page.click('[data-testid="login-button"]');
@@ -47,7 +47,7 @@ test.describe('Tests de Integración E2E', () => {
       // Primero hacer login
       await page.goto('/login');
       await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
-      await page.fill('[data-testid="password-input"]', 'Admin123!');
+      await page.fill('[data-testid="password-input"]', 'Proyecto123!');
       await page.click('[data-testid="login-button"]');
       await page.waitForURL('/dashboard', { timeout: 10000 });
       
@@ -83,7 +83,7 @@ test.describe('Tests de Integración E2E', () => {
       // Login como admin antes de cada test
       await page.goto('/login');
       await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
-      await page.fill('[data-testid="password-input"]', 'Admin123!');
+      await page.fill('[data-testid="password-input"]', 'Proyecto123!');
       await page.click('[data-testid="login-button"]');
       
       // Esperar a estar logueado

@@ -22,7 +22,7 @@ test.describe('Sistema de Autenticación', () => {
     // Credenciales de prueba - usando usuario del seeder
     const validCredentials = {
       email: 'admin@gestion-proyectos.com',
-      password: 'Admin123!'
+      password: 'Proyecto123!'
     };
 
     await page.fill('[data-testid="email-input"]', validCredentials.email);
@@ -91,8 +91,8 @@ test.describe('Sistema de Autenticación', () => {
     const timestamp = Date.now();
     await page.fill('input[name="nombre"]', `Usuario Test ${timestamp}`);
     await page.fill('input[name="email"]', `test${timestamp}@test.com`);
-    await page.fill('input[name="contraseña"]', 'password123');
-    await page.fill('input[name="confirmarContraseña"]', 'password123');
+    await page.fill('input[name="contraseña"]', 'Test123!@#456');
+    await page.fill('input[name="confirmarContraseña"]', 'Test123!@#456');
     
     // Hacer click en el botón de registro y esperar navegación
     await Promise.all([
@@ -108,7 +108,7 @@ test.describe('Sistema de Autenticación', () => {
     // Primero hacer login
     await page.goto('/login');
     await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
-    await page.fill('[data-testid="password-input"]', 'Admin123!');
+    await page.fill('[data-testid="password-input"]', 'Proyecto123!');
     await page.click('[data-testid="login-button"]');
     
     // Esperar a que se complete el login y esté en el dashboard con timeout más largo
@@ -137,7 +137,7 @@ test.describe('Sistema de Autenticación', () => {
   test('debe mantener la sesión después de recargar la página', async ({ page }) => {
     const validCredentials = {
       email: 'admin@gestion-proyectos.com',
-      password: 'Admin123!'
+      password: 'Proyecto123!'
     };
     
     // Primero hacer login

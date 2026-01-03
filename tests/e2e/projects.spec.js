@@ -6,7 +6,7 @@ async function loginAsAdmin(page) {
   
   // Usar los selectores data-testid que están en el LoginPage
   await page.fill('[data-testid="email-input"]', 'admin@gestion-proyectos.com');
-  await page.fill('[data-testid="password-input"]', 'Admin123!');
+  await page.fill('[data-testid="password-input"]', 'Proyecto123!');
   
   // Hacer clic en el botón de login
   await page.click('[data-testid="login-button"]');

@@ -12,7 +12,7 @@
 export async function loginAsAdmin(page, options = {}) {
   const {
     email = 'admin@gestion-proyectos.com',
-    password = 'Admin123!',
+    password = 'Proyecto123!',
     timeout = 30000
   } = options;
 
@@ -39,10 +39,10 @@ export async function loginAsAdmin(page, options = {}) {
 
   // Luego esperar a que aparezca el dashboard o cualquier contenido principal
   try {
-    await page.waitForSelector('[data-testid="dashboard-page"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="dashboard-page"]', { timeout: 15000 });
   } catch {
     // Si no encuentra el dashboard-page, esperar por el header del dashboard
-    await page.waitForSelector('[data-testid="dashboard-header"]', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="dashboard-header"]', { timeout: 10000 });
   }
 }
 

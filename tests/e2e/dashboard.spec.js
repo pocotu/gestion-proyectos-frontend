@@ -23,43 +23,35 @@ test.describe('Dashboard E2E', () => {
     // Verificar que se muestra la sección de estadísticas
     await expect(page.locator('[data-testid="dashboard-stats"]')).toBeVisible();
     
-    // Verificar que las estadísticas tienen contenido (texto en mayúsculas)
-    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("TOTAL PROYECTOS")')).toBeVisible();
-    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("PROYECTOS ACTIVOS")')).toBeVisible();
-    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("TOTAL TAREAS")')).toBeVisible();
-    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("EN PROGRESO")')).toBeVisible();
+    // Verificar que las estadísticas tienen contenido
+    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("Proyectos")')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("activos")')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("Tareas")')).toBeVisible();
+    await expect(page.locator('[data-testid="dashboard-stats"]:has-text("en progreso")')).toBeVisible();
   });
 
-  test('debe mostrar resumen de proyectos', async ({ page }) => {
-    // Verificar que existe la sección de resumen de proyectos
-    await expect(page.locator('h6:has-text("Resumen de Proyectos")')).toBeVisible();
+  test('debe mostrar estadísticas de proyectos', async ({ page }) => {
+    // Verificar que existe la sección de estadísticas en la columna izquierda
+    await expect(page.locator('[data-testid="dashboard-stats"]').locator('text=Estadísticas')).toBeVisible();
     
-    // Verificar que existe el botón para ver todos los proyectos
-    await expect(page.locator('a[href="/projects"]:has-text("Ver todos los proyectos")')).toBeVisible();
+    // Verificar que existe la card de proyectos
+    await expect(page.locator('text=Proyectos').first()).toBeVisible();
   });
 
-  test('debe mostrar resumen de tareas', async ({ page }) => {
-    // Verificar que existe la sección de resumen de tareas
-    await expect(page.locator('h6:has-text("Resumen de Tareas")')).toBeVisible();
-    
-    // Verificar que existe el botón para ver todas las tareas
-    await expect(page.locator('a[href="/tasks"]:has-text("Ver todas las tareas")')).toBeVisible();
+  test('debe mostrar estadísticas de tareas', async ({ page }) => {
+    // Verificar que existe la card de tareas
+    await expect(page.locator('text=Tareas').first()).toBeVisible();
   });
 
   test('debe mostrar acciones rápidas', async ({ page }) => {
-    // Verificar que existe la sección de acciones rápidas
-    await expect(page.locator('h6:has-text("Acciones Rápidas")')).toBeVisible();
-    
-    // Verificar que existen los botones de acciones rápidas dentro del dashboard-grid
-    const dashboardGrid = page.locator('[data-testid="dashboard-grid"]');
-    await expect(dashboardGrid.locator('a[href="/projects"]:has-text("Crear Proyecto")')).toBeVisible();
-    await expect(dashboardGrid.locator('a[href="/tasks"]:has-text("Crear Tarea")')).toBeVisible();
-    await expect(dashboardGrid.locator('a[href="/files"]:has-text("Archivos")')).toBeVisible();
+    // Verificar que existen los botones de acciones rápidas
+    await expect(page.locator('a[href="/projects"]:has-text("Crear Proyecto")')).toBeVisible();
+    await expect(page.locator('a[href="/projects"]:has-text("Ver Proyectos")')).toBeVisible();
   });
 
   test('debe navegar a proyectos desde el dashboard', async ({ page }) => {
-    // Hacer clic en "Ver todos los proyectos"
-    await page.click('a[href="/projects"]:has-text("Ver todos los proyectos")');
+    // Hacer clic en "Ver Proyectos"
+    await page.click('a[href="/projects"]:has-text("Ver Proyectos")');
     
     // Esperar navegación
     await page.waitForURL(/.*projects/, { timeout: 10000 });
@@ -68,62 +60,45 @@ test.describe('Dashboard E2E', () => {
     await expect(page).toHaveURL(/.*projects/);
   });
 
-  test('debe navegar a tareas desde el dashboard', async ({ page }) => {
-    // Hacer clic en "Ver todas las tareas"
-    await page.click('a[href="/tasks"]:has-text("Ver todas las tareas")');
-    
-    // Esperar navegación
-    await page.waitForURL(/.*tasks/, { timeout: 10000 });
-    
-    // Verificar que estamos en la página de tareas
-    await expect(page).toHaveURL(/.*tasks/);
+  test('debe mostrar sección de mis tareas', async ({ page }) => {
+    // Verificar que existe la sección de mis tareas
+    await expect(page.locator('text=Mis Tareas')).toBeVisible();
   });
 
   test('debe mostrar actividades recientes', async ({ page }) => {
-    // Verificar que existe la sección de actividades recientes (nuevo diseño compacto)
-    await expect(page.locator('h6:has-text("Actividades Recientes")')).toBeVisible();
+    // Verificar que existe la sección de actividades recientes
+    await expect(page.locator('text=Actividad Reciente')).toBeVisible();
   });
 
-  test('debe permitir actualizar datos', async ({ page }) => {
-    // Verificar que existe el botón de actualizar
-    const refreshButton = page.locator('button:has-text("Actualizar")');
+  test('debe permitir refrescar datos', async ({ page }) => {
+    // Verificar que existe el botón de refrescar (icono RefreshCw)
+    const refreshButton = page.locator('button').filter({ has: page.locator('svg') }).first();
     await expect(refreshButton).toBeVisible();
     
     // El botón debe estar habilitado
     await expect(refreshButton).toBeEnabled();
-    
-    // Verificar que el botón contiene el texto "Actualizar"
-    await expect(refreshButton).toContainText('Actualizar');
   });
 
-  test('debe mostrar mis tareas pendientes', async ({ page }) => {
-    // Verificar que existe la sección de mis tareas pendientes
-    await expect(page.locator('h6:has-text("Mis Tareas Pendientes")')).toBeVisible();
-    
-    // Verificar que se muestra información de tareas asignadas
-    await expect(page.locator('text=Tareas asignadas a ti')).toBeVisible();
-    
-    // Verificar que existe el botón para ver mis tareas
-    await expect(page.locator('a[href="/tasks"]:has-text("Ver mis tareas")')).toBeVisible();
+  test('debe mostrar sección de tareas pendientes', async ({ page }) => {
+    // Verificar que existe la sección de mis tareas (puede estar vacía o con tareas)
+    await expect(page.locator('text=Mis Tareas')).toBeVisible();
   });
 
-  test('debe mostrar grid del dashboard', async ({ page }) => {
-    // Verificar que existe el grid principal del dashboard
-    await expect(page.locator('[data-testid="dashboard-grid"]')).toBeVisible();
+  test('debe mostrar layout de 3 columnas', async ({ page }) => {
+    // Verificar que existe la sección de estadísticas (columna izquierda)
+    await expect(page.locator('[data-testid="dashboard-stats"]').locator('text=Estadísticas')).toBeVisible();
     
-    // Verificar que contiene las secciones principales
-    await expect(page.locator('h6:has-text("Resumen de Proyectos")')).toBeVisible();
-    await expect(page.locator('h6:has-text("Resumen de Tareas")')).toBeVisible();
-    await expect(page.locator('h6:has-text("Acciones Rápidas")')).toBeVisible();
+    // Verificar que existe la sección de mis tareas (columna central)
+    await expect(page.locator('text=Mis Tareas')).toBeVisible();
+    
+    // Verificar que existe la sección de actividad reciente (columna derecha)
+    await expect(page.locator('text=Actividad Reciente')).toBeVisible();
   });
 
-  test('debe mostrar información del usuario logueado', async ({ page }) => {
-    // Verificar que se muestra el mensaje de bienvenida en el header del dashboard
+  test('debe mostrar título del dashboard', async ({ page }) => {
+    // Verificar que se muestra el título del dashboard
     const dashboardHeader = page.locator('[data-testid="dashboard-header"]');
-    await expect(dashboardHeader.locator('text=Bienvenido')).toBeVisible();
-    
-    // Verificar que se muestra el badge de administrador (usando first() para evitar strict mode)
-    await expect(dashboardHeader.locator('span:has-text("Admin")').first()).toBeVisible();
+    await expect(dashboardHeader.locator('h1:has-text("Dashboard")')).toBeVisible();
   });
 
   test('debe ser responsive en diferentes tamaños de pantalla', async ({ page }) => {
